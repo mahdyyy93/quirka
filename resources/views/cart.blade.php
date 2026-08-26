@@ -30,8 +30,6 @@
                         $paymentMethods = $paymentService->available();
                         $customer = auth()->user()->customer;
                     @endphp
-                    <form method="POST" action="{{ route('checkout.store') }}">
-                        @csrf
                 @endauth
 
                 <div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
@@ -39,7 +37,7 @@
                     {{-- Left: Cart items (visible to guests & auth users) --}}
                     <div class="lg:col-span-2 space-y-6">
 
-                        {{-- Cart items --}}
+                        {{-- Cart items — each row has its OWN independent forms (update/delete) --}}
                         <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden">
                             <div class="px-6 py-4 border-b border-gray-100">
                                 <h3 class="font-semibold text-gray-800 text-lg">Your Items</h3>
@@ -94,63 +92,71 @@
                         </div>
 
                         @auth
-                        {{-- Delivery details --}}
-                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                            <h3 class="font-semibold text-gray-800 text-lg mb-4">Delivery Details</h3>
+                        {{-- Delivery & payment fields live inside the checkout form below --}}
+                        <div id="checkout-fields">
+                        <form method="POST" action="{{ route('checkout.store') }}" id="checkout-form">
+                            @csrf
 
-                            <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
-                                    <input type="text" value="{{ auth()->user()->name }}" disabled
-                                        class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-2.5 text-gray-500 text-sm">
+                            {{-- Delivery details --}}
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+                                <h3 class="font-semibold text-gray-800 text-lg mb-4">Delivery Details</h3>
+
+                                <div class="grid grid-cols-1 sm:grid-cols-2 gap-4 mb-4">
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Name</label>
+                                        <input type="text" value="{{ auth()->user()->name }}" disabled
+                                            class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-2.5 text-gray-500 text-sm">
+                                    </div>
+                                    <div>
+                                        <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
+                                        <input type="email" value="{{ auth()->user()->email }}" disabled
+                                            class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-2.5 text-gray-500 text-sm">
+                                    </div>
                                 </div>
-                                <div>
-                                    <label class="block text-sm font-medium text-gray-700 mb-1">Email</label>
-                                    <input type="email" value="{{ auth()->user()->email }}" disabled
-                                        class="w-full border border-gray-200 bg-gray-50 rounded-lg px-4 py-2.5 text-gray-500 text-sm">
-                                </div>
-                            </div>
 
-                            <div class="mb-4">
-                                <label for="address" class="block text-sm font-medium text-gray-700 mb-1">
-                                    Shipping Address <span class="text-red-500">*</span>
-                                </label>
-                                <textarea id="address" name="address" rows="2" required
-                                    class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 @error('address') border-red-400 @enderror"
-                                    placeholder="Street address, city, postal code...">{{ old('address', $customer?->address) }}</textarea>
-                                @error('address') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
-                            </div>
-
-                            <div>
-                                <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">
-                                    Order Notes <span class="text-gray-400 font-normal">(optional)</span>
-                                </label>
-                                <textarea id="notes" name="notes" rows="2"
-                                    class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
-                                    placeholder="Any special instructions...">{{ old('notes') }}</textarea>
-                            </div>
-                        </div>
-
-                        {{-- Payment method --}}
-                        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
-                            <h3 class="font-semibold text-gray-800 text-lg mb-4">Payment Method</h3>
-                            @error('payment_method') <p class="text-red-500 text-xs mb-2">{{ $message }}</p> @enderror
-
-                            <div class="space-y-3">
-                                @foreach($paymentMethods as $key => $label)
-                                    <label class="flex items-center gap-4 border border-gray-200 rounded-xl px-4 py-3 cursor-pointer hover:border-gray-400 transition-colors has-[:checked]:border-gray-900 has-[:checked]:bg-gray-50">
-                                        <input type="radio" name="payment_method" value="{{ $key }}"
-                                            {{ (old('payment_method', array_key_first($paymentMethods)) === $key) ? 'checked' : '' }}
-                                            class="accent-gray-900">
-                                        <div>
-                                            <span class="font-medium text-gray-800">{{ $label }}</span>
-                                            @if($key === 'cash_on_delivery')
-                                                <p class="text-xs text-gray-400 mt-0.5">Pay in cash when your order arrives.</p>
-                                            @endif
-                                        </div>
+                                <div class="mb-4">
+                                    <label for="address" class="block text-sm font-medium text-gray-700 mb-1">
+                                        Shipping Address <span class="text-red-500">*</span>
                                     </label>
-                                @endforeach
+                                    <textarea id="address" name="address" rows="2" required
+                                        class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 @error('address') border-red-400 @enderror"
+                                        placeholder="Street address, city, postal code...">{{ old('address', $customer?->address) }}</textarea>
+                                    @error('address') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                                </div>
+
+                                <div>
+                                    <label for="notes" class="block text-sm font-medium text-gray-700 mb-1">
+                                        Order Notes <span class="text-gray-400 font-normal">(optional)</span>
+                                    </label>
+                                    <textarea id="notes" name="notes" rows="2"
+                                        class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900"
+                                        placeholder="Any special instructions...">{{ old('notes') }}</textarea>
+                                </div>
                             </div>
+
+                            {{-- Payment method --}}
+                            <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
+                                <h3 class="font-semibold text-gray-800 text-lg mb-4">Payment Method</h3>
+                                @error('payment_method') <p class="text-red-500 text-xs mb-2">{{ $message }}</p> @enderror
+
+                                <div class="space-y-3">
+                                    @foreach($paymentMethods as $key => $label)
+                                        <label class="flex items-center gap-4 border border-gray-200 rounded-xl px-4 py-3 cursor-pointer hover:border-gray-400 transition-colors has-[:checked]:border-gray-900 has-[:checked]:bg-gray-50">
+                                            <input type="radio" name="payment_method" value="{{ $key }}"
+                                                {{ (old('payment_method', array_key_first($paymentMethods)) === $key) ? 'checked' : '' }}
+                                                class="accent-gray-900">
+                                            <div>
+                                                <span class="font-medium text-gray-800">{{ $label }}</span>
+                                                @if($key === 'cash_on_delivery')
+                                                    <p class="text-xs text-gray-400 mt-0.5">Pay in cash when your order arrives.</p>
+                                                @endif
+                                            </div>
+                                        </label>
+                                    @endforeach
+                                </div>
+                            </div>
+
+                        </form>
                         </div>
                         @endauth
                     </div>
@@ -184,7 +190,8 @@
                             </div>
 
                             @auth
-                                <button type="submit"
+                                {{-- Submit button targets the checkout form by id --}}
+                                <button type="submit" form="checkout-form"
                                     class="w-full bg-gray-900 text-white font-semibold py-3 rounded-xl hover:bg-gray-700 transition-colors">
                                     Place Order
                                 </button>
@@ -205,10 +212,6 @@
                     </div>
 
                 </div>{{-- /grid --}}
-
-                @auth
-                    </form>
-                @endauth
             @endif
         </div>
     </div>

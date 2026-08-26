@@ -276,14 +276,14 @@ No discount codes or loyalty points. Positive repeat-purchase signal but not a f
 | 2 | Privacy Policy, ToS, Returns, Shipping pages | 🔴 P0 | 2–4 h | [ ] |
 | 3 | Real payment gateway (Stripe/PayPal) | 🔴 P0 | 4–8 h | [ ] |
 | 4 | Customer-facing order history + tracking | 🔴 P0 | 3–5 h | [ ] |
-| 5 | Order confirmation email | 🔴 P0 | 2–3 h | [ ] |
+| 5 | Order confirmation email | 🔴 P0 | 2–3 h | [x] |
 | 6 | Product descriptions field | 🟠 P1 | 1–2 h | [ ] |
 | 7 | Product detail page (`/shop/{product}`) | 🟠 P1 | 2–4 h | [ ] |
-| 8 | Fix `Order::$fillable` (missing fields) | 🟠 P1 | 5 min | [ ] |
+| 8 | Fix `Order::$fillable` (missing fields) | 🟠 P1 | 5 min | [x] |
 | 9 | Reviews & ratings | 🟠 P1 | 4–6 h | [ ] |
 | 10 | Stock level display + over-order guard | 🟠 P1 | 2–3 h | [ ] |
 | 11 | Security headers middleware | 🟠 P1 | 1 h | [ ] |
-| 12 | Remove `/php-info` debug route | 🟠 P1 | 5 min | [ ] |
+| 12 | Remove `/php-info` debug route | 🟠 P1 | 5 min | [x] |
 | 13 | About Us page | 🟡 P2 | 1–2 h | [ ] |
 | 14 | Contact / Support page | 🟡 P2 | 1–2 h | [ ] |
 | 15 | Persistent cart (DB-backed) | 🟡 P2 | 3–4 h | [ ] |

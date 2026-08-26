@@ -2,14 +2,16 @@
 
 namespace App\Http\Controllers;
 
+use App\Mail\OrderConfirmed;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
 use App\Services\PaymentService;
-use Illuminate\Http\Request;
 use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Mail;
 use Illuminate\View\View;
 
 class CheckoutController extends Controller
@@ -41,8 +43,8 @@ class CheckoutController extends Controller
     {
         $request->validate([
             'payment_method' => 'required|string',
-            'address'        => 'required|string|max:500',
-            'notes'          => 'nullable|string|max:1000',
+            'address' => 'required|string|max:500',
+            'notes' => 'nullable|string|max:1000',
         ]);
 
         $cart = session()->get('cart', []);
@@ -53,7 +55,7 @@ class CheckoutController extends Controller
 
         $customer = Auth::user()->customer;
 
-        if (!$customer) {
+        if (! $customer) {
             return redirect()->route('login')->with('error', 'Please log in to place an order.');
         }
 
@@ -74,20 +76,20 @@ class CheckoutController extends Controller
 
         $order = DB::transaction(function () use ($request, $customer, $products, $cart, $total) {
             $order = Order::create([
-                'customer_id'    => $customer->id,
-                'status'         => 'pending',
-                'total_price'    => $total,
+                'customer_id' => $customer->id,
+                'status' => 'pending',
+                'total_price' => $total,
                 'payment_method' => $request->payment_method,
                 'payment_status' => 'unpaid',
-                'notes'          => $request->notes,
+                'notes' => $request->notes,
             ]);
 
             foreach ($products as $product) {
                 OrderItem::create([
-                    'order_id'       => $order->id,
-                    'product_id'     => $product->id,
-                    'quantity'       => $cart[$product->id]['quantity'] ?? 1,
-                    'unit_price'     => $product->price,
+                    'order_id' => $order->id,
+                    'product_id' => $product->id,
+                    'quantity' => $cart[$product->id]['quantity'] ?? 1,
+                    'unit_price' => $product->price,
                     'customizations' => $product->customizations,
                 ]);
             }
@@ -97,6 +99,10 @@ class CheckoutController extends Controller
 
         // Process payment through the registered driver
         $this->paymentService->process($request->payment_method, $order);
+
+        // Send order confirmation email
+        $order->load('items.product', 'customer');
+        Mail::to($order->customer->email)->queue(new OrderConfirmed($order));
 
         session()->forget('cart');
 
