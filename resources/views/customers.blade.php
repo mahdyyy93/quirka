@@ -1,36 +1,27 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Customers') }}
-        </h2>
-    </x-slot>
+    <div class="py-8">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <input type="text" id="searchInput" placeholder="Search customer by name or email..." class="border border-gray-200 rounded-xl px-4 py-2.5 text-sm w-full max-w-md focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                </div>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 overflow-x-auto">
-
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-bold">All Customers</h3>
-                        <input type="text" id="searchInput" placeholder="Search name or email..."
-                            class="border border-gray-300 rounded px-3 py-2 text-sm w-64">
-                    </div>
-
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-gray-50 text-gray-500 uppercase text-xs tracking-wider border-b border-gray-100">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Address</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Orders</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total Spent</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Member Since</th>
+                                <th class="px-6 py-3.5 font-semibold">Name</th>
+                                <th class="px-6 py-3.5 font-semibold">Email</th>
+                                <th class="px-6 py-3.5 font-semibold">Address</th>
+                                <th class="px-6 py-3.5 font-semibold">Orders</th>
+                                <th class="px-6 py-3.5 font-semibold">Total Spent</th>
+                                <th class="px-6 py-3.5 font-semibold">Member Since</th>
                             </tr>
                         </thead>
-                        <tbody id="customersBody" class="bg-white divide-y divide-gray-200"></tbody>
+                        <tbody id="customersBody" class="divide-y divide-gray-100 text-sm text-gray-700"></tbody>
                     </table>
 
-                    <p id="emptyState" class="hidden text-center text-gray-400 py-8">No customers found.</p>
+                    <p id="emptyState" class="hidden text-center text-gray-400 py-8 text-sm">No customers found.</p>
                 </div>
             </div>
         </div>

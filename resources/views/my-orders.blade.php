@@ -1,6 +1,6 @@
 <x-app-layout>
-    <div class="py-12">
-        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="py-8">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-6">
             <div class="mb-4">
                 <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">My Orders</h1>
                 <p class="text-sm text-gray-500 mt-1">Track and manage your recent framed poster orders.</p>

@@ -1,6 +1,6 @@
 <x-app-layout>
-    <div class="py-10 bg-gray-50 min-h-screen">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+    <div class="py-8">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
 
             <div class="mb-8">
                 <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Shopping Cart</h1>

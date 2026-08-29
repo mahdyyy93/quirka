@@ -13,6 +13,15 @@ class OrderController extends Controller
     {
         $orders = Order::with(['customer.user', 'items.product'])
             ->when($request->status, fn ($q, $s) => $q->where('status', $s))
+            ->when($request->search, function ($q, $s) {
+                $q->where(function ($query) use ($s) {
+                    $query->where('id', 'like', "%{$s}%")
+                        ->orWhereHas('customer', function ($cq) use ($s) {
+                            $cq->where('name', 'like', "%{$s}%")
+                                ->orWhere('email', 'like', "%{$s}%");
+                        });
+                });
+            })
             ->latest()
             ->paginate(20);
 

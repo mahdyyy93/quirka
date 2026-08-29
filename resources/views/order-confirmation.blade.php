@@ -1,6 +1,6 @@
 <x-app-layout>
-    <div class="py-12 bg-gray-50 min-h-screen">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-8">
+    <div class="py-8 bg-gray-50 min-h-screen">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8 space-y-8">
 
             <!-- Success Header Banner -->
             <div class="bg-white rounded-2xl p-8 border border-gray-100 shadow-sm text-center space-y-3">

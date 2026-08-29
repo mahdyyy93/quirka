@@ -1,31 +1,24 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Suppliers Management') }}
-        </h2>
-    </x-slot>
+    <div class="py-8">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <input type="text" id="searchInput" oninput="filterSuppliers()" placeholder="Search supplier by name or email..." class="border border-gray-200 rounded-xl px-4 py-2.5 text-sm w-full max-w-md focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                    <button onclick="openModal()" class="bg-gray-900 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm hover:bg-gray-800 transition-all shrink-0">
+                        + Add Supplier
+                    </button>
+                </div>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 overflow-x-auto">
-
-                    <div class="flex justify-between mb-4">
-                        <h3 class="text-lg font-bold">Suppliers List</h3>
-                        <button onclick="openModal()" class="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">
-                            + Add Supplier
-                        </button>
-                    </div>
-
-                    <table id="suppliersTable" class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                <div class="overflow-x-auto">
+                    <table id="suppliersTable" class="w-full text-left border-collapse">
+                        <thead class="bg-gray-50 text-gray-500 uppercase text-xs tracking-wider border-b border-gray-100">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Name</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Email</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                <th class="px-6 py-3.5 font-semibold">Name</th>
+                                <th class="px-6 py-3.5 font-semibold">Email</th>
+                                <th class="px-6 py-3.5 font-semibold text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200"></tbody>
+                        <tbody class="divide-y divide-gray-100 text-sm text-gray-700"></tbody>
                     </table>
                 </div>
             </div>
@@ -34,46 +27,65 @@
 
     <!-- Modal -->
     <div id="supplierModal" class="fixed inset-0 bg-gray-600 bg-opacity-50 hidden flex items-center justify-center z-50">
-        <div class="bg-white rounded-lg p-6 w-96 shadow-xl">
+        <div class="bg-white rounded-xl p-6 w-96 shadow-xl">
             <h3 id="modalTitle" class="text-lg font-bold mb-4">Add Supplier</h3>
 
             <form id="supplierForm" onsubmit="saveSupplier(event)">
                 <input type="hidden" id="supplierId">
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700">Name</label>
-                    <input type="text" id="supplierName" required class="mt-1 w-full border border-gray-300 rounded px-3 py-2">
+                    <input type="text" id="supplierName" required class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-gray-900">
                 </div>
                 <div class="mb-4">
                     <label class="block text-sm font-medium text-gray-700">Email</label>
-                    <input type="email" id="supplierEmail" required class="mt-1 w-full border border-gray-300 rounded px-3 py-2">
+                    <input type="email" id="supplierEmail" required class="mt-1 w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-gray-900">
                 </div>
                 <div class="flex justify-end gap-2">
-                    <button type="button" onclick="closeModal()" class="bg-gray-200 text-gray-800 px-4 py-2 rounded hover:bg-gray-300">Cancel</button>
-                    <button type="submit" class="bg-gray-900 text-white px-4 py-2 rounded hover:bg-gray-700">Save</button>
+                    <button type="button" onclick="closeModal()" class="bg-gray-200 text-gray-800 px-4 py-2 rounded-lg text-sm hover:bg-gray-300">Cancel</button>
+                    <button type="submit" class="bg-gray-900 text-white px-4 py-2 rounded-lg text-sm hover:bg-gray-800">Save</button>
                 </div>
             </form>
         </div>
     </div>
 
     <script>
+        let allSuppliers = [];
+
         async function fetchSuppliers() {
             const res = await fetch('/admin/suppliers');
-            const data = await res.json();
+            allSuppliers = await res.json();
+            renderSuppliers(allSuppliers);
+        }
+
+        function renderSuppliers(suppliers) {
             const tbody = document.querySelector('#suppliersTable tbody');
             tbody.innerHTML = '';
 
-            data.forEach(supplier => {
+            if (suppliers.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="3" class="px-6 py-8 text-center text-gray-500">No suppliers found.</td></tr>';
+                return;
+            }
+
+            suppliers.forEach(supplier => {
                 const tr = document.createElement('tr');
                 tr.innerHTML = `
                     <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-gray-900">${supplier.name}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${supplier.email}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium gap-2 flex">
-                        <button class="text-indigo-600 hover:text-indigo-900" onclick="editSupplier(${supplier.id}, '${supplier.name.replace(/'/g, "\\'")}', '${supplier.email}')">Edit</button>
-                        <button class="text-red-600 hover:text-red-900" onclick="deleteSupplier(${supplier.id})">Delete</button>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium gap-2 flex justify-end">
+                        <button class="text-indigo-600 hover:text-indigo-900 px-2 py-1" onclick="editSupplier(${supplier.id}, '${supplier.name.replace(/'/g, "\\'")}', '${supplier.email}')">Edit</button>
+                        <button class="text-red-600 hover:text-red-900 px-2 py-1" onclick="deleteSupplier(${supplier.id})">Delete</button>
                     </td>
                 `;
                 tbody.appendChild(tr);
             });
+        }
+
+        function filterSuppliers() {
+            const query = document.getElementById('searchInput').value.toLowerCase();
+            const filtered = allSuppliers.filter(s => 
+                s.name.toLowerCase().includes(query) || s.email.toLowerCase().includes(query)
+            );
+            renderSuppliers(filtered);
         }
 
         function openModal() {
@@ -101,15 +113,14 @@
             const name = document.getElementById('supplierName').value;
             const email = document.getElementById('supplierEmail').value;
 
-            const method = id ? 'PUT' : 'POST';
             const url = id ? `/admin/suppliers/${id}` : '/admin/suppliers';
+            const method = id ? 'PUT' : 'POST';
 
             const res = await fetch(url, {
                 method: method,
                 headers: {
                     'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json'
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}'
                 },
                 body: JSON.stringify({ name, email })
             });
@@ -118,8 +129,7 @@
                 closeModal();
                 fetchSuppliers();
             } else {
-                const data = await res.json();
-                alert(data.message || 'An error occurred');
+                alert('Error saving supplier');
             }
         }
 
@@ -128,16 +138,13 @@
 
             const res = await fetch(`/admin/suppliers/${id}`, {
                 method: 'DELETE',
-                headers: {
-                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
-                    'Accept': 'application/json'
-                }
+                headers: { 'X-CSRF-TOKEN': '{{ csrf_token() }}' }
             });
 
             if (res.ok) {
                 fetchSuppliers();
             } else {
-                alert('Failed to delete supplier.');
+                alert('Error deleting supplier');
             }
         }
 

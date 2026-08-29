@@ -1,25 +1,14 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            @if(auth()->user()?->role === 'admin')
-                {{ __('Orders Management') }}
-            @else
-                {{ __('My Orders') }}
-            @endif
-        </h2>
-    </x-slot>
-
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 overflow-x-auto">
+    <div class="py-8">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8">
 
                     @if(auth()->user()?->role === 'admin')
                     {{-- ───────────────── ADMIN VIEW ───────────────── --}}
-                    <div class="flex justify-between items-center mb-4">
-                        <h3 class="text-lg font-bold">All Orders</h3>
-                        <div class="flex items-center gap-3">
-                            <select id="statusFilter" class="border border-gray-300 rounded px-3 py-2 text-sm">
+                    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                        <input type="text" id="searchInput" placeholder="Search customer name, email, or order ID..." class="border border-gray-200 rounded-xl px-4 py-2.5 text-sm w-full max-w-md focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                        <div class="flex items-center gap-3 shrink-0">
+                            <select id="statusFilter" class="border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-700 bg-white focus:ring-2 focus:ring-gray-900 focus:outline-none">
                                 <option value="">All Statuses</option>
                                 <option value="pending">Pending</option>
                                 <option value="pending_verification">Pending Verification</option>
@@ -32,22 +21,24 @@
                         </div>
                     </div>
 
-                    <table id="ordersTable" class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Customer</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Printlet Status</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
-                            </tr>
-                        </thead>
-                        <tbody class="bg-white divide-y divide-gray-200" id="ordersBody"></tbody>
-                    </table>
+                    <div class="overflow-x-auto">
+                        <table id="ordersTable" class="w-full text-left border-collapse">
+                            <thead class="bg-gray-50 text-gray-500 uppercase text-xs tracking-wider border-b border-gray-100">
+                                <tr>
+                                    <th class="px-6 py-3.5 font-semibold">#</th>
+                                    <th class="px-6 py-3.5 font-semibold">Customer</th>
+                                    <th class="px-6 py-3.5 font-semibold">Items</th>
+                                    <th class="px-6 py-3.5 font-semibold">Total</th>
+                                    <th class="px-6 py-3.5 font-semibold">Payment</th>
+                                    <th class="px-6 py-3.5 font-semibold">Status</th>
+                                    <th class="px-6 py-3.5 font-semibold">Printlet Status</th>
+                                    <th class="px-6 py-3.5 font-semibold">Date</th>
+                                    <th class="px-6 py-3.5 font-semibold text-right">Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody class="divide-y divide-gray-100 text-sm text-gray-700" id="ordersBody"></tbody>
+                        </table>
+                    </div>
 
                     <!-- Pagination -->
                     <div id="pagination" class="mt-4 flex items-center justify-between text-sm text-gray-600"></div>
@@ -129,8 +120,11 @@
 
                         async function fetchOrders(page = 1) {
                             currentPage = page;
-                            const filter = document.getElementById('statusFilter').value;
-                            const url = `/admin/orders?page=${page}${filter ? '&status=' + filter : ''}`;
+                            const filter = document.getElementById('statusFilter')?.value ?? '';
+                            const search = document.getElementById('searchInput')?.value ?? '';
+                            let url = `/admin/orders?page=${page}`;
+                            if (filter) url += `&status=${encodeURIComponent(filter)}`;
+                            if (search) url += `&search=${encodeURIComponent(search)}`;
                             const res = await fetch(url);
                             const data = await res.json();
                             allOrders = {};
@@ -169,8 +163,8 @@
                                         </span>
                                     </td>
                                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${date}</td>
-                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium">
-                                        <button class="text-indigo-600 hover:text-indigo-900 font-semibold" onclick="openModal(${order.id})">View</button>
+                                    <td class="px-6 py-4 whitespace-nowrap text-sm font-medium text-right">
+                                        <button class="text-indigo-600 hover:text-indigo-900 font-semibold px-2 py-1" onclick="openModal(${order.id})">View</button>
                                     </td>
                                 `;
                                 tbody.appendChild(tr);
@@ -296,7 +290,12 @@
                             }
                         }
 
-                        document.getElementById('statusFilter').addEventListener('change', () => fetchOrders(1));
+                        let searchDebounce;
+                        document.getElementById('searchInput')?.addEventListener('input', () => {
+                            clearTimeout(searchDebounce);
+                            searchDebounce = setTimeout(() => fetchOrders(1), 300);
+                        });
+                        document.getElementById('statusFilter')?.addEventListener('change', () => fetchOrders(1));
 
                         fetchOrders();
                     </script>

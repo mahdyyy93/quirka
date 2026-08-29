@@ -1,6 +1,6 @@
 <x-app-layout>
     <div class="py-10">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
+        <div class="max-w-[1600px] mx-auto sm:px-6 lg:px-8">
             <div class="mb-8">
                 <h1 class="text-3xl font-extrabold text-gray-900 tracking-tight">Custom Framed Art Prints</h1>
                 <p class="text-sm text-gray-500 mt-1">Museum-quality posters & custom frames, printed on demand.</p>

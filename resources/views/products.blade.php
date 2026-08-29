@@ -1,36 +1,29 @@
 <x-app-layout>
-    <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Products Dashboard') }}
-        </h2>
-    </x-slot>
+    <div class="py-8">
+        <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8">
+                <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
+                    <input type="text" id="searchInput" placeholder="Search title or SKU..." class="border border-gray-200 rounded-xl px-4 py-2.5 text-sm w-full max-w-md focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                    <button onclick="openModal()" class="bg-gray-900 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm hover:bg-gray-800 transition-all shrink-0">
+                        + Add Product
+                    </button>
+                </div>
 
-    <div class="py-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900 overflow-x-auto">
-
-                    <div class="flex justify-between items-center mb-4">
-                        <input type="text" id="searchInput" placeholder="Search SKU or Title..." class="border border-gray-300 rounded p-2 w-full max-w-md">
-                        <button onclick="openModal()" class="bg-gray-900 text-white px-4 py-2 rounded-lg hover:bg-gray-700 transition">
-                            + Add Product
-                        </button>
-                    </div>
-
-                    <table id="productsTable" class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
+                <div class="overflow-x-auto">
+                    <table id="productsTable" class="w-full text-left border-collapse">
+                        <thead class="bg-gray-50 text-gray-500 uppercase text-xs tracking-wider border-b border-gray-100">
                             <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Thumbnail</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">SKU</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Title</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Price</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Images</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Supplier</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Availability</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Actions</th>
+                                <th class="px-4 py-3.5 font-semibold">Thumbnail</th>
+                                <th class="px-4 py-3.5 font-semibold">SKU</th>
+                                <th class="px-4 py-3.5 font-semibold">Title</th>
+                                <th class="px-4 py-3.5 font-semibold">Price</th>
+                                <th class="px-4 py-3.5 font-semibold">Images</th>
+                                <th class="px-4 py-3.5 font-semibold">Supplier</th>
+                                <th class="px-4 py-3.5 font-semibold">Availability</th>
+                                <th class="px-4 py-3.5 font-semibold text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody class="bg-white divide-y divide-gray-200"></tbody>
+                        <tbody class="divide-y divide-gray-100 text-sm text-gray-700"></tbody>
                     </table>
                 </div>
             </div>
