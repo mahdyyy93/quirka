@@ -60,10 +60,10 @@
 ## 3. 🔴 P0 — Legal Pages & Customer Trust
 
 - [x] **Legal Pages (Footer Links)**
-  - [x] Privacy Policy page (`/privacy`) — Includes Printlet 3rd-party manufacturing data sharing clause.
-  - [x] Terms of Service page (`/terms`) — Includes cancellation pre-printing rule and 60-day COD storage/abandonment policy.
-  - [x] Return & Refund Policy page (`/returns`) — Includes 14-day defect window, photographic proof requirement, and no buyer's remorse policy.
-  - [x] Shipping & Delivery Policy page (`/shipping`) — Includes Sun-Thu business days, 1-2d printing, 1-3d transit, and 3 delivery attempts max.
+  - [x] Privacy Policy page (`/privacy`) — Pre-designed catalog policy + Printlet 3rd-party manufacturing data sharing clause.
+  - [x] Terms of Service page (`/terms`) — Pre-designed catalog terms, pre-processing cancellation window, and 60-day COD storage/abandonment policy.
+  - [x] Return & Refund Policy page (`/returns`) — 14-day defect/transit damage replacement guarantee for catalog items.
+  - [x] Shipping & Delivery Policy page (`/shipping`) — Pre-designed catalog fulfillment, Sun-Thu business days, 1-2d processing, 1-3d transit, 3 delivery attempts max.
 - [x] **Customer Order Tracking & History**
   - [x] Added customer-facing `/my-orders` list and `/my-orders/{order}` detail page with order status timeline.
 - [x] **Transaction Proof / Email**

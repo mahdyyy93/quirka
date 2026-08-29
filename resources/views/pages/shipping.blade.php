@@ -1,24 +1,31 @@
 <x-app-layout>
     <x-slot name="header">
-        <div class="flex items-center justify-between">
-            <h2 class="font-bold text-2xl text-gray-900 leading-tight flex items-center gap-2">
-                <span>🚚</span> Shipping & Delivery Policy
-            </h2>
-            <span class="text-xs bg-indigo-100 text-indigo-800 font-semibold px-3 py-1 rounded-full">
-                Print-on-Demand Order Fulfillment
+        <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4 bg-white px-6 py-4 rounded-2xl border border-gray-100 shadow-sm">
+            <div class="flex items-center gap-3.5">
+                <div class="w-10 h-10 rounded-xl bg-indigo-600 text-white flex items-center justify-center font-bold text-lg shadow-sm">
+                    🚚
+                </div>
+                <div>
+                    <h2 class="font-extrabold text-xl text-gray-900 leading-tight">Shipping & Delivery Policy</h2>
+                    <p class="text-xs text-gray-400 mt-0.5">Pre-Designed Catalog Order Fulfillment</p>
+                </div>
+            </div>
+            <span class="inline-flex items-center gap-1.5 text-xs bg-indigo-50 text-indigo-800 font-semibold px-3.5 py-1.5 rounded-full border border-indigo-100 self-start sm:self-center">
+                <span class="w-2 h-2 rounded-full bg-indigo-500"></span>
+                Official Store Policy
             </span>
         </div>
     </x-slot>
 
-    <div class="py-12 bg-gray-50 min-h-screen">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-8">
+    <div class="pb-12">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
 
             <!-- Hero Notice Card -->
             <div class="bg-gradient-to-r from-gray-900 to-indigo-950 text-white rounded-2xl p-8 shadow-xl relative overflow-hidden">
                 <div class="relative z-10">
                     <h3 class="text-xl font-bold mb-2">Estimated Delivery Window</h3>
                     <p class="text-indigo-200 text-sm max-w-2xl leading-relaxed">
-                        Every framed poster is custom printed and hand-assembled upon order. You can expect your delivery within 
+                        Our framed posters are pre-designed catalog items crafted for fast, premium fulfillment. You can expect your delivery within 
                         <strong class="text-white underline decoration-indigo-400">1 to 5 working days</strong> from order creation.
                     </p>
                 </div>
@@ -36,18 +43,18 @@
                     </div>
                     <h4 class="font-bold text-gray-900 text-base">Business Operating Days</h4>
                     <p class="text-gray-600 text-sm leading-relaxed">
-                        Our production facility and fulfillment teams operate from <strong>Sunday through Thursday</strong>, excluding official public holidays. Orders placed on Friday or Saturday are queued for Sunday processing.
+                        Our fulfillment center and delivery partners operate from <strong>Sunday through Thursday</strong>, excluding official public holidays. Orders placed on Friday or Saturday are processed starting Sunday morning.
                     </p>
                 </div>
 
-                <!-- Production Time -->
+                <!-- Processing Time -->
                 <div class="bg-white rounded-xl p-6 shadow-sm border border-gray-100 space-y-2">
                     <div class="w-10 h-10 bg-amber-50 rounded-lg flex items-center justify-center text-amber-600 font-bold text-lg mb-3">
                         🖼️
                     </div>
-                    <h4 class="font-bold text-gray-900 text-base">Production Time</h4>
+                    <h4 class="font-bold text-gray-900 text-base">Processing & Packaging Time</h4>
                     <p class="text-gray-600 text-sm leading-relaxed">
-                        Because each poster is printed on demand with museum-grade archival paper and custom framing, initial printing and framing takes <strong>1 to 2 business days</strong> before dispatch.
+                        Preparing, framing, and quality-inspecting your selected pre-designed poster takes <strong>1 to 2 business days</strong> before being dispatched to our courier network.
                     </p>
                 </div>
 
@@ -58,7 +65,7 @@
                     </div>
                     <h4 class="font-bold text-gray-900 text-base">Courier Transit Time</h4>
                     <p class="text-gray-600 text-sm leading-relaxed">
-                        Once handed over to local courier services, transit to your doorstep takes <strong>1 to 3 business days</strong> depending on your geographical zone and governorate.
+                        Once handed over to local courier services, transit to your doorstep takes <strong>1 to 3 business days</strong> depending on your governorate and geographical zone.
                     </p>
                 </div>
 
@@ -81,18 +88,18 @@
                 <div class="relative border-l-2 border-indigo-100 ml-3 pl-6 space-y-6">
                     <div class="relative">
                         <div class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-indigo-600 border-4 border-white shadow"></div>
-                        <h5 class="font-semibold text-gray-900">Step 1: Order Placement & Verification</h5>
-                        <p class="text-xs text-gray-500 mt-1">Prepaid orders enter production immediately. Cash on Delivery (COD) orders undergo brief phone/SMS verification.</p>
+                        <h5 class="font-semibold text-gray-900">Step 1: Order Confirmation & Verification</h5>
+                        <p class="text-xs text-gray-500 mt-1">Prepaid orders enter processing immediately. Cash on Delivery (COD) orders undergo quick phone/SMS verification.</p>
                     </div>
                     <div class="relative">
                         <div class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-indigo-600 border-4 border-white shadow"></div>
-                        <h5 class="font-semibold text-gray-900">Step 2: Custom Printing & Framing (1–2 Days)</h5>
-                        <p class="text-xs text-gray-500 mt-1">Archival pigment printing, matting, glass mounting, and frame assembly at our specialized facility.</p>
+                        <h5 class="font-semibold text-gray-900">Step 2: Processing & Protective Packaging (1–2 Days)</h5>
+                        <p class="text-xs text-gray-500 mt-1">Quality inspection, hand-framing assembly, and protective packaging at our fulfillment facility.</p>
                     </div>
                     <div class="relative">
                         <div class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-indigo-600 border-4 border-white shadow"></div>
-                        <h5 class="font-semibold text-gray-900">Step 3: Courier Dispatch & Transit (1–3 Days)</h5>
-                        <p class="text-xs text-gray-500 mt-1">Handed to shipping courier with live tracking updates dispatched via email/SMS.</p>
+                        <h5 class="font-semibold text-gray-900">Step 3: Courier Dispatch & Delivery (1–3 Days)</h5>
+                        <p class="text-xs text-gray-500 mt-1">Dispatched via local couriers with live status updates available on your account dashboard.</p>
                     </div>
                 </div>
 
