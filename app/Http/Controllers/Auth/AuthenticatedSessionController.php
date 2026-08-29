@@ -14,8 +14,19 @@ class AuthenticatedSessionController extends Controller
     /**
      * Display the login view.
      */
-    public function create(): View
+    public function create(Request $request): View
     {
+        // Store the referring page as the post-login destination, but only if
+        // the auth middleware hasn't already stored an intended URL and the
+        // referrer is not the login page itself (avoids infinite loops).
+        if (! $request->session()->has('url.intended')) {
+            $referer = $request->headers->get('referer');
+
+            if ($referer && ! str_contains($referer, route('login'))) {
+                $request->session()->put('url.intended', $referer);
+            }
+        }
+
         return view('auth.login');
     }
 
