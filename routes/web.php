@@ -4,16 +4,21 @@ use App\Http\Controllers\Admin\CustomerController;
 use App\Http\Controllers\Admin\OrderController as AdminOrderController;
 use App\Http\Controllers\Admin\ProductController;
 use App\Http\Controllers\Admin\SupplierController;
+use App\Http\Controllers\AdminOrderController as PrintletAdminOrderController;
 use App\Http\Controllers\CartController;
 use App\Http\Controllers\CheckoutController;
 use App\Http\Controllers\OrderController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\ShopController;
+use App\Http\Controllers\WebhookController;
 use App\Http\Middleware\EnsureUserIsAdmin;
 use Illuminate\Support\Facades\Route;
 
 // Public storefront
 Route::get('/', [ShopController::class, 'index'])->name('shop.index');
+
+// Printlet Webhook endpoint (CSRF-exempt)
+Route::post('/webhooks/printlet', [WebhookController::class, 'handle'])->name('webhooks.printlet');
 
 // Profile (Breeze)
 Route::middleware('auth')->group(function () {
@@ -64,6 +69,7 @@ Route::middleware(['auth', EnsureUserIsAdmin::class])->group(function () {
     Route::get('/admin/orders', [AdminOrderController::class, 'index']);
     Route::get('/admin/customers', [CustomerController::class, 'index']);
     Route::patch('/admin/orders/{order}/status', [AdminOrderController::class, 'updateStatus']);
+    Route::post('/admin/orders/{order}/verify-cod', [PrintletAdminOrderController::class, 'verifyCod'])->name('admin.orders.verify-cod');
 });
 
 require __DIR__.'/auth.php';

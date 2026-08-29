@@ -2,28 +2,30 @@
 
 namespace Database\Seeders;
 
+use App\Models\Customer;
 use App\Models\Product;
 use App\Models\StockLevel;
 use App\Models\Supplier;
+use App\Models\User;
 use Illuminate\Database\Seeder;
 
 class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
-        $admin = \App\Models\User::factory()->create([
+        $admin = User::factory()->create([
             'name' => 'Admin User',
             'email' => 'admin@example.com',
             'role' => 'admin',
         ]);
 
-        $customerUser = \App\Models\User::factory()->create([
+        $customerUser = User::factory()->create([
             'name' => 'Customer User',
             'email' => 'customer@example.com',
             'role' => 'customer',
         ]);
 
-        \App\Models\Customer::create([
+        Customer::create([
             'user_id' => $customerUser->id,
             'name' => $customerUser->name,
             'email' => $customerUser->email,

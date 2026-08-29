@@ -23,7 +23,7 @@ return new class extends Migration
             $table->dropForeign(['user_id']);
             $table->dropColumn('user_id');
         });
-        
+
         Schema::table('users', function (Blueprint $table) {
             $table->dropColumn('role');
         });

@@ -1,0 +1,2019 @@
+{
+  "info": {
+    "_postman_id": "77378e2c-2fb8-4f67-bf56-5af0d1d84e29",
+    "name": "Printlet API Integration v1 — Sequential E2E",
+    "description": "Run requests top-to-bottom. The collection discovers valid catalog IDs, ingests artwork, renders a preview, quotes fulfillment, creates prepaid and COD orders, verifies COD, exercises cancellation, reads events, and (for test keys) simulates fulfillment.\n\nMULTIPLE PRINT AREAS: a configuration supports 1–10 distinct print areas, each with its own artwork. Create a quote containing the full configuration, then create the order from that quote. See docs/api-integration/MULTI_PRINT_AREA_STATUS.md for the two-area request example.\n\nSAFE DEFAULT: use a prnt_test_ credential. Test orders stay inside the production-hosted sandbox and do not appear as fulfillment orders in the normal merchant Orders dashboard.\n\nDASHBOARD E2E: use a prnt_live_ credential on Printlet staging and explicitly set run_live_dashboard_flow=true. Live credentials can charge the merchant wallet and create fulfillment work. A live COD order appears in the Orders dashboard immediately as On Hold; it is released and charged only after COD verification. Prepaid orders appear after Printlet payment is committed.\n\nDocumentation: https://stg-portal.printleteg.com/developers/api-integration",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "auth": {
+    "type": "bearer",
+    "bearer": [
+      {
+        "key": "token",
+        "value": "{{api_key}}",
+        "type": "string"
+      }
+    ]
+  },
+  "event": [
+    {
+      "listen": "prerequest",
+      "script": {
+        "type": "text/javascript",
+        "exec": [
+          "const key = String(pm.environment.get('api_key') || '');",
+          "if (!key || !/^prnt_(test|live)_/.test(key)) {",
+          "  throw new Error('Set api_key to a copied prnt_test_ or prnt_live_ credential before sending requests.');",
+          "}"
+        ]
+      }
+    }
+  ],
+  "variable": [
+    {
+      "key": "base_url",
+      "value": "https://stg-portal.printleteg.com/api/integrations/v1"
+    }
+  ],
+  "item": [
+    {
+      "name": "00 — Setup and catalog discovery",
+      "description": "Start here. These requests populate every catalog and shipping variable used later.",
+      "item": [
+        {
+          "name": "00.1 Initialize run + list countries",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const stamp = new Date().toISOString().replace(/[-:.TZ]/g, '').slice(0, 14);",
+                  "pm.environment.set('run_id', `${stamp}-${pm.variables.replaceIn('{{$randomUUID}}').slice(0, 8)}`);",
+                  "['product_id','variant_id','variant_revision','print_area_id','print_area_revision','technique_id','technique_revision','placement_preset','shipping_method_id','city_id','artwork_id','artwork_revision','preview_id','test_prepaid_quote_id','test_prepaid_order_id','test_cod_quote_id','test_cod_order_id','test_cancel_quote_id','test_cancel_order_id','live_prepaid_quote_id','live_prepaid_order_id','live_cod_quote_id','live_cod_order_id','dashboard_payment_url'].forEach(k => pm.environment.unset(k));"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});",
+                  "function save(key, value) {",
+                  "  if (value !== undefined && value !== null) pm.environment.set(key, String(value));",
+                  "}",
+                  "const body = pm.response.json();",
+                  "pm.test('At least one market is available', () => pm.expect(body.data).to.be.an('array').that.is.not.empty);",
+                  "const country = body.data[0];",
+                  "save('country_id', country.id); save('country_code', country.code); save('currency', country.currency);",
+                  "console.log('Run', pm.environment.get('run_id'), 'market', country.name, country.currency);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/catalog/countries",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Creates a new unique run and selects the first market returned for this installation. Override country_id after this request if needed."
+          }
+        },
+        {
+          "name": "00.2 List products",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});",
+                  "function save(key, value) {",
+                  "  if (value !== undefined && value !== null) pm.environment.set(key, String(value));",
+                  "}",
+                  "const body = pm.response.json();",
+                  "pm.test('Products are available', () => pm.expect(body.data).to.be.an('array').that.is.not.empty);",
+                  "const product = body.data.find(p => p.status === 'active' && Array.isArray(p.variants) && p.variants.some(v => v.available)) || body.data[0];",
+                  "save('product_id', product.id); save('catalog_revision', body.catalog_revision);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/catalog/products?country_id={{country_id}}&limit=100",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Selects the first active product with an available variant. If its detail has no eligible print technique, set product_id to another returned product and resend the next request."
+          }
+        },
+        {
+          "name": "00.3 Get product configuration",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});",
+                  "function save(key, value) {",
+                  "  if (value !== undefined && value !== null) pm.environment.set(key, String(value));",
+                  "}",
+                  "const body = pm.response.json();",
+                  "const variant = body.variants.find(v => v.available);",
+                  "const area = body.print_areas.find(a => a.techniques && a.techniques.some(t => t.placement_presets && t.placement_presets.length));",
+                  "const technique = area && area.techniques.find(t => t.placement_presets && t.placement_presets.length);",
+                  "pm.test('Product can be configured', function () { pm.expect(variant, 'available variant').to.exist; pm.expect(area, 'print area').to.exist; pm.expect(technique, 'technique').to.exist; });",
+                  "if (variant && area && technique) { save('variant_id', variant.id); save('variant_revision', variant.revision); save('print_area_id', area.id); save('print_area_revision', area.revision); save('technique_id', technique.id); save('technique_revision', technique.revision); save('placement_preset', technique.placement_presets.includes('center') ? 'center' : technique.placement_presets[0]); save('fill_mode', technique.fill_mode); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/catalog/products/{{product_id}}?country_id={{country_id}}",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Captures a valid variant, print area, technique, and named placement preset. The artwork fills the selected print area; the preset controls placement within that area."
+          }
+        },
+        {
+          "name": "00.4 List shipping methods",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});",
+                  "function save(key, value) {",
+                  "  if (value !== undefined && value !== null) pm.environment.set(key, String(value));",
+                  "}",
+                  "const body = pm.response.json();",
+                  "let selectedMethod; let selectedRate;",
+                  "for (const method of body.data || []) { const rate = (method.rates || []).find(r => r.cities && r.cities.length); if (rate) { selectedMethod = method; selectedRate = rate; break; } }",
+                  "pm.test('A method with an eligible city exists', function () { pm.expect(selectedMethod).to.exist; pm.expect(selectedRate).to.exist; });",
+                  "if (selectedMethod && selectedRate) { save('shipping_method_id', selectedMethod.id); save('city_id', selectedRate.cities[0].id); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/catalog/shipping-methods?country_id={{country_id}}",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Selects a shipping method and an eligible city. Each rate returns cities as objects with both id and name."
+          }
+        },
+        {
+          "name": "00.5 List catalog changes",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/catalog/changes?limit=100",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Use this cursor feed to reconcile deprecated, retired, replaced, or revised catalog entities without changing stable IDs."
+          }
+        }
+      ]
+    },
+    {
+      "name": "01 — Artwork and preview",
+      "description": "The remote-URL path is runner-friendly and is the default. Printlet fetches and privately stores the original print file.",
+      "item": [
+        {
+          "name": "01.1 Create artwork from remote URL",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 202', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([202]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});",
+                  "function save(key, value) {",
+                  "  if (value !== undefined && value !== null) pm.environment.set(key, String(value));",
+                  "}",
+                  "const body = pm.response.json();",
+                  "save('artwork_id', body.id); save('artwork_revision', body.revision);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "postman-{{$guid}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"source\": {\n    \"type\": \"remote_url\",\n    \"url\": \"{{remote_artwork_url}}\"\n  },\n  \"merchant_artwork_id\": \"postman-artwork-{{run_id}}\",\n  \"file_name\": \"postman-sample.jpeg\",\n  \"wait\": 15,\n  \"rights_attested\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/artworks",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "The URL must be HTTPS, publicly fetchable long enough for asynchronous ingestion, and return PNG, JPEG, or WebP. By sending rights_attested=true you attest that you may print and store it."
+          }
+        },
+        {
+          "name": "01.2 Poll artwork until ready",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});",
+                  "function save(key, value) {",
+                  "  if (value !== undefined && value !== null) pm.environment.set(key, String(value));",
+                  "}",
+                  "const body = pm.response.json();",
+                  "save('artwork_revision', body.revision); save('artwork_status', body.status);",
+                  "const terminal = ['ready', 'failed', 'rejected', 'expired', 'deleted'];",
+                  "if (!terminal.includes(body.status)) { const attempt = Number(pm.environment.get('artwork_poll_attempt') || 0) + 1; pm.environment.set('artwork_poll_attempt', attempt); if (attempt < 30) { setTimeout(function () {}, 1500); pm.execution.setNextRequest('01.2 Poll artwork until ready'); } else { pm.test('Artwork became ready in time', () => pm.expect.fail('Timed out waiting for artwork')); } } else { pm.environment.unset('artwork_poll_attempt'); pm.test('Artwork is printable', () => pm.expect(body.status).to.eql('ready')); }"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/artworks/{{artwork_id}}",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Collection Runner repeats this request for up to 30 attempts. With the Send button, resend it until status is ready before continuing."
+          }
+        },
+        {
+          "name": "01.3 Create preview",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 202', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([202]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});",
+                  "function save(key, value) {",
+                  "  if (value !== undefined && value !== null) pm.environment.set(key, String(value));",
+                  "}",
+                  "const body = pm.response.json();",
+                  "save('preview_id', body.id);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "postman-{{$guid}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"country_id\": \"{{country_id}}\",\n  \"wait\": 15,\n  \"configuration\": {\n    \"variant\": {\n      \"id\": \"{{variant_id}}\",\n      \"revision\": {{variant_revision}}\n    },\n    \"print_areas\": [\n      {\n        \"print_area\": {\n          \"id\": \"{{print_area_id}}\",\n          \"revision\": {{print_area_revision}}\n        },\n        \"technique\": {\n          \"id\": \"{{technique_id}}\",\n          \"revision\": {{technique_revision}}\n        },\n        \"placement_preset\": \"{{placement_preset}}\",\n        \"artwork\": {\n          \"id\": \"{{artwork_id}}\",\n          \"revision\": {{artwork_revision}}\n        }\n      }\n    ]\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/previews",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Renders the same placement rules used by Printlet. Preview configurations intentionally omit quantity because it does not affect rendering. Save the returned signed mockup URL before it expires."
+          }
+        },
+        {
+          "name": "01.4 Poll preview until ready",
+          "event": [
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});",
+                  "function save(key, value) {",
+                  "  if (value !== undefined && value !== null) pm.environment.set(key, String(value));",
+                  "}",
+                  "const body = pm.response.json();",
+                  "save('preview_status', body.status); if (body.mockups && body.mockups[0]) save('preview_url', body.mockups[0].url);",
+                  "if (!['ready','failed','expired'].includes(body.status)) { const attempt = Number(pm.environment.get('preview_poll_attempt') || 0) + 1; pm.environment.set('preview_poll_attempt', attempt); if (attempt < 30) { setTimeout(function () {}, 1500); pm.execution.setNextRequest('01.4 Poll preview until ready'); } else { pm.test('Preview became ready in time', () => pm.expect.fail('Timed out waiting for preview')); } } else { pm.environment.unset('preview_poll_attempt'); pm.test('Preview rendered', () => pm.expect(body.status).to.eql('ready')); }",
+                  "if (body.mockups && body.mockups[0]) pm.visualizer.set('<div style=\"font-family:system-ui\"><h2>Printlet preview</h2><img src=\"{{url}}\" style=\"max-width:100%;max-height:70vh\"></div>', { url: body.mockups[0].url });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/previews/{{preview_id}}",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Collection Runner repeats until ready. With Send, resend until status is ready. The Visualize tab displays the first mockup."
+          }
+        }
+      ]
+    },
+    {
+      "name": "02 — Safe sandbox order E2E (prnt_test_ only)",
+      "description": "Runs only for test credentials. These orders appear in API resources/events, not in the normal fulfillment Orders dashboard.",
+      "item": [
+        {
+          "name": "02.1 Fund sandbox wallet",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!String(pm.environment.get('api_key') || '').startsWith('prnt_test_')) {",
+                  "  console.log('Skipped: this request is available only to prnt_test_ credentials.');",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 202', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([202]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "postman-{{$guid}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"wallet.funded\",\n  \"resource_id\": \"wallet-{{run_id}}\",\n  \"amount\": 100000,\n  \"currency\": \"{{currency}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/sandbox/simulations",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Adds simulated balance only. No real wallet or money changes."
+          }
+        },
+        {
+          "name": "02.2 Create prepaid quote",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!String(pm.environment.get('api_key') || '').startsWith('prnt_test_')) {",
+                  "  console.log('Skipped: this request is available only to prnt_test_ credentials.');",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([201]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});",
+                  "function save(key, value) {",
+                  "  if (value !== undefined && value !== null) pm.environment.set(key, String(value));",
+                  "}",
+                  "const body = pm.response.json();",
+                  "save('test_prepaid_quote_id', body.id);",
+                  "pm.test('Quote is valid', () => pm.expect(body.status).to.eql('valid'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "postman-{{$guid}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"merchant_quote_id\": \"postman-test-prepaid-quote-{{run_id}}\",\n  \"market\": {\n    \"country_id\": \"{{country_id}}\",\n    \"currency\": \"{{currency}}\"\n  },\n  \"items\": [\n    {\n      \"merchant_line_id\": \"postman-test-prepaid-line-{{run_id}}\",\n      \"configuration\": {\n        \"variant\": {\n          \"id\": \"{{variant_id}}\",\n          \"revision\": {{variant_revision}}\n        },\n        \"print_areas\": [\n          {\n            \"print_area\": {\n              \"id\": \"{{print_area_id}}\",\n              \"revision\": {{print_area_revision}}\n            },\n            \"technique\": {\n              \"id\": \"{{technique_id}}\",\n              \"revision\": {{technique_revision}}\n            },\n            \"placement_preset\": \"{{placement_preset}}\",\n            \"artwork\": {\n              \"id\": \"{{artwork_id}}\",\n              \"revision\": {{artwork_revision}}\n            }\n          }\n        ],\n        \"quantity\": 1\n      }\n    }\n  ],\n  \"shipping\": {\n    \"method_id\": \"{{shipping_method_id}}\",\n    \"recipient\": {\n      \"name\": \"{{recipient_name}}\",\n      \"phone\": \"{{recipient_phone}}\",\n      \"email\": \"{{recipient_email}}\",\n      \"address_line_1\": \"{{recipient_address_line_1}}\",\n      \"city_id\": \"{{city_id}}\",\n      \"country\": \"{{country_code}}\"\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/quotes",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Quotes Printlet COGS plus shipping and expires after fifteen minutes. To order separate artwork on another area, add a second distinct entry to configuration.print_areas before sending; see MULTI_PRINT_AREA_STATUS.md."
+          }
+        },
+        {
+          "name": "02.3 Get prepaid quote",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!String(pm.environment.get('api_key') || '').startsWith('prnt_test_')) {",
+                  "  console.log('Skipped: this request is available only to prnt_test_ credentials.');",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/quotes/{{test_prepaid_quote_id}}",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Reads the quote before it is consumed."
+          }
+        },
+        {
+          "name": "02.4 Create prepaid order",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!String(pm.environment.get('api_key') || '').startsWith('prnt_test_')) {",
+                  "  console.log('Skipped: this request is available only to prnt_test_ credentials.');",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([201]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});",
+                  "function save(key, value) {",
+                  "  if (value !== undefined && value !== null) pm.environment.set(key, String(value));",
+                  "}",
+                  "const body = pm.response.json();",
+                  "save('test_prepaid_order_id', body.id);",
+                  "save('test_prepaid_order_id_status', body.status);",
+                  "if (body.dashboard_payment_url) save('dashboard_payment_url', body.dashboard_payment_url);",
+                  "pm.test('Order has a normalized state', () => pm.expect(['pending_verification', 'payment_required', 'accepted']).to.include(body.status));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "postman-{{$guid}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"merchant_order_id\": \"postman-test-prepaid-order-{{run_id}}\",\n  \"merchant_order_number\": \"POSTMAN-TEST-PREPAID-{{run_id}}\",\n  \"quote_id\": \"{{test_prepaid_quote_id}}\",\n  \"end_customer_payment\": {\n    \"method\": \"prepaid\",\n    \"currency\": \"{{currency}}\"\n  },\n  \"notes\": \"Postman test-prepaid end-to-end API Integration order.\",\n  \"metadata\": {\n    \"source\": \"postman\",\n    \"run_id\": \"{{run_id}}\",\n    \"flow\": \"test-prepaid\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/orders",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Creates a sandbox prepaid order and attempts commitment against the simulated wallet."
+          }
+        },
+        {
+          "name": "02.5 Get prepaid order",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!String(pm.environment.get('api_key') || '').startsWith('prnt_test_')) {",
+                  "  console.log('Skipped: this request is available only to prnt_test_ credentials.');",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/orders/{{test_prepaid_order_id}}",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Reads the normalized API order."
+          }
+        },
+        {
+          "name": "02.6 Simulate order.in_production",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!String(pm.environment.get('api_key') || '').startsWith('prnt_test_')) {",
+                  "  console.log('Skipped: this request is available only to prnt_test_ credentials.');",
+                  "  pm.execution.skipRequest();",
+                  "}",
+                  "if (pm.environment.get('test_prepaid_order_id_status') !== 'accepted') { console.log('Skipped: fund the sandbox wallet and create an accepted order first.'); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 202', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([202]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "postman-{{$guid}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"order.in_production\",\n  \"resource_id\": \"{{test_prepaid_order_id}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/sandbox/simulations",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Moves an accepted sandbox order to in_production."
+          }
+        },
+        {
+          "name": "02.7 Simulate order.shipped",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!String(pm.environment.get('api_key') || '').startsWith('prnt_test_')) {",
+                  "  console.log('Skipped: this request is available only to prnt_test_ credentials.');",
+                  "  pm.execution.skipRequest();",
+                  "}",
+                  "if (pm.environment.get('test_prepaid_order_id_status') !== 'accepted') { console.log('Skipped: fund the sandbox wallet and create an accepted order first.'); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 202', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([202]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "postman-{{$guid}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"order.shipped\",\n  \"resource_id\": \"{{test_prepaid_order_id}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/sandbox/simulations",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Moves an accepted sandbox order to shipped."
+          }
+        },
+        {
+          "name": "02.8 Simulate order.delivered",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!String(pm.environment.get('api_key') || '').startsWith('prnt_test_')) {",
+                  "  console.log('Skipped: this request is available only to prnt_test_ credentials.');",
+                  "  pm.execution.skipRequest();",
+                  "}",
+                  "if (pm.environment.get('test_prepaid_order_id_status') !== 'accepted') { console.log('Skipped: fund the sandbox wallet and create an accepted order first.'); pm.execution.skipRequest(); }"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 202', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([202]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "postman-{{$guid}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"action\": \"order.delivered\",\n  \"resource_id\": \"{{test_prepaid_order_id}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/sandbox/simulations",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Moves an accepted sandbox order to delivered."
+          }
+        },
+        {
+          "name": "02.9 Create COD quote",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!String(pm.environment.get('api_key') || '').startsWith('prnt_test_')) {",
+                  "  console.log('Skipped: this request is available only to prnt_test_ credentials.');",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([201]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});",
+                  "function save(key, value) {",
+                  "  if (value !== undefined && value !== null) pm.environment.set(key, String(value));",
+                  "}",
+                  "const body = pm.response.json();",
+                  "save('test_cod_quote_id', body.id);",
+                  "pm.test('Quote is valid', () => pm.expect(body.status).to.eql('valid'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "postman-{{$guid}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"merchant_quote_id\": \"postman-test-cod-quote-{{run_id}}\",\n  \"market\": {\n    \"country_id\": \"{{country_id}}\",\n    \"currency\": \"{{currency}}\"\n  },\n  \"items\": [\n    {\n      \"merchant_line_id\": \"postman-test-cod-line-{{run_id}}\",\n      \"configuration\": {\n        \"variant\": {\n          \"id\": \"{{variant_id}}\",\n          \"revision\": {{variant_revision}}\n        },\n        \"print_areas\": [\n          {\n            \"print_area\": {\n              \"id\": \"{{print_area_id}}\",\n              \"revision\": {{print_area_revision}}\n            },\n            \"technique\": {\n              \"id\": \"{{technique_id}}\",\n              \"revision\": {{technique_revision}}\n            },\n            \"placement_preset\": \"{{placement_preset}}\",\n            \"artwork\": {\n              \"id\": \"{{artwork_id}}\",\n              \"revision\": {{artwork_revision}}\n            }\n          }\n        ],\n        \"quantity\": 1\n      }\n    }\n  ],\n  \"shipping\": {\n    \"method_id\": \"{{shipping_method_id}}\",\n    \"recipient\": {\n      \"name\": \"{{recipient_name}}\",\n      \"phone\": \"{{recipient_phone}}\",\n      \"email\": \"{{recipient_email}}\",\n      \"address_line_1\": \"{{recipient_address_line_1}}\",\n      \"city_id\": \"{{city_id}}\",\n      \"country\": \"{{country_code}}\"\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/quotes",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "A quote is single-use, so COD receives its own quote."
+          }
+        },
+        {
+          "name": "02.10 Create COD order",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!String(pm.environment.get('api_key') || '').startsWith('prnt_test_')) {",
+                  "  console.log('Skipped: this request is available only to prnt_test_ credentials.');",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([201]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});",
+                  "function save(key, value) {",
+                  "  if (value !== undefined && value !== null) pm.environment.set(key, String(value));",
+                  "}",
+                  "const body = pm.response.json();",
+                  "save('test_cod_order_id', body.id);",
+                  "save('test_cod_order_id_status', body.status);",
+                  "if (body.dashboard_payment_url) save('dashboard_payment_url', body.dashboard_payment_url);",
+                  "pm.test('Order has a normalized state', () => pm.expect(['pending_verification', 'payment_required', 'accepted']).to.include(body.status));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "postman-{{$guid}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"merchant_order_id\": \"postman-test-cod-order-{{run_id}}\",\n  \"merchant_order_number\": \"POSTMAN-TEST-COD-{{run_id}}\",\n  \"quote_id\": \"{{test_cod_quote_id}}\",\n  \"end_customer_payment\": {\n    \"method\": \"cod\",\n    \"currency\": \"{{currency}}\",\n    \"collection_amount\": \"{{cod_collection_amount}}\",\n    \"includes_merchant_shipping\": true\n  },\n  \"notes\": \"Postman test-cod end-to-end API Integration order.\",\n  \"metadata\": {\n    \"source\": \"postman\",\n    \"run_id\": \"{{run_id}}\",\n    \"flow\": \"test-cod\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/orders",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "COD normally pauses at pending_verification so the merchant can verify the customer before Printlet commitment."
+          }
+        },
+        {
+          "name": "02.11 Verify COD order",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!String(pm.environment.get('api_key') || '').startsWith('prnt_test_')) {",
+                  "  console.log('Skipped: this request is available only to prnt_test_ credentials.');",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});",
+                  "function save(key, value) {",
+                  "  if (value !== undefined && value !== null) pm.environment.set(key, String(value));",
+                  "}",
+                  "const body = pm.response.json();",
+                  "save('test_cod_order_id_status', body.status);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "postman-{{$guid}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"verified\",\n  \"reference\": \"POSTMAN-{{run_id}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/orders/{{test_cod_order_id}}/cod-verification",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Marks the customer COD order as verified and attempts commitment against the simulated wallet."
+          }
+        },
+        {
+          "name": "02.12 List orders",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!String(pm.environment.get('api_key') || '').startsWith('prnt_test_')) {",
+                  "  console.log('Skipped: this request is available only to prnt_test_ credentials.');",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});",
+                  "const ids = pm.response.json().data.map(o => o.id); pm.test('Created orders are listed', function () { pm.expect(ids).to.include(pm.environment.get('test_prepaid_order_id')); pm.expect(ids).to.include(pm.environment.get('test_cod_order_id')); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/orders?limit=100",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Both newly created API orders should be present."
+          }
+        },
+        {
+          "name": "02.13 Create cancellable quote",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!String(pm.environment.get('api_key') || '').startsWith('prnt_test_')) {",
+                  "  console.log('Skipped: this request is available only to prnt_test_ credentials.');",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([201]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});",
+                  "function save(key, value) {",
+                  "  if (value !== undefined && value !== null) pm.environment.set(key, String(value));",
+                  "}",
+                  "const body = pm.response.json();",
+                  "save('test_cancel_quote_id', body.id);",
+                  "pm.test('Quote is valid', () => pm.expect(body.status).to.eql('valid'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "postman-{{$guid}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"merchant_quote_id\": \"postman-test-cancel-quote-{{run_id}}\",\n  \"market\": {\n    \"country_id\": \"{{country_id}}\",\n    \"currency\": \"{{currency}}\"\n  },\n  \"items\": [\n    {\n      \"merchant_line_id\": \"postman-test-cancel-line-{{run_id}}\",\n      \"configuration\": {\n        \"variant\": {\n          \"id\": \"{{variant_id}}\",\n          \"revision\": {{variant_revision}}\n        },\n        \"print_areas\": [\n          {\n            \"print_area\": {\n              \"id\": \"{{print_area_id}}\",\n              \"revision\": {{print_area_revision}}\n            },\n            \"technique\": {\n              \"id\": \"{{technique_id}}\",\n              \"revision\": {{technique_revision}}\n            },\n            \"placement_preset\": \"{{placement_preset}}\",\n            \"artwork\": {\n              \"id\": \"{{artwork_id}}\",\n              \"revision\": {{artwork_revision}}\n            }\n          }\n        ],\n        \"quantity\": 1\n      }\n    }\n  ],\n  \"shipping\": {\n    \"method_id\": \"{{shipping_method_id}}\",\n    \"recipient\": {\n      \"name\": \"{{recipient_name}}\",\n      \"phone\": \"{{recipient_phone}}\",\n      \"email\": \"{{recipient_email}}\",\n      \"address_line_1\": \"{{recipient_address_line_1}}\",\n      \"city_id\": \"{{city_id}}\",\n      \"country\": \"{{country_code}}\"\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/quotes",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Creates a separate quote for the cancellation example."
+          }
+        },
+        {
+          "name": "02.14 Create unverified COD order to cancel",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!String(pm.environment.get('api_key') || '').startsWith('prnt_test_')) {",
+                  "  console.log('Skipped: this request is available only to prnt_test_ credentials.');",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([201]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});",
+                  "function save(key, value) {",
+                  "  if (value !== undefined && value !== null) pm.environment.set(key, String(value));",
+                  "}",
+                  "const body = pm.response.json();",
+                  "save('test_cancel_order_id', body.id);",
+                  "save('test_cancel_order_id_status', body.status);",
+                  "if (body.dashboard_payment_url) save('dashboard_payment_url', body.dashboard_payment_url);",
+                  "pm.test('Order has a normalized state', () => pm.expect(['pending_verification', 'payment_required', 'accepted']).to.include(body.status));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "postman-{{$guid}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"merchant_order_id\": \"postman-test-cancel-order-{{run_id}}\",\n  \"merchant_order_number\": \"POSTMAN-TEST-CANCEL-{{run_id}}\",\n  \"quote_id\": \"{{test_cancel_quote_id}}\",\n  \"end_customer_payment\": {\n    \"method\": \"cod\",\n    \"currency\": \"{{currency}}\",\n    \"collection_amount\": \"{{cod_collection_amount}}\",\n    \"includes_merchant_shipping\": true\n  },\n  \"notes\": \"Postman test-cancel end-to-end API Integration order.\",\n  \"metadata\": {\n    \"source\": \"postman\",\n    \"run_id\": \"{{run_id}}\",\n    \"flow\": \"test-cancel\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/orders",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Leaves the order uncommitted so cancellation is immediate and does not affect fulfillment."
+          }
+        },
+        {
+          "name": "02.15 Cancel uncommitted order",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!String(pm.environment.get('api_key') || '').startsWith('prnt_test_')) {",
+                  "  console.log('Skipped: this request is available only to prnt_test_ credentials.');",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 202', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([202]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});",
+                  "pm.test('Order cancelled', () => pm.expect(pm.response.json().status).to.eql('cancelled'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Idempotency-Key",
+                "value": "postman-{{$guid}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/orders/{{test_cancel_order_id}}/cancel",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Cancels an uncommitted order. Committed orders instead become cancellation_requested."
+          }
+        },
+        {
+          "name": "02.16 List events",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (!String(pm.environment.get('api_key') || '').startsWith('prnt_test_')) {",
+                  "  console.log('Skipped: this request is available only to prnt_test_ credentials.');",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});",
+                  "const types = pm.response.json().data.map(e => e.type); pm.test('Order events were emitted', () => pm.expect(types.some(t => t.startsWith('order.'))).to.eql(true));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/events?limit=100",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Recover lifecycle events after missed webhooks. Persist next_cursor and pass it as after on the next page."
+          }
+        }
+      ]
+    },
+    {
+      "name": "03 — Staging Orders dashboard E2E (LIVE-CHARGED)",
+      "description": "DANGER: skipped unless api_key starts with prnt_live_ AND run_live_dashboard_flow=true. A committed order charges the staging merchant wallet and creates fulfillment records visible at {{orders_dashboard_url}}. A new live COD order is visible there immediately as On Hold, before its COD verification is approved.",
+      "item": [
+        {
+          "name": "03.1 Create LIVE prepaid quote",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const key = String(pm.environment.get('api_key') || '');",
+                  "if (!key.startsWith('prnt_live_') || pm.environment.get('run_live_dashboard_flow') !== 'true') {",
+                  "  console.log('Skipped: requires a prnt_live_ key and run_live_dashboard_flow=true.');",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([201]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});",
+                  "function save(key, value) {",
+                  "  if (value !== undefined && value !== null) pm.environment.set(key, String(value));",
+                  "}",
+                  "const body = pm.response.json();",
+                  "save('live_prepaid_quote_id', body.id);",
+                  "pm.test('Quote is valid', () => pm.expect(body.status).to.eql('valid'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "postman-{{$guid}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"merchant_quote_id\": \"postman-live-prepaid-quote-{{run_id}}\",\n  \"market\": {\n    \"country_id\": \"{{country_id}}\",\n    \"currency\": \"{{currency}}\"\n  },\n  \"items\": [\n    {\n      \"merchant_line_id\": \"postman-live-prepaid-line-{{run_id}}\",\n      \"configuration\": {\n        \"variant\": {\n          \"id\": \"{{variant_id}}\",\n          \"revision\": {{variant_revision}}\n        },\n        \"print_areas\": [\n          {\n            \"print_area\": {\n              \"id\": \"{{print_area_id}}\",\n              \"revision\": {{print_area_revision}}\n            },\n            \"technique\": {\n              \"id\": \"{{technique_id}}\",\n              \"revision\": {{technique_revision}}\n            },\n            \"placement_preset\": \"{{placement_preset}}\",\n            \"artwork\": {\n              \"id\": \"{{artwork_id}}\",\n              \"revision\": {{artwork_revision}}\n            }\n          }\n        ],\n        \"quantity\": 1\n      }\n    }\n  ],\n  \"shipping\": {\n    \"method_id\": \"{{shipping_method_id}}\",\n    \"recipient\": {\n      \"name\": \"{{recipient_name}}\",\n      \"phone\": \"{{recipient_phone}}\",\n      \"email\": \"{{recipient_email}}\",\n      \"address_line_1\": \"{{recipient_address_line_1}}\",\n      \"city_id\": \"{{city_id}}\",\n      \"country\": \"{{country_code}}\"\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/quotes",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "LIVE staging quote. Confirm the selected product, recipient, and shipping variables before sending."
+          }
+        },
+        {
+          "name": "03.2 Create LIVE prepaid dashboard order",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const key = String(pm.environment.get('api_key') || '');",
+                  "if (!key.startsWith('prnt_live_') || pm.environment.get('run_live_dashboard_flow') !== 'true') {",
+                  "  console.log('Skipped: requires a prnt_live_ key and run_live_dashboard_flow=true.');",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([201]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});",
+                  "function save(key, value) {",
+                  "  if (value !== undefined && value !== null) pm.environment.set(key, String(value));",
+                  "}",
+                  "const body = pm.response.json();",
+                  "save('live_prepaid_order_id', body.id);",
+                  "save('live_prepaid_order_id_status', body.status);",
+                  "if (body.dashboard_payment_url) save('dashboard_payment_url', body.dashboard_payment_url);",
+                  "pm.test('Order has a normalized state', () => pm.expect(['pending_verification', 'payment_required', 'accepted']).to.include(body.status));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "postman-{{$guid}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"merchant_order_id\": \"postman-live-prepaid-order-{{run_id}}\",\n  \"merchant_order_number\": \"POSTMAN-LIVE-PREPAID-{{run_id}}\",\n  \"quote_id\": \"{{live_prepaid_quote_id}}\",\n  \"end_customer_payment\": {\n    \"method\": \"prepaid\",\n    \"currency\": \"{{currency}}\"\n  },\n  \"notes\": \"Postman live-prepaid end-to-end API Integration order.\",\n  \"metadata\": {\n    \"source\": \"postman\",\n    \"run_id\": \"{{run_id}}\",\n    \"flow\": \"live-prepaid\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/orders",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "If auto-fulfill is enabled and the wallet has enough balance, status is accepted and the order appears in the Orders dashboard. Otherwise status is payment_required and dashboard_payment_url is captured."
+          }
+        },
+        {
+          "name": "03.3 Get LIVE prepaid order",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const key = String(pm.environment.get('api_key') || '');",
+                  "if (!key.startsWith('prnt_live_') || pm.environment.get('run_live_dashboard_flow') !== 'true') {",
+                  "  console.log('Skipped: requires a prnt_live_ key and run_live_dashboard_flow=true.');",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/orders/{{live_prepaid_order_id}}",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Compare this API status with the merchant Orders dashboard. If payment_required, open {{dashboard_payment_url}} and pay before expecting a dashboard fulfillment record."
+          }
+        },
+        {
+          "name": "03.4 Create LIVE COD quote",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const key = String(pm.environment.get('api_key') || '');",
+                  "if (!key.startsWith('prnt_live_') || pm.environment.get('run_live_dashboard_flow') !== 'true') {",
+                  "  console.log('Skipped: requires a prnt_live_ key and run_live_dashboard_flow=true.');",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([201]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});",
+                  "function save(key, value) {",
+                  "  if (value !== undefined && value !== null) pm.environment.set(key, String(value));",
+                  "}",
+                  "const body = pm.response.json();",
+                  "save('live_cod_quote_id', body.id);",
+                  "pm.test('Quote is valid', () => pm.expect(body.status).to.eql('valid'));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "postman-{{$guid}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"merchant_quote_id\": \"postman-live-cod-quote-{{run_id}}\",\n  \"market\": {\n    \"country_id\": \"{{country_id}}\",\n    \"currency\": \"{{currency}}\"\n  },\n  \"items\": [\n    {\n      \"merchant_line_id\": \"postman-live-cod-line-{{run_id}}\",\n      \"configuration\": {\n        \"variant\": {\n          \"id\": \"{{variant_id}}\",\n          \"revision\": {{variant_revision}}\n        },\n        \"print_areas\": [\n          {\n            \"print_area\": {\n              \"id\": \"{{print_area_id}}\",\n              \"revision\": {{print_area_revision}}\n            },\n            \"technique\": {\n              \"id\": \"{{technique_id}}\",\n              \"revision\": {{technique_revision}}\n            },\n            \"placement_preset\": \"{{placement_preset}}\",\n            \"artwork\": {\n              \"id\": \"{{artwork_id}}\",\n              \"revision\": {{artwork_revision}}\n            }\n          }\n        ],\n        \"quantity\": 1\n      }\n    }\n  ],\n  \"shipping\": {\n    \"method_id\": \"{{shipping_method_id}}\",\n    \"recipient\": {\n      \"name\": \"{{recipient_name}}\",\n      \"phone\": \"{{recipient_phone}}\",\n      \"email\": \"{{recipient_email}}\",\n      \"address_line_1\": \"{{recipient_address_line_1}}\",\n      \"city_id\": \"{{city_id}}\",\n      \"country\": \"{{country_code}}\"\n    }\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/quotes",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Separate single-use quote for COD."
+          }
+        },
+        {
+          "name": "03.5 Create LIVE COD order",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const key = String(pm.environment.get('api_key') || '');",
+                  "if (!key.startsWith('prnt_live_') || pm.environment.get('run_live_dashboard_flow') !== 'true') {",
+                  "  console.log('Skipped: requires a prnt_live_ key and run_live_dashboard_flow=true.');",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([201]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});",
+                  "function save(key, value) {",
+                  "  if (value !== undefined && value !== null) pm.environment.set(key, String(value));",
+                  "}",
+                  "const body = pm.response.json();",
+                  "save('live_cod_order_id', body.id);",
+                  "save('live_cod_order_id_status', body.status);",
+                  "if (body.dashboard_payment_url) save('dashboard_payment_url', body.dashboard_payment_url);",
+                  "pm.test('Order has a normalized state', () => pm.expect(['pending_verification', 'payment_required', 'accepted']).to.include(body.status));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "postman-{{$guid}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"merchant_order_id\": \"postman-live-cod-order-{{run_id}}\",\n  \"merchant_order_number\": \"POSTMAN-LIVE-COD-{{run_id}}\",\n  \"quote_id\": \"{{live_cod_quote_id}}\",\n  \"end_customer_payment\": {\n    \"method\": \"cod\",\n    \"currency\": \"{{currency}}\",\n    \"collection_amount\": \"{{cod_collection_amount}}\",\n    \"includes_merchant_shipping\": true\n  },\n  \"notes\": \"Postman live-cod end-to-end API Integration order.\",\n  \"metadata\": {\n    \"source\": \"postman\",\n    \"run_id\": \"{{run_id}}\",\n    \"flow\": \"live-cod\"\n  }\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/orders",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Creates a real staging COD API order in pending_verification and a linked Orders-dashboard record in On Hold. It cannot enter fulfillment or charge the wallet yet."
+          }
+        },
+        {
+          "name": "03.6 Verify LIVE COD order",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const key = String(pm.environment.get('api_key') || '');",
+                  "if (!key.startsWith('prnt_live_') || pm.environment.get('run_live_dashboard_flow') !== 'true') {",
+                  "  console.log('Skipped: requires a prnt_live_ key and run_live_dashboard_flow=true.');",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});",
+                  "function save(key, value) {",
+                  "  if (value !== undefined && value !== null) pm.environment.set(key, String(value));",
+                  "}",
+                  "const body = pm.response.json();",
+                  "save('live_cod_order_id_status', body.status); if (body.dashboard_payment_url) save('dashboard_payment_url', body.dashboard_payment_url);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "postman-{{$guid}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"status\": \"verified\",\n  \"reference\": \"POSTMAN-LIVE-{{run_id}}\"\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/orders/{{live_cod_order_id}}/cod-verification",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Releases the linked On Hold dashboard order for wallet commitment. It may commit and charge the merchant wallet if COD auto-fulfill is enabled; otherwise it returns payment_required for manual dashboard payment."
+          }
+        },
+        {
+          "name": "03.7 List LIVE orders",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const key = String(pm.environment.get('api_key') || '');",
+                  "if (!key.startsWith('prnt_live_') || pm.environment.get('run_live_dashboard_flow') !== 'true') {",
+                  "  console.log('Skipped: requires a prnt_live_ key and run_live_dashboard_flow=true.');",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});",
+                  "const ids = pm.response.json().data.map(o => o.id); pm.test('Live API orders are listed', function () { pm.expect(ids).to.include(pm.environment.get('live_prepaid_order_id')); pm.expect(ids).to.include(pm.environment.get('live_cod_order_id')); });"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/orders?limit=100",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Checks that both API-owned live resources exist. Then open {{orders_dashboard_url}} in your signed-in browser; the COD order appears as On Hold immediately, while the prepaid order appears after commitment."
+          }
+        },
+        {
+          "name": "03.8 List LIVE events",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "const key = String(pm.environment.get('api_key') || '');",
+                  "if (!key.startsWith('prnt_live_') || pm.environment.get('run_live_dashboard_flow') !== 'true') {",
+                  "  console.log('Skipped: requires a prnt_live_ key and run_live_dashboard_flow=true.');",
+                  "  pm.execution.skipRequest();",
+                  "}"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 200', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([200]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "GET",
+            "header": [],
+            "url": {
+              "raw": "{{base_url}}/events?limit=100",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Inspect order.pending_verification, order.payment_required, and order.accepted events for the live run."
+          }
+        }
+      ]
+    },
+    {
+      "name": "04 — Direct file upload alternative (manual)",
+      "description": "Optional alternative to POST /artworks. Set run_direct_upload_flow=true and choose a local PNG/JPEG/WebP file in request 04.2. Do not run this folder after the main flow unless you intend to replace artwork_id.",
+      "item": [
+        {
+          "name": "04.1 Create direct upload intent",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.environment.get('run_direct_upload_flow') !== 'true') pm.execution.skipRequest();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 201', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([201]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});",
+                  "function save(key, value) {",
+                  "  if (value !== undefined && value !== null) pm.environment.set(key, String(value));",
+                  "}",
+                  "const body = pm.response.json();",
+                  "save('upload_intent_id', body.id); save('direct_artwork_id', body.artwork_id); save('upload_url', body.upload.url); save('upload_content_type', body.upload.headers['Content-Type'] || 'image/png');"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/json"
+              },
+              {
+                "key": "Idempotency-Key",
+                "value": "postman-{{$guid}}",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "{\n  \"merchant_artwork_id\": \"postman-direct-{{run_id}}\",\n  \"file_name\": \"postman-direct.png\",\n  \"mime_type\": \"image/png\",\n  \"rights_attested\": true\n}",
+              "options": {
+                "raw": {
+                  "language": "json"
+                }
+              }
+            },
+            "url": {
+              "raw": "{{base_url}}/artwork-upload-intents",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Returns a short-lived signed PUT URL. Original files may be up to 25 MB and 10,000 × 10,000 pixels."
+          }
+        },
+        {
+          "name": "04.2 PUT local artwork to signed URL",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.environment.get('run_direct_upload_flow') !== 'true') pm.execution.skipRequest();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('Upload accepted', () => pm.expect(pm.response.code).to.be.oneOf([200,201]));"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "PUT",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "{{upload_content_type}}"
+              }
+            ],
+            "body": {
+              "mode": "file",
+              "file": {
+                "src": ""
+              }
+            },
+            "url": {
+              "raw": "{{upload_url}}",
+              "host": [
+                "{{upload_url}}"
+              ]
+            },
+            "description": "MANUAL STEP: choose your local file in Body → binary/file before Send. The signed URL is short-lived and must not receive the Printlet API Authorization header."
+          }
+        },
+        {
+          "name": "04.3 Complete direct upload",
+          "event": [
+            {
+              "listen": "prerequest",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "if (pm.environment.get('run_direct_upload_flow') !== 'true') pm.execution.skipRequest();"
+                ]
+              }
+            },
+            {
+              "listen": "test",
+              "script": {
+                "type": "text/javascript",
+                "exec": [
+                  "pm.test('HTTP 202', function () {",
+                  "  pm.expect(pm.response.code).to.be.oneOf([202]);",
+                  "});",
+                  "pm.test('Request-Id is returned', function () {",
+                  "  pm.expect(pm.response.headers.get('Request-Id')).to.be.a('string').and.not.empty;",
+                  "});",
+                  "function save(key, value) {",
+                  "  if (value !== undefined && value !== null) pm.environment.set(key, String(value));",
+                  "}",
+                  "const body = pm.response.json();",
+                  "save('direct_artwork_revision', body.revision);"
+                ]
+              }
+            }
+          ],
+          "request": {
+            "method": "POST",
+            "header": [
+              {
+                "key": "Idempotency-Key",
+                "value": "postman-{{$guid}}",
+                "type": "text"
+              }
+            ],
+            "url": {
+              "raw": "{{base_url}}/artwork-upload-intents/{{upload_intent_id}}/complete",
+              "host": [
+                "{{base_url}}"
+              ]
+            },
+            "description": "Confirms the bytes are present and queues validation. Set artwork_id={{direct_artwork_id}} afterward if you want to use this file in a new preview/quote."
+          }
+        }
+      ]
+    }
+  ]
+}

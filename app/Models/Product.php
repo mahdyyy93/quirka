@@ -18,17 +18,25 @@ class Product extends Model
         'price',
         'is_available',
         'customizations',
+        'printlet_artwork_id',
+        'printlet_artwork_revision',
     ];
 
     protected $casts = [
         'is_available' => 'boolean',
         'customizations' => 'array',
         'price' => 'decimal:2',
+        'printlet_artwork_revision' => 'integer',
     ];
 
     public function supplier(): BelongsTo
     {
         return $this->belongsTo(Supplier::class);
+    }
+
+    public function variants(): HasMany
+    {
+        return $this->hasMany(Variant::class);
     }
 
     public function stockLevels(): HasMany

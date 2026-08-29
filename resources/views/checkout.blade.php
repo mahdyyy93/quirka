@@ -18,6 +18,9 @@
                     <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6">
                         <h3 class="font-semibold text-gray-800 text-lg mb-4">Delivery Details</h3>
 
+                        <input type="hidden" name="name" value="{{ auth()->user()->name }}">
+                        <input type="hidden" name="email" value="{{ auth()->user()->email }}">
+
                         <div class="mb-4">
                             <label class="block text-sm font-medium text-gray-700 mb-1">Full name</label>
                             <input type="text" value="{{ auth()->user()->name }}" disabled
@@ -31,11 +34,20 @@
                         </div>
 
                         <div class="mb-4">
-                            <label for="address" class="block text-sm font-medium text-gray-700 mb-1">Shipping Address <span class="text-red-500">*</span></label>
-                            <textarea id="address" name="address" rows="3" required
-                                class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 @error('address') border-red-400 @enderror"
-                                placeholder="Street address, city, postal code...">{{ old('address', $customer?->address) }}</textarea>
-                            @error('address') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                            <label for="phone" class="block text-sm font-medium text-gray-700 mb-1">Phone Number <span class="text-red-500">*</span></label>
+                            <input type="text" id="phone" name="phone" required
+                                value="{{ old('phone', $customer?->phone ?? '01000000000') }}"
+                                class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 @error('phone') border-red-400 @enderror"
+                                placeholder="+20 100 000 0000">
+                            @error('phone') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div class="mb-4">
+                            <label for="address_line_1" class="block text-sm font-medium text-gray-700 mb-1">Shipping Address <span class="text-red-500">*</span></label>
+                            <textarea id="address_line_1" name="address_line_1" rows="3" required
+                                class="w-full border border-gray-200 rounded-lg px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-gray-900 @error('address_line_1') border-red-400 @enderror"
+                                placeholder="Street address, city, postal code...">{{ old('address_line_1', old('address', $customer?->address)) }}</textarea>
+                            @error('address_line_1') <p class="text-red-500 text-xs mt-1">{{ $message }}</p> @enderror
                         </div>
 
                         <div>
@@ -59,7 +71,7 @@
                                         class="accent-gray-900">
                                     <div>
                                         <span class="font-medium text-gray-800">{{ $label }}</span>
-                                        @if($key === 'cash_on_delivery')
+                                        @if($key === 'cod' || $key === 'cash_on_delivery')
                                             <p class="text-xs text-gray-400">Pay in cash when your order arrives.</p>
                                         @endif
                                     </div>

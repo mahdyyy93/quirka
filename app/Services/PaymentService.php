@@ -18,7 +18,7 @@ class PaymentService
 
     public function driver(string $key): PaymentMethodInterface
     {
-        if (!isset($this->drivers[$key])) {
+        if (! isset($this->drivers[$key])) {
             throw new InvalidArgumentException("Payment driver [{$key}] is not registered.");
         }
 

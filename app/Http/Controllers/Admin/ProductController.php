@@ -16,7 +16,7 @@ class ProductController extends Controller
         if ($search = $request->get('search')) {
             $query->where(function ($q) use ($search) {
                 $q->where('title', 'like', "%{$search}%")
-                  ->orWhere('sku', 'like', "%{$search}%");
+                    ->orWhere('sku', 'like', "%{$search}%");
             });
         }
 
@@ -28,30 +28,31 @@ class ProductController extends Controller
 
         return response()->json($query->paginate(15));
     }
+
     public function toggleAvailability(Product $product)
     {
-        $product->is_available = !$product->is_available;
+        $product->is_available = ! $product->is_available;
         $product->save();
 
         return response()->json([
             'message' => 'Product availability updated.',
-            'is_available' => $product->is_available
+            'is_available' => $product->is_available,
         ]);
     }
 
     public function store(Request $request)
     {
         $validated = $request->validate([
-            'title'          => 'required|string|max:255',
-            'sku'            => 'required|string|max:255|unique:products,sku',
-            'price'          => 'required|numeric|min:0',
-            'supplier_id'    => 'required|exists:suppliers,id',
+            'title' => 'required|string|max:255',
+            'sku' => 'required|string|max:255|unique:products,sku',
+            'price' => 'required|numeric|min:0',
+            'supplier_id' => 'required|exists:suppliers,id',
             'customizations' => 'nullable|string',
-            'images'         => 'nullable|array',
-            'images.*'       => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048',
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048',
         ]);
 
-        if (!empty($validated['customizations'])) {
+        if (! empty($validated['customizations'])) {
             $validated['customizations'] = json_decode($validated['customizations'], true);
         }
 
@@ -69,23 +70,23 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
-    //         dd([
-    //     'has_file' => $request->hasFile('images'),
-    //     'files' => $request->file('images'),
-    //     'all' => $request->all(),
-    // ]);
+        //         dd([
+        //     'has_file' => $request->hasFile('images'),
+        //     'files' => $request->file('images'),
+        //     'all' => $request->all(),
+        // ]);
         $validated = $request->validate([
-            'title'          => 'required|string|max:255',
-            'sku'            => 'required|string|max:255|unique:products,sku,' . $product->id,
-            'price'          => 'required|numeric|min:0',
-            'supplier_id'    => 'required|exists:suppliers,id',
+            'title' => 'required|string|max:255',
+            'sku' => 'required|string|max:255|unique:products,sku,'.$product->id,
+            'price' => 'required|numeric|min:0',
+            'supplier_id' => 'required|exists:suppliers,id',
             'customizations' => 'nullable|string',
-            'images'         => 'nullable|array',
-            'images.*'       => 'image|mimes:jpeg,png,jpg,gif,webp|max:5048',
+            'images' => 'nullable|array',
+            'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5048',
         ]);
 
         // Decode JSON string into array before saving
-        if (!empty($validated['customizations'])) {
+        if (! empty($validated['customizations'])) {
             $validated['customizations'] = json_decode($validated['customizations'], true);
         }
 
@@ -104,6 +105,7 @@ class ProductController extends Controller
     public function destroy(Product $product)
     {
         $product->delete();
+
         return response()->json(['message' => 'Product deleted successfully.']);
     }
 }

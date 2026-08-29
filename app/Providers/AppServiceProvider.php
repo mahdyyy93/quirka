@@ -2,7 +2,6 @@
 
 namespace App\Providers;
 
-use App\Contracts\PaymentMethodInterface;
 use App\Contracts\SupplierSyncServiceInterface;
 use App\Payments\CashOnDeliveryPayment;
 use App\Services\MockSupplierSyncService;
@@ -24,11 +23,11 @@ class AppServiceProvider extends ServiceProvider
         $this->app->bind(SupplierSyncServiceInterface::class, MockSupplierSyncService::class);
 
         $this->app->singleton(PaymentService::class, function () {
-            $service = new PaymentService();
+            $service = new PaymentService;
 
             // Register payment drivers here.
             // To add Stripe, PayPal, etc. — just call $service->register(new StripePayment());
-            $service->register(new CashOnDeliveryPayment());
+            $service->register(new CashOnDeliveryPayment);
 
             return $service;
         });

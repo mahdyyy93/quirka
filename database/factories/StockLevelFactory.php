@@ -11,7 +11,7 @@ class StockLevelFactory extends Factory
     {
         return [
             'product_id' => Product::factory(),
-            'location_name' => fake()->city() . ' Warehouse',
+            'location_name' => fake()->city().' Warehouse',
             'quantity' => fake()->numberBetween(0, 100),
         ];
     }

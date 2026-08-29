@@ -29,7 +29,7 @@ class SupplierController extends Controller
     {
         $validated = $request->validate([
             'name' => 'required|string|max:255',
-            'email' => 'required|email|unique:suppliers,email,' . $supplier->id,
+            'email' => 'required|email|unique:suppliers,email,'.$supplier->id,
         ]);
 
         $supplier->update($validated);
@@ -40,6 +40,7 @@ class SupplierController extends Controller
     public function destroy(Supplier $supplier)
     {
         $supplier->delete();
+
         return response()->json(['message' => 'Supplier deleted successfully.']);
     }
 }

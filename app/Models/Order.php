@@ -15,13 +15,19 @@ class Order extends Model
         'customer_id',
         'status',
         'total_price',
+        'shipping_amount',
         'payment_method',
         'payment_status',
         'notes',
+        'printlet_order_id',
+        'printlet_quote_id',
+        'printlet_status',
+        'cod_reference',
     ];
 
     protected $casts = [
         'total_price' => 'decimal:2',
+        'shipping_amount' => 'decimal:2',
     ];
 
     public function customer(): BelongsTo
