@@ -1,14 +1,8 @@
-# Quirka — Customer Trust Audit
+# Quirka — Production Readiness & Trust Audit
 
-> **Platform:** Laravel 13 · Livewire 4 · SQLite · Tailwind CSS v4
-> **Audit date:** 2026-08-22
-> **Reviewer:** Antigravity
-
----
-
-## Executive Summary
-
-Quirka is a hyper-lean e-commerce platform with a solid technical foundation: proper CSRF on all forms, auth-gated purchasing, an `is_available` product flag, and a DB-transaction-wrapped checkout. However, several critical signals that **customers judge a store's legitimacy by** are entirely absent. This document catalogs every gap with a priority rating and concrete fix direction.
+> **Platform:** Laravel 13 · Livewire 4 · SQLite/PostgreSQL · Tailwind CSS v4  
+> **Last updated:** 2026-08-29  
+> **Status:** Printlet v1 Integration Complete · Production Polish In Progress
 
 ---
 
@@ -16,286 +10,102 @@ Quirka is a hyper-lean e-commerce platform with a solid technical foundation: pr
 
 | Symbol | Meaning |
 |--------|---------|
-| 🔴 **P0** | Blocking trust — customers will likely abandon without this |
-| 🟠 **P1** | Strong trust signal — high-impact, relatively quick to add |
-| 🟡 **P2** | Moderate trust signal — adds polish and reassurance |
-| 🟢 **P3** | Nice-to-have — differentiates from competitors |
+| 🔴 **P0** | Blocking release — critical security, legal, or payment requirement |
+| 🟠 **P1** | High priority — strong UX/trust signal, high conversion impact |
+| 🟡 **P2** | Polish & reassurance — branding, pages, state persistence |
+| 🟢 **P3** | Nice-to-have — advanced features |
 
 ---
 
-## 1. 🔴 P0 — HTTPS / SSL Certificate
+## 1. 🔴 P0 — Infrastructure & Production Deployment Setup
 
-**Current state:** No HTTPS enforcement found anywhere in the codebase (`routes/web.php`, middleware, `.env`).
-
-**Why it kills trust:** Every modern browser shows "Not Secure" on HTTP. Customers see this before they even read the product names.
-
-**Fix:**
-- Force HTTPS in `AppServiceProvider` (or `TrustProxies` if behind a load balancer):
-  ```php
-  // AppServiceProvider::boot()
-  if (app()->isProduction()) {
-      URL::forceScheme('https');
-  }
-  ```
-- Set `FORCE_HTTPS=true` in production `.env` and handle at the web server/reverse-proxy level.
+- [ ] **Force HTTPS in Production**
+  - Enforce `URL::forceScheme('https')` in `AppServiceProvider` when `app()->isProduction()`.
+  - Set `APP_URL=https://yourdomain.com` in production `.env`.
+- [x] **Security Headers Middleware**
+  - Added `App\Http\Middleware\SecurityHeaders` returning `X-Frame-Options`, `X-Content-Type-Options`, `Referrer-Policy`.
+- [x] **Remove Debug Routes**
+  - Removed unauthenticated `/php-info` debug route from `routes/web.php`.
+- [ ] **Production Optimization Commands**
+  - Run `php artisan config:cache`, `php artisan route:cache`, `php artisan view:cache` on deployment.
+  - Set `APP_DEBUG=false` in production `.env`.
 
 ---
 
-## 2. 🔴 P0 — No Legal Pages (Privacy Policy, Terms of Service, Return Policy)
+## 2. 🔴 P0 — Printlet Fulfillment Integration (v1)
 
-**Current state:** Zero legal pages exist. No links in any layout. The `welcome.blade.php` footer is empty.
-
-**Why it kills trust:** Customers actively look for these before buying. Their absence is a red flag for scam sites. Payment processors (Stripe, PayPal) also *require* them.
-
-**Fix — minimum viable set:**
-
-| Page | Route | Content |
-|------|-------|---------|
-| Privacy Policy | `/privacy` | How you store/use personal data |
-| Terms of Service | `/terms` | Purchase rules, disclaimers |
-| Return & Refund Policy | `/returns` | Who pays return shipping, refund timeline |
-| Shipping Policy | `/shipping` | Estimated delivery times, carriers |
-
-Add to a shared footer component visible on every page.
-
----
-
-## 3. 🔴 P0 — Only One Payment Method (Cash on Delivery)
-
-**Current state:** `CashOnDeliveryPayment.php` is the only payment driver registered.
-
-**Why it kills trust:**
-- COD-only stores are a known vector for fraud — customers know this.
-- International customers cannot buy at all.
-- No card payment means no Stripe/PayPal trust badge on the checkout page.
-
-**Fix:**
-- Integrate **Stripe** (or PayPal/Paymob for MENA) using the existing `PaymentMethodInterface` contract — the architecture already supports it.
-- Display the provider's official trust badge on the checkout page.
-- Add card logos (Visa, Mastercard) in the footer.
+- [x] **Database Schema & Models**
+  - [x] Added `printlet_artwork_id` to `products` table (`2026_08_29_170000_add_printlet_artwork_id_to_products_table.php`).
+  - [x] Created `variants` table mapping size, color, price, sku, and `printlet_variant_id` (`2026_08_29_170001_create_variants_table.php`).
+  - [x] Added `printlet_order_id`, `printlet_quote_id`, `printlet_status`, `cod_reference`, `shipping_amount` to `orders` table.
+- [x] **Printlet API Service (`PrintletApiService`)**
+  - [x] Implemented `POST /quotes`, `POST /orders`, `POST /orders/{id}/cod-verification`, and `GET /events` cursor feed.
+  - [x] Added automatic Bearer token auth and UUID `Idempotency-Key` headers.
+- [x] **Just-in-Time Checkout Flow (`CheckoutController`)**
+  - [x] Hits `POST /quotes` during checkout submission to calculate fulfillment & shipping costs.
+  - [x] Immediately places order via `POST /orders`.
+  - [x] Supports `prepaid` and `cod` (leaving COD in `pending_verification` state).
+  - [x] Wrapped in DB transaction.
+- [x] **Admin COD Order Verification**
+  - [x] Implemented `AdminOrderController::verifyCod` (`POST /admin/orders/{order}/verify-cod`).
+  - [x] Updated Admin Orders UI (`resources/views/orders.blade.php`) with Printlet metadata and interactive `✓ Verify COD Order` banner.
+- [x] **Webhooks (`WebhookController`)**
+  - [x] Implemented `POST /webhooks/printlet` endpoint handling `order.shipped`, `order.in_production`, `order.delivered`, `order.cancelled`.
+  - [x] Implemented HMAC-SHA256 signature verification in `verifySignature()`.
+- [x] **Resiliency & Event Sync (`SyncPrintletEvents`)**
+  - [x] Created scheduled Artisan command `php artisan printlet:sync-events` querying cursor feed to reconcile missed state updates.
 
 ---
 
-## 4. 🔴 P0 — No Order Tracking for Customers
+## 3. 🔴 P0 — Legal Pages & Customer Trust
 
-**Current state:** After `order-confirmation.blade.php`, customers have no way to view their order history or check status. There is no `/orders` customer-facing route — only an admin one.
-
-**Why it kills trust:** "Where is my order?" is the #1 support ticket for e-commerce. Without self-service tracking, customers feel they've sent money into a void.
-
-**Fix:**
-- Add a `/my-orders` route returning a customer's own orders list.
-- Add a `/my-orders/{order}` detail page with status timeline.
-- Note: `Order::$fillable` currently only includes `customer_id`, `status`, `total_price` — `payment_method`, `payment_status`, and `notes` are missing from `$fillable` (they will be silently ignored by mass-assignment). **Fix this immediately.**
-
----
-
-## 5. 🔴 P0 — No Transactional Email (Order Confirmation Email)
-
-**Current state:** After `CheckoutController::store()` completes, no email is sent. The customer gets a success screen and nothing else.
-
-**Why it kills trust:** An email with the order number is proof-of-purchase. Without it, customers have no receipt, and chargebacks are harder to dispute.
-
-**Fix:**
-- Create an `OrderConfirmed` Mailable and dispatch it in `CheckoutController::store()` after the transaction.
-- Minimum email contents: order number, item list, total, payment method, estimated delivery note.
-- Configure `MAIL_MAILER` in `.env` (Resend, Mailgun, SES).
+- [x] **Legal Pages (Footer Links)**
+  - [x] Privacy Policy page (`/privacy`) — Includes Printlet 3rd-party manufacturing data sharing clause.
+  - [x] Terms of Service page (`/terms`) — Includes cancellation pre-printing rule and 60-day COD storage/abandonment policy.
+  - [x] Return & Refund Policy page (`/returns`) — Includes 14-day defect window, photographic proof requirement, and no buyer's remorse policy.
+  - [x] Shipping & Delivery Policy page (`/shipping`) — Includes Sun-Thu business days, 1-2d printing, 1-3d transit, and 3 delivery attempts max.
+- [x] **Customer Order Tracking & History**
+  - [x] Added customer-facing `/my-orders` list and `/my-orders/{order}` detail page with order status timeline.
+- [x] **Transaction Proof / Email**
+  - [x] Created `OrderConfirmed` Mailable queued on checkout.
 
 ---
 
-## 6. 🟠 P1 — No Product Descriptions
+## 4. 🟠 P1 — Product Catalog & Inventory Polish
 
-**Current state:** `Product` model has `title`, `sku`, `price`, `is_available`, `customizations` — **no `description` field**. The `shop.blade.php` card shows only the title and price.
-
-**Why it matters:** Customers make purchase decisions based on product details. No description = no differentiation = no confidence they're buying the right thing.
-
-**Fix:**
-- Add `description` (text) and optionally `short_description` (varchar 255) to the products migration.
-- Render `short_description` on the product card and full `description` on a dedicated product detail page (`/shop/{product}`).
-
----
-
-## 7. 🟠 P1 — No Product Detail Page
-
-**Current state:** There is no `/shop/{product}` route. Customers can only see the card in the grid; there is no way to see more images, specs, or description.
-
-**Why it matters:** Buying without seeing product detail is a barrier. Multiple images and specs are prerequisites for high-AOV products.
-
-**Fix:**
-- Add `ShopController::show(Product $product)` method.
-- Create a `shop/show.blade.php` with an image gallery (using `$product->images`), full description, customization options, and the Add-to-Cart form.
+- [ ] **Product Detail Page (`/shop/{product}`)**
+  - Dedicated product detail page allowing variant selection (size & frame color) before adding to cart.
+- [ ] **Product Descriptions**
+  - Surface detailed product specs, dimensions, and frame descriptions.
+- [ ] **Stock Level Validation**
+  - Surfacing inventory availability ("In Stock", "Low Stock") and atomic stock decrement on checkout.
 
 ---
 
-## 8. 🟠 P1 — Missing `$fillable` Fields on Order Model
+## 5. 🟡 P2 — Storefront Polish & Brand Identity
 
-**Current state:** `Order::$fillable` is:
-```php
-protected $fillable = ['customer_id', 'status', 'total_price'];
-```
-But `CheckoutController::store()` calls `Order::create([..., 'payment_method', 'payment_status', 'notes'])`. Those 3 fields are silently dropped by Eloquent.
-
-**Why it matters:** Orders are missing payment data. The admin panel shows incomplete data and trust-critical features like "payment status" don't work.
-
-**Fix — immediate, 1 line:**
-```php
-protected $fillable = [
-    'customer_id', 'status', 'total_price',
-    'payment_method', 'payment_status', 'notes',
-];
-```
+- [ ] **Custom Brand Favicon**
+  - Commit favicon assets (`favicon.ico`, `favicon.svg`, `apple-touch-icon.png`).
+- [ ] **Storefront Landing Page**
+  - Custom brand hero section replacing default welcome screen.
+- [ ] **About Us & Contact Page**
+  - `/about` story page and `/contact` support form.
 
 ---
 
-## 9. 🟠 P1 — No Social Proof (Reviews / Ratings)
+## Summary Status Table
 
-**Current state:** Zero review or rating functionality exists.
-
-**Why it matters:** 93% of shoppers read reviews before buying (BrightLocal 2024). An empty review section signals a new/untested store.
-
-**Fix:**
-- Add a `reviews` table (`product_id`, `customer_id`, `rating`, `body`, `approved_at`).
-- Display average star rating on product cards and individual review comments on the detail page.
-- Gate submission to verified purchasers (customer has a delivered `OrderItem` for that product).
-
----
-
-## 10. 🟠 P1 — No Stock/Inventory Feedback
-
-**Current state:** `StockLevel` model exists but is never surfaced to customers. There is no "Only 3 left!" message, no out-of-stock indicator, and no validation preventing over-ordering in `CheckoutController`.
-
-**Why it matters:** Customers who order an item that turns out to be out of stock lose trust permanently.
-
-**Fix:**
-- Show `stock_quantity` on product cards ("In Stock" / "Low Stock" / "Out of Stock").
-- Validate available stock in `CheckoutController::store()` before committing the transaction.
-- Decrement stock atomically inside the existing DB transaction.
-
----
-
-## 11. 🟠 P1 — No Security Headers
-
-**Current state:** No `Content-Security-Policy`, `X-Frame-Options`, `X-Content-Type-Options`, or `Referrer-Policy` headers are set.
-
-**Why it matters:** Security headers are inspected by browser security tools (and technically-savvy customers). Their absence also enables clickjacking.
-
-**Fix:**
-```php
-// In a new SecurityHeaders middleware, registered globally:
-$response->header('X-Frame-Options', 'SAMEORIGIN');
-$response->header('X-Content-Type-Options', 'nosniff');
-$response->header('Referrer-Policy', 'strict-origin-when-cross-origin');
-```
-
----
-
-## 12. 🟠 P1 — Exposed Debug Route in Production
-
-**Current state:** `routes/web.php` L63-69:
-```php
-Route::get('/php-info', function () {
-    return [
-        'php_ini' => php_ini_loaded_file(),
-        'upload_max_filesize' => ini_get('upload_max_filesize'),
-        'post_max_size' => ini_get('post_max_size'),
-    ];
-});
-```
-This is a public, unauthenticated route that leaks server configuration.
-
-**Fix:** Delete this route entirely or guard it with `EnsureUserIsAdmin`.
-
----
-
-## 13. 🟡 P2 — No "About Us" / Brand Story Page
-
-**Current state:** The storefront goes directly from a login screen to a product grid. There is no brand identity page.
-
-**Why it matters:** First-time visitors who don't know the brand look for an "About" page to verify the company is real.
-
-**Fix:** A single static `/about` page with: who you are, where you're based, your mission, and a contact email.
-
----
-
-## 14. 🟡 P2 — No Contact / Support Channel
-
-**Current state:** No contact page, email address, live chat, or support link anywhere in the UI.
-
-**Why it matters:** Customers need to know they can reach you if something goes wrong. Its absence is a significant trust killer.
-
-**Fix:** At minimum, a `/contact` page with a contact form or mailto link. Bonus: a live chat widget (Crisp/Tawk.to — both free).
-
----
-
-## 15. 🟡 P2 — Cart is Session-Based Only (Lost on Login Expiry)
-
-**Current state:** Cart is stored in the Laravel session. If the session expires, the cart is silently lost.
-
-**Why it matters:** Customers returning the next day find an empty cart and feel frustrated.
-
-**Fix:** Persist cart to a `carts` table for authenticated users and merge session cart on login.
-
----
-
-## 16. 🟡 P2 — No Favicon / Brand Identity
-
-**Current state:** `welcome.blade.php` references `/favicon.ico` and `/apple-touch-icon.png` but no custom favicon files were committed. Browser shows a generic icon.
-
-**Why it matters:** A missing favicon makes the tab look like a dev environment, not a real store.
-
-**Fix:** Create and commit a proper favicon set (favicon.ico, favicon.svg, apple-touch-icon.png).
-
----
-
-## 17. 🟡 P2 — The Welcome Page is the Laravel Default
-
-**Current state:** `welcome.blade.php` renders the stock Laravel welcome screen (links to Laravel docs, Laracasts, etc.) and is served on `route('shop.index')` — which actually points to `ShopController::index()`, not the welcome page. However the welcome page is still accessible at the root path and contains Laravel boilerplate text.
-
-**Why it matters:** Sophisticated customers who land on the root URL and see "Let's get started — Read the Documentation" will immediately recognize this as an unconfigured demo.
-
-**Fix:** Replace `welcome.blade.php` with a proper landing/hero page, or redirect `/` to `/shop`.
-
----
-
-## 18. 🟢 P3 — No Wishlist
-
-No wishlist functionality. Moderate trust/retention signal — customers can save items for later.
-
----
-
-## 19. 🟢 P3 — No Loyalty / Coupon System
-
-No discount codes or loyalty points. Positive repeat-purchase signal but not a first-visit trust factor.
-
----
-
-## Summary Checklist
-
-| # | Issue | Priority | Est. Effort | Done |
-|---|-------|----------|-------------|------|
-| 1 | Force HTTPS in production | 🔴 P0 | 30 min | [ ] |
-| 2 | Privacy Policy, ToS, Returns, Shipping pages | 🔴 P0 | 2–4 h | [ ] |
-| 3 | Real payment gateway (Stripe/PayPal) | 🔴 P0 | 4–8 h | [ ] |
-| 4 | Customer-facing order history + tracking | 🔴 P0 | 3–5 h | [ ] |
-| 5 | Order confirmation email | 🔴 P0 | 2–3 h | [x] |
-| 6 | Product descriptions field | 🟠 P1 | 1–2 h | [ ] |
-| 7 | Product detail page (`/shop/{product}`) | 🟠 P1 | 2–4 h | [ ] |
-| 8 | Fix `Order::$fillable` (missing fields) | 🟠 P1 | 5 min | [x] |
-| 9 | Reviews & ratings | 🟠 P1 | 4–6 h | [ ] |
-| 10 | Stock level display + over-order guard | 🟠 P1 | 2–3 h | [ ] |
-| 11 | Security headers middleware | 🟠 P1 | 1 h | [ ] |
-| 12 | Remove `/php-info` debug route | 🟠 P1 | 5 min | [x] |
-| 13 | About Us page | 🟡 P2 | 1–2 h | [ ] |
-| 14 | Contact / Support page | 🟡 P2 | 1–2 h | [ ] |
-| 15 | Persistent cart (DB-backed) | 🟡 P2 | 3–4 h | [ ] |
-| 16 | Custom favicon | 🟡 P2 | 30 min | [ ] |
-| 17 | Real landing/hero page | 🟡 P2 | 2–4 h | [ ] |
-| 18 | Wishlist | 🟢 P3 | 4–6 h | [ ] |
-| 19 | Coupon/loyalty system | 🟢 P3 | 6–10 h | [ ] |
-
----
-
-> [!CAUTION]
-> Items #8 (missing `$fillable`) and #12 (exposed debug route) are **silent bugs affecting live data and security right now**. Fix them before anything else.
-
-> [!IMPORTANT]
-> The P0 items (#1–#5) should be treated as a release blocker. A store without HTTPS, legal pages, and order emails will struggle to get customers past the checkout page — regardless of product quality.
+| # | Feature / Component | Priority | Status |
+|---|---------------------|----------|--------|
+| 1 | Force HTTPS in production | 🔴 P0 | [ ] Pending |
+| 2 | Legal pages (Privacy, ToS, Returns, Shipping) | 🔴 P0 | [x] **Completed** |
+| 3 | Printlet API Integration (v1) | 🔴 P0 | [x] **Completed** |
+| 4 | Customer order tracking (`/my-orders`) | 🔴 P0 | [x] **Completed** |
+| 5 | Transactional email confirmation | 🔴 P0 | [x] **Completed** |
+| 6 | Security headers middleware | 🟠 P1 | [x] **Completed** |
+| 7 | Fix `Order::$fillable` | 🟠 P1 | [x] **Completed** |
+| 8 | Remove `/php-info` debug route | 🟠 P1 | [x] **Completed** |
+| 9 | Product detail page (`/shop/{product}`) | 🟠 P1 | [ ] Pending |
+| 10 | Stock validation & low stock indicators | 🟠 P1 | [ ] Pending |
+| 11 | Custom favicon & brand identity | 🟡 P2 | [ ] Pending |
+| 12 | About & Contact pages | 🟡 P2 | [ ] Pending |

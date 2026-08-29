@@ -17,6 +17,12 @@ use Illuminate\Support\Facades\Route;
 // Public storefront
 Route::get('/', [ShopController::class, 'index'])->name('shop.index');
 
+// Public legal & policy pages
+Route::get('/shipping', fn () => view('pages.shipping'))->name('legal.shipping');
+Route::get('/returns', fn () => view('pages.returns'))->name('legal.returns');
+Route::get('/terms', fn () => view('pages.terms'))->name('legal.terms');
+Route::get('/privacy', fn () => view('pages.privacy'))->name('legal.privacy');
+
 // Printlet Webhook endpoint (CSRF-exempt)
 Route::post('/webhooks/printlet', [WebhookController::class, 'handle'])->name('webhooks.printlet');
 
