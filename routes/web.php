@@ -42,7 +42,7 @@ Route::delete('/cart/{product}', [CartController::class, 'remove'])->name('cart.
 // Authenticated customer routes
 Route::middleware('auth')->group(function () {
     // Checkout — POST processes the order
-    Route::get('/checkout', fn () => redirect()->route('cart.index'))->name('checkout.show');
+    Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout.show');
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
     Route::get('/order/{order}/confirmation', [CheckoutController::class, 'confirmation'])->name('order.confirmation');
 
