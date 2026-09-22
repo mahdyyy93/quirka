@@ -18,16 +18,30 @@
     </x-slot>
 
     <div class="pb-12">
-        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8">
+        <div class="max-w-7xl mx-auto sm:px-6 lg:px-8 space-y-8 padding-y-12">
 
             <!-- Hero Notice Card -->
-            <div class="bg-gradient-to-r from-gray-900 to-indigo-950 text-white rounded-2xl p-8 shadow-xl relative overflow-hidden">
+            <div x-data="{ city: '{{ request('city_id', 'city_cairo') }}' }" class="bg-gradient-to-r from-gray-100 to-indigo-450 text-black rounded-2xl p-8 shadow-xl relative overflow-hidden">
                 <div class="relative z-10">
-                    <h3 class="text-xl font-bold mb-2">Estimated Delivery Window</h3>
-                    <p class="text-indigo-200 text-sm max-w-2xl leading-relaxed">
-                        Our framed posters are pre-designed catalog items crafted for fast, premium fulfillment. You can expect your delivery within 
-                        <strong class="text-white underline decoration-indigo-400">1 to 5 working days</strong> from order creation.
-                    </p>
+                    <div class="flex flex-col sm:flex-row sm:items-end sm:justify-between gap-4">
+                        <div>
+                            <h3 class="text-xl font-bold mb-2">Estimated Delivery Window</h3>
+                            <p class="text-black text-sm max-w-2xl leading-relaxed">
+                                Our framed posters are pre-designed catalog items crafted for fast, premium fulfillment.
+                                Usually orders are fulfilled and delivered within
+                                <strong class="text-black underline decoration-indigo-400" x-text="['city_cairo', 'city_giza', 'city_qalyubia'].includes(city) ? '3-5 working days' : '4-8 working days'"></strong>
+                                based on your selected city.
+                            </p>
+                        </div>
+                        <label class="text-sm font-semibold text-gray-800 shrink-0">
+                            <span class="block mb-1">Delivery city</span>
+                            <select x-model="city" class="w-full sm:w-52 rounded-lg border border-gray-300 bg-white px-3 py-2 text-sm font-normal text-gray-700 focus:border-indigo-500 focus:ring-indigo-500">
+                                @foreach(config('services.printlet.cities', []) as $cityId => $cityName)
+                                    <option value="{{ $cityId }}">{{ $cityName }}</option>
+                                @endforeach
+                            </select>
+                        </label>
+                    </div>
                 </div>
                 <div class="absolute -right-6 -bottom-6 text-indigo-950/40 text-9xl font-black select-none pointer-events-none">
                     1-5d
@@ -84,7 +98,7 @@
             <!-- Detailed Policy breakdown -->
             <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 space-y-6 text-gray-700 text-sm">
                 <h3 class="text-lg font-bold text-gray-900">Delivery Timeline Breakdown</h3>
-                
+
                 <div class="relative border-l-2 border-indigo-100 ml-3 pl-6 space-y-6">
                     <div class="relative">
                         <div class="absolute -left-[31px] top-0 w-4 h-4 rounded-full bg-indigo-600 border-4 border-white shadow"></div>

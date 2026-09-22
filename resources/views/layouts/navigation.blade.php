@@ -5,9 +5,8 @@
             <div class="flex items-center gap-8">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('shop.index') }}" class="flex items-center gap-2">
-                        <x-application-logo class="block h-9 w-auto fill-current text-gray-900" />
-                        <span class="font-extrabold text-xl tracking-tight text-gray-900">Quirka</span>
+                    <a href="{{ route('shop.index') }}" class="flex items-center">
+                        <img src="{{ asset('images/quirka-logo-horizontal.jpg') }}" alt="Quirka" class="h-[62px] w-auto object-contain rounded-md">
                     </a>
                 </div>
 
@@ -43,17 +42,24 @@
             <div class="hidden sm:flex sm:items-center sm:gap-4">
                 {{-- Cart Button (Visible for all users) --}}
                 @php $cartCount = collect(session()->get('cart', []))->sum('quantity'); @endphp
-                <a href="{{ route('cart.index') }}" class="relative inline-flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold px-4 py-2 rounded-xl shadow-sm transition-all duration-150">
-                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.4 5.6a1 1 0 001 1.4H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/>
-                    </svg>
-                    <span>Cart</span>
-                    @if($cartCount > 0)
-                        <span class="bg-red-500 text-white text-xs font-bold rounded-full h-5 min-w-[20px] px-1.5 flex items-center justify-center">
-                            {{ $cartCount }}
-                        </span>
+                <div class="relative">
+                    <a href="{{ route('cart.index') }}" class="relative inline-flex items-center gap-2 bg-gray-900 hover:bg-gray-800 text-white text-sm font-semibold px-4 py-2 rounded-xl shadow-sm transition-all duration-150">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.4 5.6a2 2 0 001 1.4H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/>
+                        </svg>
+                        <span>Cart</span>
+                        @if($cartCount > 0)
+                            <span class="bg-red-500 text-white text-xs font-bold rounded-full h-5 min-w-[20px] px-1.5 flex items-center justify-center">
+                                {{ $cartCount }}
+                            </span>
+                        @endif
+                    </a>
+                    @if(session('success') || session('error'))
+                        <div x-data="{ visible: true }" x-init="setTimeout(() => visible = false, 3000)" x-show="visible" x-transition class="absolute top-full left-1/2 z-50 mt-2 w-64 -translate-x-1/2 rounded-lg border px-3 py-2 text-xs shadow-lg {{ session('success') ? 'border-green-200 bg-green-50 text-green-800' : 'border-red-200 bg-red-50 text-red-800' }}">
+                            {{ session('success') ?? session('error') }}
+                        </div>
                     @endif
-                </a>
+                </div>
 
                 @auth
                     {{-- User Profile Dropdown --}}
@@ -90,14 +96,21 @@
 
             <!-- Mobile Hamburger button -->
             <div class="-me-2 flex items-center sm:hidden gap-2">
-                <a href="{{ route('cart.index') }}" class="relative inline-flex items-center p-2 text-gray-700 hover:text-gray-900">
-                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.4 5.6a1 1 0 001 1.4H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
-                    @if($cartCount > 0)
-                        <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">
-                            {{ $cartCount }}
-                        </span>
+                <div class="relative">
+                    <a href="{{ route('cart.index') }}" class="relative inline-flex items-center p-2 text-gray-700 hover:text-gray-900">
+                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 3h2l.4 2M7 13h10l4-8H5.4M7 13L5.4 5M7 13l-1.4 5.6a2 2 0 001 1.4H17m0 0a2 2 0 100 4 2 2 0 000-4zm-8 2a2 2 0 100 4 2 2 0 000-4z"/></svg>
+                        @if($cartCount > 0)
+                            <span class="absolute -top-1 -right-1 bg-red-500 text-white text-xs font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                                {{ $cartCount }}
+                            </span>
+                        @endif
+                    </a>
+                    @if(session('success') || session('error'))
+                        <div x-data="{ visible: true }" x-init="setTimeout(() => visible = false, 3000)" x-show="visible" x-transition class="absolute top-full right-0 z-50 mt-2 w-64 rounded-lg border px-3 py-2 text-xs shadow-lg {{ session('success') ? 'border-green-200 bg-green-50 text-green-800' : 'border-red-200 bg-red-50 text-red-800' }}">
+                            {{ session('success') ?? session('error') }}
+                        </div>
                     @endif
-                </a>
+                </div>
                 <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-lg text-gray-500 hover:text-gray-900 hover:bg-gray-100 focus:outline-none transition duration-150">
                     <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16" />

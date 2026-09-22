@@ -65,13 +65,26 @@
                     <p class="text-red-500 text-xs mt-1 hidden error-msg" id="error-supplier_id"></p>
                 </div>
 
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Customizations (JSON)</label>
-                    <textarea id="productCustomizations" rows="3" class="mt-1 w-full border border-gray-300 rounded px-3 py-2 font-mono text-sm" placeholder='{"color": "red", "size": "L"}'></textarea>
-                    <div class="flex justify-between mt-1">
-                        <p class="text-xs text-gray-500">Optional. Must be valid JSON.</p>
-                        <p class="text-red-500 text-xs hidden error-msg" id="error-customizations"></p>
+                <div class="mb-4 bg-gray-50 border border-gray-200 rounded-xl p-3.5 space-y-3">
+                    <div class="flex items-center justify-between">
+                        <label class="block text-xs font-bold uppercase tracking-wider text-gray-700">Product Variations</label>
+                        <span class="text-[11px] text-gray-400">Comma-separated</span>
                     </div>
+
+                    <div>
+                        <label for="productSizes" class="block text-xs font-medium text-gray-600 mb-1">Available Sizes</label>
+                        <input type="text" id="productSizes" placeholder="e.g. S, M, L, XL or 30x40, 50x70" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-gray-900 focus:outline-none bg-white">
+                        <p class="text-[11px] text-gray-400 mt-1">Separate sizes with commas (e.g. Small, Medium, Large)</p>
+                    </div>
+
+                    <div>
+                        <label for="productColors" class="block text-xs font-medium text-gray-600 mb-1">Available Colors</label>
+                        <input type="text" id="productColors" placeholder="e.g. Black, White, Navy, Heather Grey" class="w-full border border-gray-300 rounded-lg px-3 py-2 text-sm focus:ring-2 focus:ring-gray-900 focus:outline-none bg-white">
+                        <p class="text-[11px] text-gray-400 mt-1">Separate colors with commas (e.g. Black, White, Red)</p>
+                    </div>
+
+                    <input type="hidden" id="productCustomizations">
+                    <p class="text-red-500 text-xs hidden error-msg" id="error-customizations"></p>
                 </div>
 
                 <div class="mb-4">
@@ -129,7 +142,19 @@
                 tr.innerHTML = `
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${thumbnail}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${product.sku}</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">${product.title}</td>
+                    <td class="px-6 py-4 text-sm text-gray-900">
+                        <div class="font-semibold">${product.title}</div>
+                        ${(() => {
+                            const cust = product.customizations || {};
+                            const s = Array.isArray(cust.sizes) ? cust.sizes.join(', ') : (cust.sizes || '');
+                            const c = Array.isArray(cust.colors) ? cust.colors.join(', ') : (cust.colors || '');
+                            if (!s && !c) return '';
+                            return `<div class="flex flex-wrap gap-1 mt-1 text-[11px] text-gray-500">
+                                ${s ? `<span class="bg-gray-100 px-1.5 py-0.5 rounded">Sizes: ${s}</span>` : ''}
+                                ${c ? `<span class="bg-gray-100 px-1.5 py-0.5 rounded">Colors: ${c}</span>` : ''}
+                            </div>`;
+                        })()}
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${product.price}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${product.images ? product.images.length : 0} img(s)</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${product.supplier ? product.supplier.name : 'None'}</td>
@@ -157,6 +182,9 @@
             document.getElementById('productModal').classList.add('hidden');
             document.getElementById('productForm').reset();
             document.getElementById('productId').value = '';
+            document.getElementById('productSizes').value = '';
+            document.getElementById('productColors').value = '';
+            document.getElementById('productCustomizations').value = '';
             document.getElementById('modalTitle').innerText = 'Add Product';
             clearErrors();
         }
@@ -181,7 +209,29 @@
             document.getElementById('productPrice').value = product.price;
             document.getElementById('productSupplier').value = product.supplier_id || '';
 
-            document.getElementById('productCustomizations').value = product.customizations ? JSON.stringify(product.customizations, null, 2) : '';
+            // Populate Sizes and Colors from customizations object
+            const cust = product.customizations || {};
+            let sizesStr = '';
+            let colorsStr = '';
+
+            if (Array.isArray(cust.sizes)) {
+                sizesStr = cust.sizes.join(', ');
+            } else if (typeof cust.sizes === 'string') {
+                sizesStr = cust.sizes;
+            } else if (cust.size) {
+                sizesStr = Array.isArray(cust.size) ? cust.size.join(', ') : cust.size;
+            }
+
+            if (Array.isArray(cust.colors)) {
+                colorsStr = cust.colors.join(', ');
+            } else if (typeof cust.colors === 'string') {
+                colorsStr = cust.colors;
+            } else if (cust.color) {
+                colorsStr = Array.isArray(cust.color) ? cust.color.join(', ') : cust.color;
+            }
+
+            document.getElementById('productSizes').value = sizesStr;
+            document.getElementById('productColors').value = colorsStr;
 
             document.getElementById('modalTitle').innerText = 'Edit Product';
             openModal();
@@ -191,19 +241,24 @@
             e.preventDefault();
             const id = document.getElementById('productId').value;
 
-            let customizations = '';
-            const custText = document.getElementById('productCustomizations').value.trim();
-            if (custText) {
-                try {
-                    JSON.parse(custText); // Just to validate
-                    customizations = custText;
-                } catch (err) {
-                    const globalError = document.getElementById('global-error');
-                    globalError.innerText = 'Invalid JSON in Customizations field.';
-                    globalError.classList.remove('hidden');
-                    return;
-                }
+            // Build structured customizations JSON from sizes & colors inputs
+            const sizesRaw = document.getElementById('productSizes').value.trim();
+            const colorsRaw = document.getElementById('productColors').value.trim();
+            const custObj = {};
+
+            if (sizesRaw) {
+                custObj.sizes = sizesRaw.split(',')
+                    .map(s => s.trim())
+                    .filter(s => s.length > 0);
             }
+
+            if (colorsRaw) {
+                custObj.colors = colorsRaw.split(',')
+                    .map(c => c.trim())
+                    .filter(c => c.length > 0);
+            }
+
+            const customizations = Object.keys(custObj).length > 0 ? JSON.stringify(custObj) : '';
 
             const formData = new FormData();
             formData.append('title', document.getElementById('productTitle').value);

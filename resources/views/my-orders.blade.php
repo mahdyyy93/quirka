@@ -59,8 +59,9 @@
             return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
         }
 
-        function formatPayment(method) {
-            return method ? method.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : '—';
+        function formatPayment(method, ref) {
+            const name = method === 'instapay' ? '⚡ Instapay' : (method ? method.replace(/_/g, ' ').replace(/\b\w/g, c => c.toUpperCase()) : '—');
+            return ref ? `${name} • Ref: ${ref}` : name;
         }
 
         function renderEmpty() {
@@ -93,7 +94,7 @@
                                 <p class="text-sm text-gray-600 truncate max-w-xs" title="${itemSummary}">
                                     ${itemSummary || 'No items'}
                                 </p>
-                                <p class="text-xs text-gray-400 mt-0.5">${formatPayment(order.payment_method)}</p>
+                                <p class="text-xs text-gray-400 mt-0.5">${formatPayment(order.payment_method, order.payment_reference)}</p>
                             </div>
 
                             <div class="flex items-center gap-6 shrink-0">

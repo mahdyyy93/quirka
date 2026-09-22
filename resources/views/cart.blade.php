@@ -32,6 +32,8 @@
                             'product' => $product,
                             'quantity' => $qty,
                             'line_total' => $lineTotal,
+                            'size' => $item['size'] ?? null,
+                            'color' => $item['color'] ?? null,
                         ];
                     }
                 }
@@ -74,7 +76,15 @@
 
                                         <div>
                                             <h4 class="font-bold text-gray-900 text-base leading-snug">{{ $product->title }}</h4>
-                                            <p class="text-xs text-gray-400 font-mono mt-0.5">SKU: {{ $product->sku }}</p>
+                                            <div class="flex items-center gap-2 mt-1">
+                                                <span class="text-xs text-gray-400 font-mono">SKU: {{ $product->sku }}</span>
+                                                @if(!empty($item['size']))
+                                                    <span class="text-[11px] bg-gray-100 text-gray-700 font-medium px-2 py-0.5 rounded">Size: {{ $item['size'] }}</span>
+                                                @endif
+                                                @if(!empty($item['color']))
+                                                    <span class="text-[11px] bg-gray-100 text-gray-700 font-medium px-2 py-0.5 rounded">Color: {{ $item['color'] }}</span>
+                                                @endif
+                                            </div>
                                             <p class="text-sm font-semibold text-gray-900 mt-1">${{ number_format($product->price, 2) }} each</p>
                                         </div>
                                     </div>

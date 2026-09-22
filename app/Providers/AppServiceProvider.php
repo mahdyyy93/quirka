@@ -4,6 +4,7 @@ namespace App\Providers;
 
 use App\Contracts\SupplierSyncServiceInterface;
 use App\Payments\CashOnDeliveryPayment;
+use App\Payments\InstapayPayment;
 use App\Services\MockSupplierSyncService;
 use App\Services\PaymentService;
 use Carbon\CarbonImmutable;
@@ -28,6 +29,7 @@ class AppServiceProvider extends ServiceProvider
             // Register payment drivers here.
             // To add Stripe, PayPal, etc. — just call $service->register(new StripePayment());
             $service->register(new CashOnDeliveryPayment);
+            $service->register(new InstapayPayment);
 
             return $service;
         });

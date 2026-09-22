@@ -45,6 +45,7 @@ Route::middleware('auth')->group(function () {
     Route::get('/checkout', [CheckoutController::class, 'show'])->name('checkout.show');
     Route::post('/checkout', [CheckoutController::class, 'store'])->name('checkout.store');
     Route::get('/order/{order}/confirmation', [CheckoutController::class, 'confirmation'])->name('order.confirmation');
+    Route::post('/order/{order}/instapay-reference', [CheckoutController::class, 'updatePaymentReference'])->name('order.instapay-reference');
 
     // Customer order history — page + JSON data endpoint
     Route::get('/my-orders', [OrderController::class, 'myOrders'])->name('my-orders.index');
@@ -76,6 +77,7 @@ Route::middleware(['auth', EnsureUserIsAdmin::class])->group(function () {
     Route::get('/admin/customers', [CustomerController::class, 'index']);
     Route::patch('/admin/orders/{order}/status', [AdminOrderController::class, 'updateStatus']);
     Route::post('/admin/orders/{order}/verify-cod', [PrintletAdminOrderController::class, 'verifyCod'])->name('admin.orders.verify-cod');
+    Route::post('/admin/orders/{order}/verify-instapay', [PrintletAdminOrderController::class, 'verifyInstapay'])->name('admin.orders.verify-instapay');
 });
 
 require __DIR__.'/auth.php';

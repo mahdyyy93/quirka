@@ -25,7 +25,11 @@ class CartController extends Controller
 
     public function add(Request $request, Product $product): RedirectResponse
     {
-        $request->validate(['quantity' => 'required|integer|min:1|max:99']);
+        $request->validate([
+            'quantity' => 'required|integer|min:1|max:99',
+            'size' => 'nullable|string|max:50',
+            'color' => 'nullable|string|max:50',
+        ]);
 
         if (! $product->is_available) {
             return back()->with('error', 'This product is no longer available.');
@@ -33,9 +37,13 @@ class CartController extends Controller
 
         $cart = session()->get('cart', []);
         $qty = $request->integer('quantity');
+        $size = $request->input('size');
+        $color = $request->input('color');
 
         $cart[$product->id] = [
             'quantity' => ($cart[$product->id]['quantity'] ?? 0) + $qty,
+            'size' => $size ?? ($cart[$product->id]['size'] ?? null),
+            'color' => $color ?? ($cart[$product->id]['color'] ?? null),
         ];
 
         session()->put('cart', $cart);

@@ -26,7 +26,7 @@
                 <div class="space-y-1">
                     <h3 class="font-bold text-amber-900 text-lg">Product Quality & Replacement Guarantee</h3>
                     <p class="text-amber-800 text-sm leading-relaxed">
-                        We take great pride in our pre-designed framed poster collection. If any product from our catalog arrives with physical damage, glass breakage, or print defects, 
+                        We take great pride in our pre-designed framed poster collection. If any product from our catalog arrives with physical damage, glass breakage, or print defects,
                         <strong class="underline decoration-amber-500">we will immediately issue a free replacement within 14 days of delivery</strong>.
                     </p>
                 </div>
@@ -62,7 +62,7 @@
             <!-- How to Request a Replacement -->
             <div class="bg-white rounded-2xl p-8 shadow-sm border border-gray-100 space-y-6">
                 <h3 class="text-lg font-bold text-gray-900">How to Submit a Replacement Claim</h3>
-                
+
                 <div class="space-y-4 text-sm text-gray-600">
                     <div class="flex items-start gap-4 p-4 bg-gray-50 rounded-xl">
                         <span class="w-7 h-7 bg-indigo-600 text-white rounded-full flex items-center justify-center font-bold text-xs shrink-0 mt-0.5">1</span>

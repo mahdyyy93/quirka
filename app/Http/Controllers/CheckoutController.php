@@ -49,11 +49,12 @@ class CheckoutController extends Controller
 
         $paymentMethods = [
             'cod' => 'Cash on Delivery',
-            'prepaid' => 'Prepaid / Online Payment',
+            'instapay' => 'Instapay Direct Transfer',
         ];
+        $instapayConfig = config('services.instapay');
         $customer = Auth::user()?->customer;
 
-        return view('checkout', compact('cart', 'products', 'paymentMethods', 'customer'));
+        return view('checkout', compact('cart', 'products', 'paymentMethods', 'instapayConfig', 'customer'));
     }
 
     /**
@@ -93,13 +94,18 @@ class CheckoutController extends Controller
                 $firstProductId = array_key_first($cart);
                 $product = Product::with('variants')->find($firstProductId);
                 if ($product) {
-                    $variant = $product->variants->first() ?? Variant::firstOrCreate(
-                        ['product_id' => $product->id],
+                    $selectedSize = $cart[$firstProductId]['size'] ?? 'M';
+                    $selectedColor = $cart[$firstProductId]['color'] ?? 'Default';
+
+                    $variant = Variant::firstOrCreate(
                         [
-                            'sku' => $product->sku ?? 'SKU-'.$product->id,
+                            'product_id' => $product->id,
+                            'size' => $selectedSize,
+                            'color' => $selectedColor,
+                        ],
+                        [
+                            'sku' => ($product->sku ?? 'SKU-'.$product->id).'-'.strtoupper(substr($selectedSize, 0, 3)).'-'.strtoupper(substr($selectedColor, 0, 3)),
                             'price' => $product->price,
-                            'size' => 'M',
-                            'color' => 'Default',
                             'printlet_variant_id' => 'v_default',
                             'printlet_variant_revision' => 1,
                         ]
@@ -113,20 +119,24 @@ class CheckoutController extends Controller
         }
 
         $request->validate([
-            'payment_method' => 'required|string|in:prepaid,cod,cash_on_delivery',
+            'payment_method' => 'required|string|in:prepaid,cod,cash_on_delivery,instapay',
+            'payment_reference' => 'nullable|string|max:255',
             'variant_id' => 'required|exists:variants,id',
             'quantity' => 'nullable|integer|min:1',
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:50',
             'email' => 'required|email|max:255',
             'address_line_1' => 'required|string|max:500',
-            'city_id' => 'nullable|string|max:100',
+            'city_id' => 'nullable|string|max:100|in:'.implode(',', array_keys(config('services.printlet.cities', []))),
             'country_code' => 'nullable|string|size:2',
             'notes' => 'nullable|string|max:1000',
         ]);
 
-        // Update customer profile address details
-        $customer->update(['address' => $request->address_line_1]);
+        $cityId = $request->city_id ?? 'city_cairo';
+
+        // Keep the selected city with the saved delivery address for future orders.
+        $cityName = config('services.printlet.cities')[$cityId] ?? $cityId;
+        $customer->update(['address' => $cityName.', '.$request->address_line_1]);
 
         $variant = Variant::with('product')->findOrFail($request->variant_id);
         $product = $variant->product;
@@ -140,8 +150,6 @@ class CheckoutController extends Controller
         $countryCode = strtoupper($request->country_code ?? config('services.printlet.country_code', 'EG'));
         $currency = config('services.printlet.currency', 'EGP');
         $shippingMethodId = config('services.printlet.shipping_method_id', 'sm_standard');
-        $cityId = $request->city_id ?? 'city_cairo';
-
         $runId = (string) Str::uuid();
 
         // --------------------------------------------------------------------------
@@ -263,7 +271,16 @@ class CheckoutController extends Controller
             $variant,
             $quantity
         ) {
-            $localStatus = ($paymentMethod === 'cod') ? 'pending_verification' : ($printletStatus === 'accepted' ? 'processing' : 'pending');
+            $localStatus = match ($paymentMethod) {
+                'cod' => 'pending_verification',
+                'instapay' => 'pending_payment',
+                default => ($printletStatus === 'accepted' ? 'processing' : 'pending'),
+            };
+
+            $paymentStatus = match ($paymentMethod) {
+                'prepaid' => 'paid',
+                default => 'unpaid',
+            };
 
             $order = Order::create([
                 'customer_id' => $customer->id,
@@ -271,7 +288,8 @@ class CheckoutController extends Controller
                 'total_price' => $grandTotal,
                 'shipping_amount' => $shippingCost,
                 'payment_method' => $paymentMethod,
-                'payment_status' => $paymentMethod === 'prepaid' ? 'paid' : 'unpaid',
+                'payment_status' => $paymentStatus,
+                'payment_reference' => $request->payment_reference,
                 'notes' => $request->notes,
                 'printlet_order_id' => $printletOrderId,
                 'printlet_quote_id' => $printletQuoteId,
@@ -294,14 +312,17 @@ class CheckoutController extends Controller
             return $order;
         });
 
-        // Queue order confirmation email
-        $order->load('items.product', 'customer');
-        Mail::to($order->customer->email)->queue(new OrderConfirmed($order));
-
+        // Observer handles order confirmation email automatically
         session()->forget('cart');
 
+        $successMessage = match ($order->payment_method) {
+            'instapay' => 'Order #'.$order->id.' placed successfully! Please complete your Instapay transfer below.',
+            'cod' => 'Order #'.$order->id.' placed successfully! Our team will contact you to verify your order before delivery.',
+            default => 'Order placed successfully! Order status: '.$order->printlet_status,
+        };
+
         return redirect()->route('order.confirmation', $order)
-            ->with('success', 'Order placed successfully! Order status: '.$order->printlet_status);
+            ->with('success', $successMessage);
     }
 
     /**
@@ -312,7 +333,29 @@ class CheckoutController extends Controller
         abort_if($order->customer_id !== Auth::user()?->customer?->id, 403);
 
         $order->load('items.product', 'customer');
+        $instapayConfig = config('services.instapay');
 
-        return view('order-confirmation', compact('order'));
+        return view('order-confirmation', compact('order', 'instapayConfig'));
+    }
+
+    /**
+     * Submit or update the customer's Instapay reference after order placement.
+     */
+    public function updatePaymentReference(Request $request, Order $order): RedirectResponse
+    {
+        abort_if($order->customer_id !== Auth::user()?->customer?->id, 403);
+
+        $validated = $request->validate([
+            'payment_reference' => 'required|string|max:255',
+        ], [
+            'payment_reference.required' => 'Please enter your Instapay reference number or sender name.',
+        ]);
+
+        $order->update([
+            'payment_reference' => $validated['payment_reference'],
+        ]);
+
+        return redirect()->route('order.confirmation', $order)
+            ->with('success', 'Your Instapay transfer reference has been received. Our team will verify it shortly.');
     }
 }

@@ -7,7 +7,9 @@
         <flux:header container class="border-b border-zinc-200 bg-zinc-50">
             <flux:sidebar.toggle class="lg:hidden mr-2" icon="bars-2" inset="left" />
 
-            <x-app-logo href="{{ route('dashboard') }}" wire:navigate />
+            <a href="{{ route('dashboard') }}" wire:navigate class="flex items-center">
+                <img src="{{ asset('images/quirka-logo-horizontal.jpg') }}" alt="Quirka" class="h-10 w-auto object-contain rounded-md">
+            </a>
 
             <flux:navbar class="-mb-px max-lg:hidden">
                 <flux:navbar.item icon="layout-grid" :href="route('dashboard')" :current="request()->routeIs('dashboard')" wire:navigate>
@@ -47,7 +49,9 @@
         <!-- Mobile Menu -->
         <flux:sidebar collapsible="mobile" sticky class="lg:hidden border-e border-zinc-200 bg-zinc-50">
             <flux:sidebar.header>
-                <x-app-logo :sidebar="true" href="{{ route('dashboard') }}" wire:navigate />
+                <a href="{{ route('dashboard') }}" wire:navigate class="flex items-center">
+                    <img src="{{ asset('images/quirka-logo-horizontal.jpg') }}" alt="Quirka" class="h-9 w-auto object-contain rounded-md">
+                </a>
                 <flux:sidebar.collapse class="in-data-flux-sidebar-on-desktop:not-in-data-flux-sidebar-collapsed-desktop:-mr-2" />
             </flux:sidebar.header>
 

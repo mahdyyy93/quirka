@@ -56,6 +56,7 @@
                                 <p class="text-sm text-gray-600"><span class="font-medium">Email:</span> <span id="modalEmail"></span></p>
                                 <p class="text-sm text-gray-600"><span class="font-medium">Address:</span> <span id="modalAddress"></span></p>
                                 <p class="text-sm text-gray-600"><span class="font-medium">Payment:</span> <span id="modalPayment"></span></p>
+                                <p class="text-sm text-gray-600 hidden" id="modalReferenceContainer"><span class="font-medium">Payment Reference:</span> <span id="modalReference" class="font-mono bg-indigo-50 text-indigo-700 px-1.5 py-0.5 rounded font-bold text-xs"></span></p>
                                 <p class="text-sm text-gray-600"><span class="font-medium">Printlet Order ID:</span> <span id="modalPrintletId" class="font-mono bg-gray-100 px-1 py-0.5 rounded"></span></p>
                                 <p class="text-sm text-gray-600"><span class="font-medium">Printlet Status:</span> <span id="modalPrintletStatus" class="font-semibold text-indigo-700"></span></p>
                                 <p class="text-sm text-gray-600"><span class="font-medium">Notes:</span> <span id="modalNotes"></span></p>
@@ -69,6 +70,17 @@
                                 </div>
                                 <button onclick="verifyCod()" class="bg-amber-600 hover:bg-amber-700 text-white font-medium px-3 py-1.5 rounded text-xs transition-colors shadow-sm">
                                     ✓ Verify COD Order
+                                </button>
+                            </div>
+
+                            <!-- Instapay Verification Action Banner -->
+                            <div id="instapayVerifyBanner" class="hidden mb-4 p-3 bg-indigo-50 border border-indigo-200 rounded-lg flex items-center justify-between">
+                                <div class="text-xs text-indigo-900">
+                                    <span class="font-bold block">⚡ Awaiting Instapay Verification</span>
+                                    <span>Sender / Ref: <strong id="bannerInstapayRef" class="font-mono font-bold"></strong></span>
+                                </div>
+                                <button onclick="verifyInstapay()" class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium px-3 py-1.5 rounded text-xs transition-colors shadow-sm">
+                                    ✓ Verify Instapay Payment
                                 </button>
                             </div>
 
@@ -208,14 +220,34 @@
                             document.getElementById('modalTotal').textContent = '$' + parseFloat(order.total_price).toFixed(2);
                             document.getElementById('modalStatus').value = order.status;
 
-                            // Toggle COD verification banner if order requires verification
-                            const isCod = ['cod', 'cash_on_delivery'].includes(order.payment_method);
-                            const needsVerify = ['pending_verification', 'pending'].includes(order.printlet_status) || ['pending_verification', 'pending'].includes(order.status);
-                            const banner = document.getElementById('codVerifyBanner');
-                            if (isCod && needsVerify) {
-                                banner.classList.remove('hidden');
+                            // Display payment reference if present
+                            const refContainer = document.getElementById('modalReferenceContainer');
+                            if (order.payment_reference) {
+                                refContainer.classList.remove('hidden');
+                                document.getElementById('modalReference').textContent = order.payment_reference;
                             } else {
-                                banner.classList.add('hidden');
+                                refContainer.classList.add('hidden');
+                            }
+
+                            // Toggle COD verification banner
+                            const isCod = ['cod', 'cash_on_delivery'].includes(order.payment_method);
+                            const needsCodVerify = ['pending_verification', 'pending'].includes(order.printlet_status) || ['pending_verification', 'pending'].includes(order.status);
+                            const codBanner = document.getElementById('codVerifyBanner');
+                            if (isCod && needsCodVerify) {
+                                codBanner.classList.remove('hidden');
+                            } else {
+                                codBanner.classList.add('hidden');
+                            }
+
+                            // Toggle Instapay verification banner
+                            const isInstapay = order.payment_method === 'instapay';
+                            const needsInstapayVerify = order.payment_status !== 'paid';
+                            const instapayBanner = document.getElementById('instapayVerifyBanner');
+                            if (isInstapay && needsInstapayVerify) {
+                                instapayBanner.classList.remove('hidden');
+                                document.getElementById('bannerInstapayRef').textContent = order.payment_reference || 'Not provided';
+                            } else {
+                                instapayBanner.classList.add('hidden');
                             }
 
                             const tbody = document.getElementById('modalItems');
@@ -261,6 +293,33 @@
 
                             if (res.ok) {
                                 alert('COD Order verified successfully!');
+                                closeModal();
+                                fetchOrders(currentPage);
+                            } else {
+                                alert('Verification failed: ' + (data.error || 'Unknown error'));
+                            }
+                        }
+
+                        async function verifyInstapay() {
+                            if (!currentOrder) return;
+
+                            if (!confirm(`Confirm that you have received payment for Order #${currentOrder.id} (Instapay Ref: ${currentOrder.payment_reference || 'N/A'})?`)) {
+                                return;
+                            }
+
+                            const res = await fetch(`/admin/orders/${currentOrder.id}/verify-instapay`, {
+                                method: 'POST',
+                                headers: {
+                                    'Content-Type': 'application/json',
+                                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                                    'Accept': 'application/json',
+                                },
+                            });
+
+                            const data = await res.json();
+
+                            if (res.ok) {
+                                alert('Instapay payment verified successfully!');
                                 closeModal();
                                 fetchOrders(currentPage);
                             } else {

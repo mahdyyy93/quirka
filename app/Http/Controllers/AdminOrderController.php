@@ -101,4 +101,38 @@ class AdminOrderController extends Controller
             return redirect()->back()->with('error', 'Printlet COD verification failed: '.$e->getMessage());
         }
     }
+
+    /**
+     * Manually verify an Instapay bank transfer order after confirming received funds.
+     */
+    public function verifyInstapay(Request $request, Order $order): RedirectResponse|JsonResponse
+    {
+        if ($order->payment_method !== 'instapay') {
+            $message = 'Cannot verify non-Instapay order (Payment method: '.$order->payment_method.').';
+            if ($request->wantsJson()) {
+                return response()->json(['error' => $message], 422);
+            }
+
+            return redirect()->back()->with('error', $message);
+        }
+
+        $order->update([
+            'payment_status' => 'paid',
+            'status' => 'processing',
+        ]);
+
+        Log::info('Instapay order payment verified by admin', [
+            'order_id' => $order->id,
+            'payment_reference' => $order->payment_reference,
+        ]);
+
+        if ($request->wantsJson()) {
+            return response()->json([
+                'message' => 'Instapay payment verified successfully.',
+                'order' => $order->fresh(),
+            ]);
+        }
+
+        return redirect()->back()->with('success', 'Instapay payment verified successfully!');
+    }
 }
