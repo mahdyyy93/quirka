@@ -227,4 +227,151 @@ class PrintletApiService
 
         return $response->json();
     }
+
+    /**
+     * Discover supported fulfillment countries.
+     * Endpoint: GET /catalog/countries
+     *
+     * @return array List of countries with code, name, and stable country_id.
+     *
+     * @throws RequestException
+     */
+    public function getCountries(): array
+    {
+        $response = $this->client()->get('/catalog/countries');
+
+        if ($response->failed()) {
+            Log::error('Printlet getCountries failed', ['status' => $response->status()]);
+
+            if ($response->status() === 401 && app()->isLocal() && config('services.printlet.mock_fallback', true)) {
+                return [
+                    'data' => [
+                        [
+                            'id' => config('services.printlet.country_id', 'c1839db2-37eb-4b21-82ea-b248aeef1e97'),
+                            'code' => 'EG',
+                            'name' => 'Egypt',
+                            'currency' => 'EGP',
+                        ],
+                    ],
+                ];
+            }
+
+            $response->throw();
+        }
+
+        return $response->json();
+    }
+
+    /**
+     * Discover shipping methods for a specific country.
+     * Endpoint: GET /catalog/shipping-methods?country_id={country_id}
+     *
+     * @param  string  $countryId  Stable Printlet country ID.
+     * @return array List of shipping methods with ID, name, cost, and delivery estimates.
+     *
+     * @throws RequestException
+     */
+    public function getShippingMethods(string $countryId): array
+    {
+        $response = $this->client()->get('/catalog/shipping-methods', ['country_id' => $countryId]);
+
+        if ($response->failed()) {
+            Log::error('Printlet getShippingMethods failed', ['status' => $response->status(), 'country_id' => $countryId]);
+
+            if ($response->status() === 401 && app()->isLocal() && config('services.printlet.mock_fallback', true)) {
+                return [
+                    'data' => [
+                        [
+                            'id' => 'sm_standard',
+                            'name' => 'Standard Doorstep Delivery (Cairo & Cities)',
+                            'cost' => 45.00,
+                            'estimated_days' => '2-4 business days',
+                        ],
+                    ],
+                ];
+            }
+
+            $response->throw();
+        }
+
+        return $response->json();
+    }
+
+    /**
+     * Discover catalog products available in a destination country.
+     * Endpoint: GET /catalog/products?country_id={country_id}
+     *
+     * @param  string  $countryId  Stable Printlet country ID.
+     * @return array List of products with IDs, titles, and variant summaries.
+     *
+     * @throws RequestException
+     */
+    public function getProducts(string $countryId): array
+    {
+        $response = $this->client()->get('/catalog/products', ['country_id' => $countryId]);
+
+        if ($response->failed()) {
+            Log::error('Printlet getProducts failed', ['status' => $response->status(), 'country_id' => $countryId]);
+
+            if ($response->status() === 401 && app()->isLocal() && config('services.printlet.mock_fallback', true)) {
+                return [
+                    'data' => [
+                        [
+                            'id' => 'prod_framed_poster',
+                            'title' => 'Framed Poster',
+                            'status' => 'active',
+                            'catalog_revision' => 1,
+                        ],
+                    ],
+                ];
+            }
+
+            $response->throw();
+        }
+
+        return $response->json();
+    }
+
+    /**
+     * Get detailed product configuration (variants, print areas, techniques, placement presets).
+     * Endpoint: GET /catalog/products/{product_id}?country_id={country_id}
+     *
+     * @param  string  $productId  Stable Printlet product ID.
+     * @param  string  $countryId  Stable Printlet country ID.
+     * @return array Full product schema containing variants, print areas, and techniques.
+     *
+     * @throws RequestException
+     */
+    public function getProduct(string $productId, string $countryId): array
+    {
+        $response = $this->client()->get("/catalog/products/{$productId}", ['country_id' => $countryId]);
+
+        if ($response->failed()) {
+            Log::error('Printlet getProduct failed', ['status' => $response->status(), 'product_id' => $productId]);
+
+            if ($response->status() === 401 && app()->isLocal() && config('services.printlet.mock_fallback', true)) {
+                return [
+                    'id' => $productId,
+                    'title' => 'Framed Poster',
+                    'variants' => [
+                        ['id' => 'v_a3_black', 'name' => 'A3 / Black Frame', 'sku' => 'POSTER-A3-BLK', 'available' => true],
+                        ['id' => 'v_a3_white', 'name' => 'A3 / White Frame', 'sku' => 'POSTER-A3-WHT', 'available' => true],
+                        ['id' => 'v_a4_black', 'name' => 'A4 / Black Frame', 'sku' => 'POSTER-A4-BLK', 'available' => true],
+                        ['id' => 'v_a4_white', 'name' => 'A4 / White Frame', 'sku' => 'POSTER-A4-WHT', 'available' => true],
+                    ],
+                    'print_areas' => [
+                        ['id' => 'pa_front', 'name' => 'Front Print Area'],
+                    ],
+                    'techniques' => [
+                        ['id' => 'tech_digital_print', 'name' => 'Fine Art Digital Printing'],
+                    ],
+                    'placement_presets' => ['centered', 'fill'],
+                ];
+            }
+
+            $response->throw();
+        }
+
+        return $response->json();
+    }
 }

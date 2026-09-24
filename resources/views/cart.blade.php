@@ -26,14 +26,33 @@
                     if (isset($products[$productId])) {
                         $product = $products[$productId];
                         $qty = (int) ($item['quantity'] ?? 1);
-                        $lineTotal = $product->price * $qty;
+
+                        // Find matching variant to use its exact price
+                        $variant = null;
+                        if (!empty($item['variant_id'])) {
+                            $variant = $product->variants->firstWhere('id', $item['variant_id']);
+                        }
+                        if (!$variant && !empty($item['size'])) {
+                            $variant = $product->variants->first(function ($v) use ($item) {
+                                $match = strtolower($v->size) === strtolower($item['size']);
+                                if (!empty($item['color'])) {
+                                    $match = $match && strtolower($v->color) === strtolower($item['color']);
+                                }
+                                return $match;
+                            });
+                        }
+
+                        $unitPrice = $variant ? (float) $variant->price : (float) $product->price;
+                        $lineTotal = $unitPrice * $qty;
                         $subtotal += $lineTotal;
                         $cartItems[] = [
                             'product' => $product,
+                            'variant' => $variant,
+                            'unit_price' => $unitPrice,
                             'quantity' => $qty,
                             'line_total' => $lineTotal,
-                            'size' => $item['size'] ?? null,
-                            'color' => $item['color'] ?? null,
+                            'size' => $variant ? $variant->size : ($item['size'] ?? null),
+                            'color' => $variant ? $variant->color : ($item['color'] ?? null),
                         ];
                     }
                 }
@@ -85,7 +104,7 @@
                                                     <span class="text-[11px] bg-gray-100 text-gray-700 font-medium px-2 py-0.5 rounded">Color: {{ $item['color'] }}</span>
                                                 @endif
                                             </div>
-                                            <p class="text-sm font-semibold text-gray-900 mt-1">${{ number_format($product->price, 2) }} each</p>
+                                            <p class="text-sm font-semibold text-gray-900 mt-1">${{ number_format($item['unit_price'], 2) }} each</p>
                                         </div>
                                     </div>
 

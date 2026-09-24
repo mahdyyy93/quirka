@@ -6,6 +6,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Support\Str;
 
 class Product extends Model
 {
@@ -14,10 +15,12 @@ class Product extends Model
     protected $fillable = [
         'supplier_id',
         'title',
+        'slug',
         'sku',
         'price',
         'is_available',
         'customizations',
+        'description',
         'printlet_artwork_id',
         'printlet_artwork_revision',
     ];
@@ -28,6 +31,37 @@ class Product extends Model
         'price' => 'decimal:2',
         'printlet_artwork_revision' => 'integer',
     ];
+
+    protected static function boot()
+    {
+        parent::boot();
+
+        static::creating(function (Product $product) {
+            if (empty($product->slug) && ! empty($product->title)) {
+                $product->slug = static::generateUniqueSlug($product->title);
+            }
+        });
+
+        static::updating(function (Product $product) {
+            if ($product->isDirty('title') && empty($product->slug)) {
+                $product->slug = static::generateUniqueSlug($product->title, $product->id);
+            }
+        });
+    }
+
+    public static function generateUniqueSlug(string $title, ?int $ignoreId = null): string
+    {
+        $slug = Str::slug($title);
+        $originalSlug = $slug;
+        $counter = 1;
+
+        while (static::where('slug', $slug)->when($ignoreId, fn ($q) => $q->where('id', '!=', $ignoreId))->exists()) {
+            $slug = "{$originalSlug}-{$counter}";
+            $counter++;
+        }
+
+        return $slug;
+    }
 
     public function supplier(): BelongsTo
     {

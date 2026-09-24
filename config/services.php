@@ -36,7 +36,7 @@ return [
     ],
 
     'printlet' => [
-        'base_url' => env('PRINTLET_BASE_URL', 'https://stg-portal.printleteg.com/api/integrations/v1'),
+        'base_url' => env('PRINTLET_BASE_URL', 'https://printleteg.com/api/integrations/v1'),
         'api_key' => env('PRINTLET_API_KEY', 'prnt_test_default_key'),
         'webhook_secret' => env('PRINTLET_WEBHOOK_SECRET', ''),
         'country_id' => env('PRINTLET_DEFAULT_COUNTRY_ID', 'c1839db2-37eb-4b21-82ea-b248aeef1e97'),

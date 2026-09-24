@@ -20,18 +20,22 @@
                     @php
                         $statusColors = [
                             'pending'              => 'bg-yellow-100 text-yellow-800 border-yellow-200',
+                            'pending_payment'      => 'bg-indigo-100 text-indigo-800 border-indigo-200',
                             'pending_verification' => 'bg-amber-100 text-amber-800 border-amber-200',
                             'processing'           => 'bg-blue-100 text-blue-800 border-blue-200',
                             'in_production'        => 'bg-indigo-100 text-indigo-800 border-indigo-200',
                             'shipped'              => 'bg-purple-100 text-purple-800 border-purple-200',
                             'delivered'            => 'bg-emerald-100 text-emerald-800 border-emerald-200',
+                            'completed'            => 'bg-emerald-100 text-emerald-800 border-emerald-200',
+                            'on_hold'              => 'bg-orange-100 text-orange-800 border-orange-200',
                             'cancelled'            => 'bg-red-100 text-red-800 border-red-200',
                         ];
-                        $badgeClass = $statusColors[$order->status] ?? 'bg-gray-100 text-gray-800 border-gray-200';
+                        $statusVal = $order->status instanceof \BackedEnum ? $order->status->value : (string) $order->status;
+                        $badgeClass = $statusColors[$statusVal] ?? 'bg-gray-100 text-gray-800 border-gray-200';
                     @endphp
 
                     <span class="font-bold px-3 py-1 rounded-full border {{ $badgeClass }} capitalize">
-                        Status: {{ str_replace('_', ' ', $order->status) }}
+                        Status: {{ $order->status instanceof \App\Enums\OrderStatus ? $order->status->label() : str_replace('_', ' ', $statusVal) }}
                     </span>
                 </div>
             </div>
@@ -186,8 +190,8 @@
                         'delivered'     => ['label' => 'Delivered', 'icon' => '🎉'],
                     ];
                     
-                    $currentStepIndex = match($order->status) {
-                        'pending', 'pending_verification' => 0,
+                    $currentStepIndex = match($order->status instanceof \BackedEnum ? $order->status->value : (string) $order->status) {
+                        'pending', 'pending_payment', 'pending_verification' => 0,
                         'processing', 'in_production' => 1,
                         'shipped' => 2,
                         'delivered', 'completed' => 3,

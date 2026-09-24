@@ -2,6 +2,8 @@
 
 namespace App\Models;
 
+use App\Enums\OrderStatus;
+use App\Enums\PrintletStatus;
 use Illuminate\Database\Eloquent\Attributes\ObservedBy;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -29,6 +31,8 @@ class Order extends Model
     ];
 
     protected $casts = [
+        'status' => OrderStatus::class,
+        'printlet_status' => PrintletStatus::class,
         'total_price' => 'decimal:2',
         'shipping_amount' => 'decimal:2',
     ];

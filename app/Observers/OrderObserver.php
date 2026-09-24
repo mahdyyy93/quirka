@@ -2,6 +2,7 @@
 
 namespace App\Observers;
 
+use App\Enums\OrderStatus;
 use App\Mail\OrderStatusUpdated;
 use App\Models\Order;
 use Illuminate\Support\Facades\Log;
@@ -32,14 +33,15 @@ class OrderObserver
         }
 
         // 2. Shipping milestone
-        if ($order->wasChanged('status') && $order->status === 'shipped') {
+        if ($order->wasChanged('status') && ($order->status === OrderStatus::SHIPPED || $order->status?->value === 'shipped')) {
             $this->dispatchStatusEmail($order, 'shipped');
 
             return;
         }
 
         // 3. Delivery milestone
-        if ($order->wasChanged('status') && in_array($order->status, ['delivered', 'completed'])) {
+        $statusValue = $order->status instanceof \BackedEnum ? $order->status->value : (string) $order->status;
+        if ($order->wasChanged('status') && in_array($statusValue, ['delivered', 'completed'])) {
             $this->dispatchStatusEmail($order, 'delivered');
 
             return;

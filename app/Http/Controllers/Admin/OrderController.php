@@ -3,9 +3,11 @@
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
+use App\Enums\OrderStatus;
 use App\Models\Order;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Validation\Rule;
 
 class OrderController extends Controller
 {
@@ -31,7 +33,7 @@ class OrderController extends Controller
     public function updateStatus(Request $request, Order $order): JsonResponse
     {
         $request->validate([
-            'status' => ['required', 'string', 'in:pending,processing,shipped,delivered,cancelled'],
+            'status' => ['required', Rule::enum(OrderStatus::class)],
         ]);
 
         $order->update(['status' => $request->status]);

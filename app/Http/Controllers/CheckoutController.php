@@ -12,6 +12,7 @@ use App\Services\PrintletApiService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
 use Illuminate\Support\Facades\Mail;
@@ -146,10 +147,10 @@ class CheckoutController extends Controller
         }
 
         $quantity = (int) ($request->quantity ?? 1);
-        $countryId = config('services.printlet.country_id', 'c1839db2-37eb-4b21-82ea-b248aeef1e97');
+        $countryId = Cache::get('printlet:egypt_country_id', config('services.printlet.country_id', 'c1839db2-37eb-4b21-82ea-b248aeef1e97'));
         $countryCode = strtoupper($request->country_code ?? config('services.printlet.country_code', 'EG'));
-        $currency = config('services.printlet.currency', 'EGP');
-        $shippingMethodId = config('services.printlet.shipping_method_id', 'sm_standard');
+        $currency = Cache::get('printlet:currency', config('services.printlet.currency', 'EGP'));
+        $shippingMethodId = Cache::get('printlet:default_shipping_method_id', config('services.printlet.shipping_method_id', 'sm_standard'));
         $runId = (string) Str::uuid();
 
         // --------------------------------------------------------------------------

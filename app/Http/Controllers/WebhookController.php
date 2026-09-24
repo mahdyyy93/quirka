@@ -5,6 +5,7 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\Log;
 
 /**
@@ -18,27 +19,42 @@ class WebhookController extends Controller
      */
     public function handle(Request $request): JsonResponse
     {
-        // 1. Verify webhook HMAC signature for authenticity
+        // 1. Verify webhook HMAC signature and timestamp for authenticity and replay protection
         if (! $this->verifySignature($request)) {
-            Log::warning('Printlet webhook signature verification failed', [
+            Log::warning('Printlet webhook signature/timestamp verification failed', [
                 'ip' => $request->ip(),
                 'headers' => $request->headers->all(),
             ]);
 
-            return response()->json(['error' => 'Invalid webhook signature'], 401);
+            return response()->json(['error' => 'Invalid or expired webhook signature'], 401);
         }
 
         $payload = $request->json()->all();
         $event = $payload['event'] ?? $payload['type'] ?? null;
+        $eventId = $payload['id'] ?? $payload['event_id'] ?? null;
         $data = $payload['data'] ?? $payload['resource'] ?? $payload;
 
         Log::info('Received Printlet webhook event', [
             'event' => $event,
+            'event_id' => $eventId,
             'printlet_order_id' => $data['id'] ?? $data['order_id'] ?? null,
         ]);
 
         if (! $event) {
             return response()->json(['message' => 'Ignored event payload without type'], 200);
+        }
+
+        // 2. Event Deduplication using atomic Cache lock (7-day TTL)
+        if ($eventId) {
+            $dedupKey = 'printlet_webhook_event:'.$eventId;
+            if (! Cache::add($dedupKey, true, now()->addDays(7))) {
+                Log::info('Printlet webhook event already processed (deduplicated)', [
+                    'event_id' => $eventId,
+                    'event' => $event,
+                ]);
+
+                return response()->json(['message' => 'Event already processed', 'event_id' => $eventId], 200);
+            }
         }
 
         // Extract printlet order ID from payload data
@@ -91,6 +107,23 @@ class WebhookController extends Controller
         if (empty($signature)) {
             // Allow unsigned webhook calls during local development testing
             return app()->isLocal();
+        }
+
+        // Reject requests with expired or future timestamp if timestamp header is provided (replay protection: 5 min window)
+        $timestamp = $request->header('X-Printlet-Timestamp')
+            ?? $request->header('X-Timestamp')
+            ?? $request->header('Timestamp');
+
+        if ($timestamp) {
+            $timestampInt = is_numeric($timestamp) ? (int) $timestamp : strtotime($timestamp);
+            if ($timestampInt && abs(time() - $timestampInt) > 300) {
+                Log::warning('Printlet webhook timestamp rejected (replay window exceeded)', [
+                    'timestamp' => $timestamp,
+                    'current_time' => time(),
+                ]);
+
+                return false;
+            }
         }
 
         $content = $request->getContent();

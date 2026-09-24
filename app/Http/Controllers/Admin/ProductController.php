@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Product;
+use App\Models\Variant;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 
@@ -58,6 +59,9 @@ class ProductController extends Controller
 
         $product = Product::create(Arr::except($validated, ['images']));
 
+        // Automatically assign standard Printlet poster variants (A4/A3 Black/White frames)
+        $this->attachDefaultPosterVariants($product);
+
         if ($request->hasFile('images')) {
             foreach ($request->file('images') as $file) {
                 $path = $file->store('products', 'public');
@@ -65,7 +69,65 @@ class ProductController extends Controller
             }
         }
 
-        return response()->json(['message' => 'Product created successfully.', 'product' => $product->load('images')]);
+        return response()->json(['message' => 'Product created successfully.', 'product' => $product->load(['images', 'variants'])]);
+    }
+
+    /**
+     * Attach standard poster variants so newly created products are immediately checkout-ready.
+     */
+    protected function attachDefaultPosterVariants(Product $product): void
+    {
+        // Check if template variants already exist in the database from other products
+        $templateVariants = Variant::where('product_id', '!=', $product->id)
+            ->get()
+            ->unique(fn ($v) => $v->printlet_variant_id);
+
+        if ($templateVariants->isNotEmpty()) {
+            foreach ($templateVariants as $template) {
+                $cleanSize = strtoupper(preg_replace('/[^a-zA-Z0-9]/', '', $template->size));
+                $cleanColor = strtoupper(preg_replace('/[^a-zA-Z0-9]/', '', $template->color));
+
+                Variant::create([
+                    'product_id' => $product->id,
+                    'size' => $template->size,
+                    'color' => $template->color,
+                    'sku' => 'POSTER-'.$product->id.'-'.$cleanSize.'-'.$cleanColor,
+                    'price' => $product->price,
+                    'printlet_variant_id' => $template->printlet_variant_id,
+                    'printlet_variant_revision' => $template->printlet_variant_revision,
+                    'printlet_print_area_id' => $template->printlet_print_area_id,
+                    'printlet_print_area_revision' => $template->printlet_print_area_revision,
+                    'printlet_technique_id' => $template->printlet_technique_id,
+                    'printlet_technique_revision' => $template->printlet_technique_revision,
+                    'placement_preset' => $template->placement_preset,
+                ]);
+            }
+        } else {
+            // Default baseline poster configurations if catalog hasn't been synced yet
+            $defaults = [
+                ['size' => 'A3', 'color' => 'Black Frame', 'printlet_variant_id' => 'v_a3_black'],
+                ['size' => 'A3', 'color' => 'White Frame', 'printlet_variant_id' => 'v_a3_white'],
+                ['size' => 'A4', 'color' => 'Black Frame', 'printlet_variant_id' => 'v_a4_black'],
+                ['size' => 'A4', 'color' => 'White Frame', 'printlet_variant_id' => 'v_a4_white'],
+            ];
+
+            foreach ($defaults as $d) {
+                $cleanSize = strtoupper(preg_replace('/[^a-zA-Z0-9]/', '', $d['size']));
+                $cleanColor = strtoupper(preg_replace('/[^a-zA-Z0-9]/', '', $d['color']));
+
+                Variant::create([
+                    'product_id' => $product->id,
+                    'size' => $d['size'],
+                    'color' => $d['color'],
+                    'sku' => 'POSTER-'.$product->id.'-'.$cleanSize.'-'.$cleanColor,
+                    'price' => $product->price,
+                    'printlet_variant_id' => $d['printlet_variant_id'],
+                    'printlet_print_area_id' => 'pa_front',
+                    'printlet_technique_id' => 'tech_digital_print',
+                    'placement_preset' => 'centered',
+                ]);
+            }
+        }
     }
 
     public function update(Request $request, Product $product)

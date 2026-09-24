@@ -54,6 +54,17 @@
   - [x] Implemented HMAC-SHA256 signature verification in `verifySignature()`.
 - [x] **Resiliency & Event Sync (`SyncPrintletEvents`)**
   - [x] Created scheduled Artisan command `php artisan printlet:sync-events` querying cursor feed to reconcile missed state updates.
+- [x] **Printlet Production Hardening & Documentation Compliance**
+  - [x] **A. Production Base URL & Credentials Configuration**
+    - Set default `base_url` to `https://printleteg.com/api/integrations/v1` in `config/services.php`.
+    - Added complete `PRINTLET_*` keys and documentation to `.env.example`.
+  - [x] **B. Webhook Replay Protection & Event Deduplication**
+    - Enforced 5-minute (300-second) window tolerance check on `X-Printlet-Timestamp` in `WebhookController::verifySignature()`.
+    - Added atomic Laravel Cache lock deduplication on incoming `event_id` with 7-day TTL in `WebhookController::handle()`.
+  - [x] **C. Poster Catalog Discovery & Sync (Egypt-focused)**
+    - Added `getCountries()`, `getShippingMethods()`, `getProducts()`, and `getProduct()` endpoints to `PrintletApiService`.
+    - Built `php artisan printlet:sync-poster-catalog` to automatically discover Egypt (`EG`), persist active shipping methods, and sync poster variants, print areas, and placement presets.
+    - Updated `CheckoutController` to prioritize discovered/cached country & shipping IDs over static fallbacks.
 
 ---
 
@@ -107,5 +118,8 @@
 | 8 | Remove `/php-info` debug route | 🟠 P1 | [x] **Completed** |
 | 9 | Product detail page (`/shop/{product}`) | 🟠 P1 | [ ] Pending |
 | 10 | Stock validation & low stock indicators | 🟠 P1 | [ ] Pending |
-| 11 | Custom favicon & brand identity | 🟡 P2 | [ ] Pending |
+| 11 | Custom favicon & brand identity | 🟡 P2 | [x] **Completed** |
 | 12 | About & Contact pages | 🟡 P2 | [ ] Pending |
+| 13 | Printlet Production URL & Live credentials switchover | 🔴 P0 | [x] **Completed** |
+| 14 | Printlet webhook replay protection & event deduplication | 🔴 P0 | [x] **Completed** |
+| 15 | Printlet Egypt poster catalog sync (variants, print areas, shipping methods) | 🟠 P1 | [x] **Completed** |

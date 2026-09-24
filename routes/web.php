@@ -16,6 +16,7 @@ use Illuminate\Support\Facades\Route;
 
 // Public storefront
 Route::get('/', [ShopController::class, 'index'])->name('shop.index');
+Route::get('/products/{product:slug}', [ShopController::class, 'show'])->name('shop.show');
 
 // Public legal & policy pages
 Route::get('/shipping', fn () => view('pages.shipping'))->name('legal.shipping');

@@ -12,9 +12,14 @@
                 <select id="statusFilter" class="border border-gray-200 rounded-lg px-3 py-2 text-sm text-gray-700 focus:outline-none focus:ring-2 focus:ring-gray-900">
                     <option value="">All Statuses</option>
                     <option value="pending">Pending</option>
+                    <option value="pending_payment">Pending Payment</option>
+                    <option value="pending_verification">Pending Verification</option>
                     <option value="processing">Processing</option>
+                    <option value="in_production">In Production</option>
                     <option value="shipped">Shipped</option>
                     <option value="delivered">Delivered</option>
+                    <option value="completed">Completed</option>
+                    <option value="on_hold">On Hold</option>
                     <option value="cancelled">Cancelled</option>
                 </select>
             </div>
@@ -30,19 +35,29 @@
 
     <script>
         const STATUS_COLORS = {
-            pending:    { bg: 'bg-yellow-100', text: 'text-yellow-800' },
-            processing: { bg: 'bg-blue-100',   text: 'text-blue-800'   },
-            shipped:    { bg: 'bg-indigo-100',  text: 'text-indigo-800' },
-            delivered:  { bg: 'bg-green-100',   text: 'text-green-800'  },
-            cancelled:  { bg: 'bg-red-100',     text: 'text-red-800'    },
+            pending:              { bg: 'bg-yellow-100', text: 'text-yellow-800' },
+            pending_payment:      { bg: 'bg-indigo-100', text: 'text-indigo-800' },
+            pending_verification: { bg: 'bg-amber-100',  text: 'text-amber-800'  },
+            processing:           { bg: 'bg-blue-100',   text: 'text-blue-800'   },
+            in_production:        { bg: 'bg-cyan-100',   text: 'text-cyan-800'   },
+            shipped:              { bg: 'bg-purple-100', text: 'text-purple-800' },
+            delivered:            { bg: 'bg-green-100',  text: 'text-green-800'  },
+            completed:            { bg: 'bg-green-100',  text: 'text-green-800'  },
+            on_hold:              { bg: 'bg-orange-100', text: 'text-orange-800' },
+            cancelled:            { bg: 'bg-red-100',    text: 'text-red-800'    },
         };
 
         const STATUS_ICONS = {
-            pending:    '🕐',
-            processing: '⚙️',
-            shipped:    '🚚',
-            delivered:  '✅',
-            cancelled:  '✖️',
+            pending:              '🕐',
+            pending_payment:      '⚡',
+            pending_verification: '🔍',
+            processing:           '⚙️',
+            in_production:        '🏭',
+            shipped:              '🚚',
+            delivered:            '✅',
+            completed:            '✅',
+            on_hold:              '⏸️',
+            cancelled:            '✖️',
         };
 
         let currentPage = 1;
@@ -56,7 +71,7 @@
         }
 
         function formatDate(iso) {
-            return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric' });
+            return new Date(iso).toLocaleDateString('en-US', { year: 'numeric', month: 'short', day: 'numeric', hour: 'numeric', minute: 'numeric' });
         }
 
         function formatPayment(method, ref) {

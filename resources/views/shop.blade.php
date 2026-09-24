@@ -23,59 +23,134 @@
                     <div class="group bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden flex flex-col hover:shadow-lg transition-shadow duration-300">
 
                         {{-- Product image --}}
-                        @if($firstImage)
-                            <div class="aspect-square overflow-hidden bg-gray-50">
+                        <a href="{{ route('shop.show', $product) }}" class="block aspect-square overflow-hidden bg-gray-50 focus:outline-none">
+                            @if($firstImage)
                                 <img
                                     src="{{ Storage::url($firstImage->path) }}"
                                     alt="{{ $product->title }}"
                                     class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500 ease-out"
                                 >
-                            </div>
-                        @else
-                            <div class="aspect-square bg-gray-50 flex items-center justify-center">
-                                <svg class="w-12 h-12 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                </svg>
-                            </div>
-                        @endif
+                            @else
+                                <div class="w-full h-full flex items-center justify-center">
+                                    <svg class="w-12 h-12 text-gray-200" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                    </svg>
+                                </div>
+                            @endif
+                        </a>
 
                         {{-- Card body --}}
                         <div class="p-5 flex flex-col flex-1">
                             <div class="flex items-start justify-between gap-2 mb-1">
-                                <h3 class="font-semibold text-gray-900 text-base leading-snug">{{ $product->title }}</h3>
+                                <h3 class="font-semibold text-gray-900 text-base leading-snug">
+                                    <a href="{{ route('shop.show', $product) }}" class="hover:text-gray-600 transition-colors">
+                                        {{ $product->title }}
+                                    </a>
+                                </h3>
                                 <span class="shrink-0 text-[11px] font-mono text-gray-400 bg-gray-50 border border-gray-100 px-1.5 py-0.5 rounded mt-0.5">
                                     {{ $product->sku }}
                                 </span>
                             </div>
 
                             @php
-                                $sizes = $product->customizations['sizes'] ?? [];
-                                if (is_string($sizes)) $sizes = array_map('trim', explode(',', $sizes));
-                                $colors = $product->customizations['colors'] ?? [];
-                                if (is_string($colors)) $colors = array_map('trim', explode(',', $colors));
+                                $variants = $product->variants;
+                                $hasVariants = $variants->isNotEmpty();
+
+                                // Extract unique sizes and colors available for this product
+                                $uniqueSizes = $hasVariants ? $variants->pluck('size')->unique()->values() : collect();
+                                $uniqueColors = $hasVariants ? $variants->pluck('color')->unique()->values() : collect();
+
+                                // Fallback to manual customizations if no variants exist
+                                if (!$hasVariants) {
+                                    $manualSizes = $product->customizations['sizes'] ?? [];
+                                    if (is_string($manualSizes)) $manualSizes = array_map('trim', explode(',', $manualSizes));
+                                    $uniqueSizes = collect($manualSizes);
+
+                                    $manualColors = $product->customizations['colors'] ?? [];
+                                    if (is_string($manualColors)) $manualColors = array_map('trim', explode(',', $manualColors));
+                                    $uniqueColors = collect($manualColors);
+                                }
+
+                                $variantsJson = $hasVariants ? $variants->map(fn($v) => [
+                                    'id' => $v->id,
+                                    'size' => $v->size,
+                                    'color' => $v->color,
+                                    'price' => (float) $v->price,
+                                    'sku' => $v->sku,
+                                ]) : collect();
+
+                                $initialVariant = $variants->first();
+                                $initialSize = $initialVariant ? $initialVariant->size : ($uniqueSizes->first() ?? '');
+                                $initialColor = $initialVariant ? $initialVariant->color : ($uniqueColors->first() ?? '');
+                                $initialPrice = $initialVariant ? (float) $initialVariant->price : (float) $product->price;
                             @endphp
 
-                            <form method="POST" action="{{ route('cart.add', $product) }}" class="space-y-3 mt-auto pt-3">
-                                @csrf
+                            <form
+                                method="POST"
+                                action="{{ route('cart.add', $product) }}"
+                                x-data="{
+                                    variants: {{ json_encode($variantsJson) }},
+                                    selectedSize: '{{ $initialSize }}',
+                                    selectedColor: '{{ $initialColor }}',
+                                    currentPrice: {{ $initialPrice }},
+                                    variantId: {{ $initialVariant ? $initialVariant->id : 'null' }},
 
-                                @if(!empty($sizes) || !empty($colors))
+                                    updateSelection() {
+                                        if (this.variants.length === 0) return;
+                                        
+                                        // Match variant by selected size and color
+                                        let matched = this.variants.find(v => 
+                                            v.size.toLowerCase() === this.selectedSize.toLowerCase() &&
+                                            v.color.toLowerCase() === this.selectedColor.toLowerCase()
+                                        );
+
+                                        // If exact color match not found for this size, pick first color with this size
+                                        if (!matched) {
+                                            matched = this.variants.find(v => v.size.toLowerCase() === this.selectedSize.toLowerCase());
+                                            if (matched) {
+                                                this.selectedColor = matched.color;
+                                            }
+                                        }
+
+                                        if (matched) {
+                                            this.variantId = matched.id;
+                                            this.currentPrice = matched.price;
+                                        }
+                                    }
+                                }"
+                                class="space-y-3 mt-auto pt-3"
+                            >
+                                @csrf
+                                <input type="hidden" name="variant_id" :value="variantId">
+
+                                @if($uniqueSizes->isNotEmpty() || $uniqueColors->isNotEmpty())
                                     <div class="grid grid-cols-2 gap-2 text-xs">
-                                        @if(!empty($sizes))
+                                        @if($uniqueSizes->isNotEmpty())
                                             <div>
                                                 <label class="block text-gray-500 font-medium mb-1">Size</label>
-                                                <select name="size" class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs bg-gray-50 focus:bg-white focus:ring-1 focus:ring-gray-900 focus:outline-none">
-                                                    @foreach($sizes as $sz)
+                                                <select
+                                                    name="size"
+                                                    x-model="selectedSize"
+                                                    @change="updateSelection()"
+                                                    class="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs bg-gray-50 font-medium text-gray-800 focus:bg-white focus:ring-1 focus:ring-gray-900 focus:outline-none transition-colors"
+                                                >
+                                                    @foreach($uniqueSizes as $sz)
                                                         <option value="{{ $sz }}">{{ $sz }}</option>
                                                     @endforeach
                                                 </select>
                                             </div>
                                         @endif
 
-                                        @if(!empty($colors))
+                                        @if($uniqueColors->isNotEmpty())
                                             <div>
-                                                <label class="block text-gray-500 font-medium mb-1">Color</label>
-                                                <select name="color" class="w-full border border-gray-200 rounded-lg px-2 py-1.5 text-xs bg-gray-50 focus:bg-white focus:ring-1 focus:ring-gray-900 focus:outline-none">
-                                                    @foreach($colors as $cl)
+                                                <label class="block text-gray-500 font-medium mb-1">Frame Color</label>
+                                                <select
+                                                    name="color"
+                                                    x-model="selectedColor"
+                                                    @change="updateSelection()"
+                                                    class="w-full border border-gray-200 rounded-lg px-2.5 py-1.5 text-xs bg-gray-50 font-medium text-gray-800 focus:bg-white focus:ring-1 focus:ring-gray-900 focus:outline-none transition-colors"
+                                                >
+                                                    @foreach($uniqueColors as $cl)
                                                         <option value="{{ $cl }}">{{ $cl }}</option>
                                                     @endforeach
                                                 </select>
@@ -84,9 +159,11 @@
                                     </div>
                                 @endif
 
+                                {{-- Price display with instant Alpine reaction --}}
                                 <div class="flex items-center justify-between pt-1">
                                     <span class="text-2xl font-bold text-gray-900">
-                                        ${{ number_format($product->price, 2) }}
+                                        <span class="text-lg font-normal text-gray-500">EGP</span>
+                                        <span x-text="parseFloat(currentPrice).toFixed(2)">{{ number_format($initialPrice, 2) }}</span>
                                     </span>
                                 </div>
 
@@ -101,7 +178,7 @@
                                     >
                                     <button
                                         type="submit"
-                                        class="flex-1 bg-gray-900 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-gray-700 active:scale-[0.98] transition-all duration-150"
+                                        class="flex-1 bg-gray-900 text-white text-sm font-semibold px-4 py-2 rounded-lg hover:bg-gray-700 active:scale-[0.98] transition-all duration-150 shadow-sm"
                                     >
                                         Add to Cart
                                     </button>

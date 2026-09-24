@@ -11,11 +11,14 @@
                             <select id="statusFilter" class="border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-700 bg-white focus:ring-2 focus:ring-gray-900 focus:outline-none">
                                 <option value="">All Statuses</option>
                                 <option value="pending">Pending</option>
+                                <option value="pending_payment">Pending Payment</option>
                                 <option value="pending_verification">Pending Verification</option>
                                 <option value="processing">Processing</option>
                                 <option value="in_production">In Production</option>
                                 <option value="shipped">Shipped</option>
                                 <option value="delivered">Delivered</option>
+                                <option value="completed">Completed</option>
+                                <option value="on_hold">On Hold</option>
                                 <option value="cancelled">Cancelled</option>
                             </select>
                         </div>
@@ -102,11 +105,14 @@
                                     <label class="text-sm font-medium text-gray-700">Status:</label>
                                     <select id="modalStatus" class="border border-gray-300 rounded px-3 py-1.5 text-sm">
                                         <option value="pending">Pending</option>
+                                        <option value="pending_payment">Pending Payment</option>
                                         <option value="pending_verification">Pending Verification</option>
                                         <option value="processing">Processing</option>
                                         <option value="in_production">In Production</option>
                                         <option value="shipped">Shipped</option>
                                         <option value="delivered">Delivered</option>
+                                        <option value="completed">Completed</option>
+                                        <option value="on_hold">On Hold</option>
                                         <option value="cancelled">Cancelled</option>
                                     </select>
                                     <button onclick="saveStatus()" class="bg-gray-900 text-white px-3 py-1.5 rounded text-sm hover:bg-gray-700">Save</button>
@@ -122,11 +128,14 @@
 
                         const statusColors = {
                             pending:              'bg-yellow-100 text-yellow-800',
+                            pending_payment:      'bg-indigo-100 text-indigo-800',
                             pending_verification: 'bg-amber-100 text-amber-800',
                             processing:           'bg-blue-100 text-blue-800',
-                            in_production:        'bg-indigo-100 text-indigo-800',
+                            in_production:        'bg-cyan-100 text-cyan-800',
                             shipped:              'bg-purple-100 text-purple-800',
                             delivered:            'bg-green-100 text-green-800',
+                            completed:            'bg-green-100 text-green-800',
+                            on_hold:              'bg-orange-100 text-orange-800',
                             cancelled:            'bg-red-100 text-red-800',
                         };
 
@@ -366,11 +375,14 @@
                         <select id="customerStatusFilter" class="border border-gray-300 rounded px-3 py-2 text-sm">
                             <option value="">All Statuses</option>
                             <option value="pending">Pending</option>
+                            <option value="pending_payment">Pending Payment</option>
                             <option value="pending_verification">Pending Verification</option>
                             <option value="processing">Processing</option>
                             <option value="in_production">In Production</option>
                             <option value="shipped">Shipped</option>
                             <option value="delivered">Delivered</option>
+                            <option value="completed">Completed</option>
+                            <option value="on_hold">On Hold</option>
                             <option value="cancelled">Cancelled</option>
                         </select>
                     </div>
@@ -397,11 +409,14 @@
 
                         const myStatusColors = {
                             pending:              'bg-yellow-100 text-yellow-800',
+                            pending_payment:      'bg-indigo-100 text-indigo-800',
                             pending_verification: 'bg-amber-100 text-amber-800',
                             processing:           'bg-blue-100 text-blue-800',
-                            in_production:        'bg-indigo-100 text-indigo-800',
+                            in_production:        'bg-cyan-100 text-cyan-800',
                             shipped:              'bg-purple-100 text-purple-800',
                             delivered:            'bg-green-100 text-green-800',
+                            completed:            'bg-green-100 text-green-800',
+                            on_hold:              'bg-orange-100 text-orange-800',
                             cancelled:            'bg-red-100 text-red-800',
                         };
 

@@ -4,7 +4,21 @@
         foreach ($cart as $productId => $item) {
             $p = $products->get($productId);
             if ($p) {
-                $cartTotal += $p->price * ($item['quantity'] ?? 1);
+                $variant = null;
+                if (!empty($item['variant_id'])) {
+                    $variant = $p->variants->firstWhere('id', $item['variant_id']);
+                }
+                if (!$variant && !empty($item['size'])) {
+                    $variant = $p->variants->first(function ($v) use ($item) {
+                        $match = strtolower($v->size) === strtolower($item['size']);
+                        if (!empty($item['color'])) {
+                            $match = $match && strtolower($v->color) === strtolower($item['color']);
+                        }
+                        return $match;
+                    });
+                }
+                $price = $variant ? (float) $variant->price : (float) $p->price;
+                $cartTotal += $price * ($item['quantity'] ?? 1);
             }
         }
     @endphp
@@ -146,15 +160,29 @@
                                 @php
                                     $product = $products->get($productId);
                                     if (!$product) continue;
-                                    $subtotal = $product->price * $item['quantity'];
+                                    $variant = null;
+                                    if (!empty($item['variant_id'])) {
+                                        $variant = $product->variants->firstWhere('id', $item['variant_id']);
+                                    }
+                                    if (!$variant && !empty($item['size'])) {
+                                        $variant = $product->variants->first(function ($v) use ($item) {
+                                            $match = strtolower($v->size) === strtolower($item['size']);
+                                            if (!empty($item['color'])) {
+                                                $match = $match && strtolower($v->color) === strtolower($item['color']);
+                                            }
+                                            return $match;
+                                        });
+                                    }
+                                    $itemPrice = $variant ? (float) $variant->price : (float) $product->price;
+                                    $subtotal = $itemPrice * $item['quantity'];
                                 @endphp
                                 <div class="flex justify-between text-sm">
                                     <div class="truncate mr-2">
                                         <span class="text-gray-700 font-medium">{{ $product->title }}</span>
                                         <span class="text-gray-400">×{{ $item['quantity'] }}</span>
-                                        @if(!empty($item['size']) || !empty($item['color']))
+                                        @if($variant || !empty($item['size']) || !empty($item['color']))
                                             <div class="text-[11px] text-gray-500">
-                                                {{ implode(' / ', array_filter([$item['size'] ?? null, $item['color'] ?? null])) }}
+                                                {{ implode(' / ', array_filter([$variant?->size ?? ($item['size'] ?? null), $variant?->color ?? ($item['color'] ?? null)])) }}
                                             </div>
                                         @endif
                                     </div>
