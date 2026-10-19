@@ -188,35 +188,38 @@
                                 </div>
                             </div>
 
-                            {{-- Lightbox Zoom Modal --}}
-                            <div
-                                x-show="zoomOpen"
-                                x-cloak
-                                x-transition:enter="transition ease-out duration-200"
-                                x-transition:enter-start="opacity-0"
-                                x-transition:enter-end="opacity-100"
-                                x-transition:leave="transition ease-in duration-150"
-                                x-transition:leave-start="opacity-100"
-                                x-transition:leave-end="opacity-0"
-                                class="fixed inset-0 z-50 bg-black/90 backdrop-blur-md flex items-center justify-center p-4 sm:p-8"
-                                @click.self="zoomOpen = false"
-                                @keydown.escape.window="zoomOpen = false"
-                            >
-                                <button
-                                    @click="zoomOpen = false"
-                                    class="absolute top-6 right-6 text-white/80 hover:text-white p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                            {{-- Lightbox Zoom Modal (Teleported to body to avoid stacking context & z-index issues) --}}
+                            <template x-teleport="body">
+                                <div
+                                    x-show="zoomOpen"
+                                    x-cloak
+                                    x-transition:enter="transition ease-out duration-200"
+                                    x-transition:enter-start="opacity-0"
+                                    x-transition:enter-end="opacity-100"
+                                    x-transition:leave="transition ease-in duration-150"
+                                    x-transition:leave-start="opacity-100"
+                                    x-transition:leave-end="opacity-0"
+                                    class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 sm:p-8"
+                                    @click.self="zoomOpen = false"
+                                    @keydown.escape.window="zoomOpen = false"
                                 >
-                                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                    </svg>
-                                </button>
-                                <img
-                                    :src="images[activeImageIndex]"
-                                    src="{{ $imageUrls->first() }}"
-                                    alt="{{ $product->title }}"
-                                    class="max-h-[90vh] max-w-[90vw] object-contain rounded-xl shadow-2xl"
-                                >
-                            </div>
+                                    <button
+                                        type="button"
+                                        @click="zoomOpen = false"
+                                        class="absolute top-6 right-6 text-white/80 hover:text-white p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
+                                    >
+                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+                                        </svg>
+                                    </button>
+                                    <img
+                                        :src="images[activeImageIndex]"
+                                        src="{{ $imageUrls->first() }}"
+                                        alt="{{ $product->title }}"
+                                        class="max-h-[90vh] max-w-[90vw] object-contain rounded-xl shadow-2xl"
+                                    >
+                                </div>
+                            </template>
                         </div>
 
                         {{-- Thumbnails side strip (to the right of the main image) --}}
