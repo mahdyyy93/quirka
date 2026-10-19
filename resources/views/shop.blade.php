@@ -5,12 +5,12 @@
             {{-- Banner --}}
             <div class="mb-12 text-center">
                 <h1 class="text-[40px] font-semibold tracking-[0.16em] text-gray-800 uppercase">
-                    On-demand printed Museum-quality posters
+                    On-demand printed works of art
                 </h1>
                 <br>
                 <div class="flex items-center justify-center gap-4 mb-5">
                     <span class="flex-1 h-px bg-gray-200 max-w-[120px]"></span>
-                    <span class="text-[10px] font-semibold tracking-[0.25em] text-gray-400 uppercase">Collection</span>
+                    <span class="text-[10px] font-semibold tracking-[0.25em] text-gray-500 uppercase">ARTISTS' Collection</span>
                     <span class="flex-1 h-px bg-gray-200 max-w-[120px]"></span>
                 </div>
             </div>
@@ -97,9 +97,9 @@
 
                                     updateSelection() {
                                         if (this.variants.length === 0) return;
-                                        
+
                                         // Match variant by selected size and color
-                                        let matched = this.variants.find(v => 
+                                        let matched = this.variants.find(v =>
                                             v.size.toLowerCase() === this.selectedSize.toLowerCase() &&
                                             v.color.toLowerCase() === this.selectedColor.toLowerCase()
                                         );

@@ -18,7 +18,7 @@
                                 <th class="px-4 py-3.5 font-semibold">Title</th>
                                 <th class="px-4 py-3.5 font-semibold">Price</th>
                                 <th class="px-4 py-3.5 font-semibold">Images</th>
-                                <th class="px-4 py-3.5 font-semibold">Supplier</th>
+                                <th class="px-4 py-3.5 font-semibold">Artist</th>
                                 <th class="px-4 py-3.5 font-semibold">Availability</th>
                                 <th class="px-4 py-3.5 font-semibold text-right">Actions</th>
                             </tr>
@@ -55,14 +55,6 @@
                     <label class="block text-sm font-medium text-gray-700">Price</label>
                     <input type="number" id="productPrice" step="0.01" required class="mt-1 w-full border border-gray-300 rounded px-3 py-2">
                     <p class="text-red-500 text-xs mt-1 hidden error-msg" id="error-price"></p>
-                </div>
-
-                <div class="mb-4">
-                    <label class="block text-sm font-medium text-gray-700">Supplier</label>
-                    <select id="productSupplier" required class="mt-1 w-full border border-gray-300 rounded px-3 py-2">
-                        <option value="">Select Supplier...</option>
-                    </select>
-                    <p class="text-red-500 text-xs mt-1 hidden error-msg" id="error-supplier_id"></p>
                 </div>
 
                 <div class="mb-4 bg-gray-50 border border-gray-200 rounded-xl p-3.5 space-y-3">
@@ -107,22 +99,6 @@
     <script>
         // Global map to store product data for editing
         let currentProducts = {};
-        let suppliers = [];
-
-        async function fetchSuppliers() {
-            const res = await fetch('/admin/suppliers');
-            suppliers = await res.json();
-            const select = document.getElementById('productSupplier');
-
-            // Keep the first default option
-            select.innerHTML = '<option value="">Select Supplier...</option>';
-            suppliers.forEach(sup => {
-                const opt = document.createElement('option');
-                opt.value = sup.id;
-                opt.textContent = sup.name;
-                select.appendChild(opt);
-            });
-        }
 
         async function fetchProducts(search = '') {
             const res = await fetch(`/admin/products?search=${search}`);
@@ -157,7 +133,7 @@
                     </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${product.price}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${product.images ? product.images.length : 0} img(s)</td>
-                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${product.supplier ? product.supplier.name : 'None'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${product.user ? product.user.name : 'None'}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${product.is_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
                             ${product.is_available ? 'Active' : 'Hidden'}
@@ -207,7 +183,6 @@
             document.getElementById('productTitle').value = product.title;
             document.getElementById('productSku').value = product.sku;
             document.getElementById('productPrice').value = product.price;
-            document.getElementById('productSupplier').value = product.supplier_id || '';
 
             // Populate Sizes and Colors from customizations object
             const cust = product.customizations || {};
@@ -264,7 +239,6 @@
             formData.append('title', document.getElementById('productTitle').value);
             formData.append('sku', document.getElementById('productSku').value);
             formData.append('price', document.getElementById('productPrice').value);
-            formData.append('supplier_id', document.getElementById('productSupplier').value);
 
             if (customizations) {
                 formData.append('customizations', customizations);
@@ -355,6 +329,6 @@
         });
 
         // Initialize
-        fetchSuppliers().then(() => fetchProducts());
+        fetchProducts();
     </script>
 </x-app-layout>

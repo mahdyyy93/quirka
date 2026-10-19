@@ -246,7 +246,7 @@
                         <div class="mb-4">
                             <div class="flex items-center justify-between gap-3 mb-2">
                                 <span class="text-xs font-semibold tracking-wider uppercase text-gray-400">
-                                    {{ $product->supplier->name ?? 'Museum Collection' }}
+                                    {{ $product->user->name ?? 'Museum Collection' }}
                                 </span>
                                 <span class="text-[11px] font-mono text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md">
                                     {{ $product->sku }}

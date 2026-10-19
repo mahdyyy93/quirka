@@ -3,7 +3,7 @@
 namespace Tests\Feature;
 
 use App\Models\Product;
-use App\Models\Supplier;
+use App\Models\User;
 use App\Models\Variant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
@@ -14,13 +14,7 @@ class ProductDetailTest extends TestCase
 
     private function createProductWithVariants(array $attributes = []): Product
     {
-        $supplier = Supplier::create([
-            'name' => 'Test Art Studio',
-            'email' => 'contact@testart.com',
-        ]);
-
         $product = Product::create(array_merge([
-            'supplier_id' => $supplier->id,
             'title' => 'Vintage Botanical Print',
             'sku' => 'BOT-001',
             'price' => 250.00,
@@ -110,7 +104,7 @@ class ProductDetailTest extends TestCase
 
     public function test_admin_can_toggle_update_and_delete_product_by_id(): void
     {
-        $admin = \App\Models\User::factory()->create([
+        $admin = User::factory()->create([
             'role' => 'admin',
         ]);
 
@@ -126,7 +120,6 @@ class ProductDetailTest extends TestCase
             'title' => 'Updated Vintage Poster',
             'sku' => 'BOT-001-UPDATED',
             'price' => 310.00,
-            'supplier_id' => $product->supplier_id,
         ]);
         $updateResponse->assertStatus(200);
         $this->assertEquals('Updated Vintage Poster', $product->fresh()->title);

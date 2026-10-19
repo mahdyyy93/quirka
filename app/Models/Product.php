@@ -13,7 +13,7 @@ class Product extends Model
     use HasFactory;
 
     protected $fillable = [
-        'supplier_id',
+        'user_id',
         'title',
         'slug',
         'sku',
@@ -63,9 +63,9 @@ class Product extends Model
         return $slug;
     }
 
-    public function supplier(): BelongsTo
+    public function user(): BelongsTo
     {
-        return $this->belongsTo(Supplier::class);
+        return $this->belongsTo(User::class);
     }
 
     public function variants(): HasMany

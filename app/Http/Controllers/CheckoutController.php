@@ -2,7 +2,6 @@
 
 namespace App\Http\Controllers;
 
-use App\Mail\OrderConfirmed;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\Product;
@@ -15,7 +14,6 @@ use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Log;
-use Illuminate\Support\Facades\Mail;
 use Illuminate\Support\Str;
 use Illuminate\View\View;
 
@@ -42,7 +40,7 @@ class CheckoutController extends Controller
         }
 
         $productIds = array_keys($cart);
-        $products = Product::with(['supplier', 'variants'])
+        $products = Product::with(['variants'])
             ->whereIn('id', $productIds)
             ->where('is_available', true)
             ->get()

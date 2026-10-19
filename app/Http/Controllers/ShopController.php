@@ -26,7 +26,7 @@ class ShopController extends Controller
         $product->load([
             'images',
             'variants',
-            'supplier',
+            'user',
             'stockLevels',
         ]);
 

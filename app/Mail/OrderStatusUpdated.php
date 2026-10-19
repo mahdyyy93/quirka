@@ -60,21 +60,21 @@ class OrderStatusUpdated extends Mailable implements ShouldQueue
     protected function getHeadline(): string
     {
         return match ($this->statusKey) {
-            'confirmed' => "Your order is confirmed! 🎉",
-            'payment_verified' => "Payment Verified & Approved! ⚡",
-            'shipped' => "Your package is on its way! 🚚",
-            'delivered' => "Your package has arrived! 🎁",
-            default => "Order status updated",
+            'confirmed' => 'Your order is confirmed! 🎉',
+            'payment_verified' => 'Payment Verified & Approved! ⚡',
+            'shipped' => 'Your package is on its way! 🚚',
+            'delivered' => 'Your package has arrived! 🎁',
+            default => 'Order status updated',
         };
     }
 
     protected function getStatusBadge(): string
     {
         return match ($this->statusKey) {
-            'confirmed' => "Order Placed & Confirmed",
-            'payment_verified' => "Payment Confirmed — In Production",
-            'shipped' => "Dispatched / Out for Delivery",
-            'delivered' => "Successfully Delivered",
+            'confirmed' => 'Order Placed & Confirmed',
+            'payment_verified' => 'Payment Confirmed — In Production',
+            'shipped' => 'Dispatched / Out for Delivery',
+            'delivered' => 'Successfully Delivered',
             default => ucfirst(str_replace('_', ' ', $this->statusKey)),
         };
     }
@@ -83,10 +83,10 @@ class OrderStatusUpdated extends Mailable implements ShouldQueue
     {
         return match ($this->statusKey) {
             'confirmed' => "We've received your order and our fulfillment team has been notified. We will update you as soon as your items are printed and dispatched.",
-            'payment_verified' => "Your payment has been successfully confirmed. Your customized print-on-demand items are now being printed with premium quality.",
-            'shipped' => "Your order has been printed, packaged, and handed over to the courier. It is now on its way to your delivery address.",
+            'payment_verified' => 'Your payment has been successfully confirmed. Your customized print-on-demand items are now being printed with premium quality.',
+            'shipped' => 'Your order has been printed, packaged, and handed over to the courier. It is now on its way to your delivery address.',
             'delivered' => "Our courier has marked your order as delivered. We hope you love your new items! If you need anything, we're always here to help.",
-            default => "Your order status has been updated. You can check the current progress anytime in your account.",
+            default => 'Your order status has been updated. You can check the current progress anytime in your account.',
         };
     }
 

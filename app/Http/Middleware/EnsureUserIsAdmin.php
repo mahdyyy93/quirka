@@ -10,10 +10,23 @@ class EnsureUserIsAdmin
 {
     public function handle(Request $request, Closure $next): Response
     {
-        if (! auth()->check() || auth()->user()->role !== 'admin') {
+        if (! auth()->check()) {
             abort(403, 'Unauthorized access.');
         }
 
-        return $next($request);
+        $user = auth()->user();
+
+        if (
+            $user->hasRole('admin') ||
+            $user->role === 'admin' ||
+            $user->can('products.view') ||
+            $user->can('orders.view') ||
+            $user->can('customers.view') ||
+            $user->can('roles.view')
+        ) {
+            return $next($request);
+        }
+
+        abort(403, 'Unauthorized access.');
     }
 }

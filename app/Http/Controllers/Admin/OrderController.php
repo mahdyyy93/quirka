@@ -2,8 +2,8 @@
 
 namespace App\Http\Controllers\Admin;
 
-use App\Http\Controllers\Controller;
 use App\Enums\OrderStatus;
+use App\Http\Controllers\Controller;
 use App\Models\Order;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\Request;
@@ -13,7 +13,22 @@ class OrderController extends Controller
 {
     public function index(Request $request): JsonResponse
     {
-        $orders = Order::with(['customer.user', 'items.product'])
+        $user = $request->user();
+
+        $query = Order::query();
+
+        if ($user && ! $user->can('orders.view-all')) {
+            // Artists only see orders containing their products, with only their items loaded
+            $query->whereHas('items.product', fn ($q) => $q->where('user_id', $user->id))
+                ->with([
+                    'customer.user',
+                    'items' => fn ($iq) => $iq->whereHas('product', fn ($pq) => $pq->where('user_id', $user->id))->with('product'),
+                ]);
+        } else {
+            $query->with(['customer.user', 'items.product']);
+        }
+
+        $orders = $query
             ->when($request->status, fn ($q, $s) => $q->where('status', $s))
             ->when($request->search, function ($q, $s) {
                 $q->where(function ($query) use ($s) {
@@ -32,6 +47,10 @@ class OrderController extends Controller
 
     public function updateStatus(Request $request, Order $order): JsonResponse
     {
+        if (! $request->user()?->can('orders.update-status')) {
+            abort(403, 'Unauthorized. You do not have permission to update orders.');
+        }
+
         $request->validate([
             'status' => ['required', Rule::enum(OrderStatus::class)],
         ]);

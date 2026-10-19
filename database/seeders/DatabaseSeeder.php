@@ -5,7 +5,6 @@ namespace Database\Seeders;
 use App\Models\Customer;
 use App\Models\Product;
 use App\Models\StockLevel;
-use App\Models\Supplier;
 use App\Models\User;
 use Illuminate\Database\Seeder;
 
@@ -13,6 +12,8 @@ class DatabaseSeeder extends Seeder
 {
     public function run(): void
     {
+        $this->call(RolesAndPermissionsSeeder::class);
+
         $admin = User::factory()->create([
             'name' => 'Admin User',
             'email' => 'admin@example.com',
@@ -31,12 +32,15 @@ class DatabaseSeeder extends Seeder
             'email' => $customerUser->email,
         ]);
 
-        $suppliers = Supplier::factory(2)->create();
+        $artist = User::factory()->create([
+            'name' => 'Featured Artist',
+            'email' => 'artist@example.com',
+            'role' => 'artist',
+        ]);
 
-        Product::factory(5)->make()->each(function ($product) use ($suppliers) {
-            $product->supplier_id = $suppliers->random()->id;
-            $product->save();
-
+        Product::factory(5)->create([
+            'user_id' => $artist->id,
+        ])->each(function ($product) {
             StockLevel::factory(rand(1, 2))->create([
                 'product_id' => $product->id,
             ]);

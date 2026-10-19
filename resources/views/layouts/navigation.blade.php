@@ -12,29 +12,39 @@
 
                 <!-- Navigation Links -->
                 <div class="hidden space-x-6 sm:-my-px sm:flex">
-                    @if(auth()->user()?->role === 'admin')
+                    <x-nav-link :href="route('shop.index')" :active="request()->routeIs('shop.index')">
+                        {{ __('Shop') }}
+                    </x-nav-link>
+
+                    @auth
+                        <x-nav-link :href="route('my-orders.index')" :active="request()->routeIs('my-orders.*')">
+                            {{ __('My Orders') }}
+                        </x-nav-link>
+                    @endauth
+
+                    @can('products.view')
                         <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                             {{ __('Products') }}
                         </x-nav-link>
-                        <x-nav-link :href="route('suppliers.index')" :active="request()->routeIs('suppliers.*')">
-                            {{ __('Suppliers') }}
-                        </x-nav-link>
+                    @endcan
+
+                    @can('orders.view')
                         <x-nav-link :href="route('orders.index')" :active="request()->routeIs('orders.*')">
                             {{ __('Orders') }}
                         </x-nav-link>
+                    @endcan
+
+                    @can('customers.view')
                         <x-nav-link :href="route('customers.index')" :active="request()->routeIs('customers.*')">
                             {{ __('Customers') }}
                         </x-nav-link>
-                    @else
-                        <x-nav-link :href="route('shop.index')" :active="request()->routeIs('shop.index')">
-                            {{ __('Shop') }}
+                    @endcan
+
+                    @can('roles.view')
+                        <x-nav-link :href="route('roles.index')" :active="request()->routeIs('roles.*')">
+                            {{ __('Roles & Permissions') }}
                         </x-nav-link>
-                        @auth
-                            <x-nav-link :href="route('my-orders.index')" :active="request()->routeIs('my-orders.*')">
-                                {{ __('My Orders') }}
-                            </x-nav-link>
-                        @endauth
-                    @endif
+                    @endcan
                 </div>
             </div>
 
@@ -132,29 +142,39 @@
     <!-- Mobile Navigation Drawer -->
     <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden bg-white border-b border-gray-200">
         <div class="pt-2 pb-3 space-y-1">
-            @if(auth()->user()?->role === 'admin')
+            <x-responsive-nav-link :href="route('shop.index')" :active="request()->routeIs('shop.index')">
+                {{ __('Shop') }}
+            </x-responsive-nav-link>
+
+            @auth
+                <x-responsive-nav-link :href="route('my-orders.index')" :active="request()->routeIs('my-orders.*')">
+                    {{ __('My Orders') }}
+                </x-responsive-nav-link>
+            @endauth
+
+            @can('products.view')
                 <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')">
                     {{ __('Products') }}
                 </x-responsive-nav-link>
-                <x-responsive-nav-link :href="route('suppliers.index')" :active="request()->routeIs('suppliers.*')">
-                    {{ __('Suppliers') }}
-                </x-responsive-nav-link>
+            @endcan
+
+            @can('orders.view')
                 <x-responsive-nav-link :href="route('orders.index')" :active="request()->routeIs('orders.*')">
                     {{ __('Orders') }}
                 </x-responsive-nav-link>
+            @endcan
+
+            @can('customers.view')
                 <x-responsive-nav-link :href="route('customers.index')" :active="request()->routeIs('customers.*')">
                     {{ __('Customers') }}
                 </x-responsive-nav-link>
-            @else
-                <x-responsive-nav-link :href="route('shop.index')" :active="request()->routeIs('shop.index')">
-                    {{ __('Shop') }}
+            @endcan
+
+            @can('roles.view')
+                <x-responsive-nav-link :href="route('roles.index')" :active="request()->routeIs('roles.*')">
+                    {{ __('Roles & Permissions') }}
                 </x-responsive-nav-link>
-                @auth
-                    <x-responsive-nav-link :href="route('my-orders.index')" :active="request()->routeIs('my-orders.*')">
-                        {{ __('My Orders') }}
-                    </x-responsive-nav-link>
-                @endauth
-            @endif
+            @endcan
         </div>
 
         @auth

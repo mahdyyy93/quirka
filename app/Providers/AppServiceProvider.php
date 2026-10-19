@@ -2,14 +2,13 @@
 
 namespace App\Providers;
 
-use App\Contracts\SupplierSyncServiceInterface;
 use App\Payments\CashOnDeliveryPayment;
 use App\Payments\InstapayPayment;
-use App\Services\MockSupplierSyncService;
 use App\Services\PaymentService;
 use Carbon\CarbonImmutable;
 use Illuminate\Support\Facades\Date;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Gate;
 use Illuminate\Support\Facades\URL;
 use Illuminate\Support\ServiceProvider;
 use Illuminate\Validation\Rules\Password;
@@ -21,8 +20,6 @@ class AppServiceProvider extends ServiceProvider
      */
     public function register(): void
     {
-        $this->app->bind(SupplierSyncServiceInterface::class, MockSupplierSyncService::class);
-
         $this->app->singleton(PaymentService::class, function () {
             $service = new PaymentService;
 
@@ -43,6 +40,10 @@ class AppServiceProvider extends ServiceProvider
         if (app()->isProduction()) {
             URL::forceScheme('https');
         }
+
+        Gate::before(function ($user, string $ability) {
+            return ($user->hasRole('admin') || $user->role === 'admin') ? true : null;
+        });
 
         $this->configureDefaults();
     }

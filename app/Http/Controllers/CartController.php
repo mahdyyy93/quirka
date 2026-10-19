@@ -17,7 +17,7 @@ class CartController extends Controller
         $cart = session()->get('cart', []);
 
         $productIds = array_keys($cart);
-        $products = Product::with(['supplier', 'variants', 'images'])
+        $products = Product::with(['variants', 'images'])
             ->whereIn('id', $productIds)
             ->where('is_available', true)
             ->get()

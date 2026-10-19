@@ -12,7 +12,12 @@ class ProductController extends Controller
 {
     public function index(Request $request)
     {
-        $query = Product::with(['supplier', 'stockLevels', 'images']);
+        $user = $request->user();
+        $query = Product::with(['user', 'stockLevels', 'images']);
+
+        if ($user && ! $user->can('products.view-all')) {
+            $query->where('user_id', $user->id);
+        }
 
         if ($search = $request->get('search')) {
             $query->where(function ($q) use ($search) {
@@ -30,8 +35,13 @@ class ProductController extends Controller
         return response()->json($query->paginate(15));
     }
 
-    public function toggleAvailability(Product $product)
+    public function toggleAvailability(Request $request, Product $product)
     {
+        $user = $request->user();
+        if ($user && ! $user->can('products.view-all') && $product->user_id !== $user->id) {
+            abort(403, 'Unauthorized.');
+        }
+
         $product->is_available = ! $product->is_available;
         $product->save();
 
@@ -47,7 +57,6 @@ class ProductController extends Controller
             'title' => 'required|string|max:255',
             'sku' => 'required|string|max:255|unique:products,sku',
             'price' => 'required|numeric|min:0',
-            'supplier_id' => 'required|exists:suppliers,id',
             'customizations' => 'nullable|string',
             'images' => 'nullable|array',
             'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:2048',
@@ -57,7 +66,12 @@ class ProductController extends Controller
             $validated['customizations'] = json_decode($validated['customizations'], true);
         }
 
-        $product = Product::create(Arr::except($validated, ['images']));
+        $data = Arr::except($validated, ['images']);
+        if ($request->user()) {
+            $data['user_id'] = $request->user()->id;
+        }
+
+        $product = Product::create($data);
 
         // Automatically assign standard Printlet poster variants (A4/A3 Black/White frames)
         $this->attachDefaultPosterVariants($product);
@@ -132,16 +146,15 @@ class ProductController extends Controller
 
     public function update(Request $request, Product $product)
     {
-        //         dd([
-        //     'has_file' => $request->hasFile('images'),
-        //     'files' => $request->file('images'),
-        //     'all' => $request->all(),
-        // ]);
+        $user = $request->user();
+        if ($user && ! $user->can('products.view-all') && $product->user_id !== $user->id) {
+            abort(403, 'Unauthorized.');
+        }
+
         $validated = $request->validate([
             'title' => 'required|string|max:255',
             'sku' => 'required|string|max:255|unique:products,sku,'.$product->id,
             'price' => 'required|numeric|min:0',
-            'supplier_id' => 'required|exists:suppliers,id',
             'customizations' => 'nullable|string',
             'images' => 'nullable|array',
             'images.*' => 'image|mimes:jpeg,png,jpg,gif,webp|max:5048',
@@ -164,8 +177,13 @@ class ProductController extends Controller
         return response()->json(['message' => 'Product updated successfully.', 'product' => $product->load('images')]);
     }
 
-    public function destroy(Product $product)
+    public function destroy(Request $request, Product $product)
     {
+        $user = $request->user();
+        if ($user && ! $user->can('products.view-all') && $product->user_id !== $user->id) {
+            abort(403, 'Unauthorized.');
+        }
+
         $product->delete();
 
         return response()->json(['message' => 'Product deleted successfully.']);

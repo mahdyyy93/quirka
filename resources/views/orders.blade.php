@@ -3,8 +3,8 @@
         <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8">
 
-                    @if(auth()->user()?->role === 'admin')
-                    {{-- ───────────────── ADMIN VIEW ───────────────── --}}
+                    @if(auth()->user()?->can('orders.view'))
+                    {{-- ───────────────── ADMIN / ARTIST ORDERS VIEW ───────────────── --}}
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                         <input type="text" id="searchInput" placeholder="Search customer name, email, or order ID..." class="border border-gray-200 rounded-xl px-4 py-2.5 text-sm w-full max-w-md focus:ring-2 focus:ring-gray-900 focus:outline-none">
                         <div class="flex items-center gap-3 shrink-0">
@@ -66,6 +66,7 @@
                             </div>
 
                             <!-- COD Verification Action Banner -->
+                            @can('orders.verify-cod')
                             <div id="codVerifyBanner" class="hidden mb-4 p-3 bg-amber-50 border border-amber-200 rounded-lg flex items-center justify-between">
                                 <div class="text-xs text-amber-800">
                                     <span class="font-bold block">Awaiting COD Verification</span>
@@ -75,8 +76,10 @@
                                     ✓ Verify COD Order
                                 </button>
                             </div>
+                            @endcan
 
                             <!-- Instapay Verification Action Banner -->
+                            @can('orders.verify-instapay')
                             <div id="instapayVerifyBanner" class="hidden mb-4 p-3 bg-indigo-50 border border-indigo-200 rounded-lg flex items-center justify-between">
                                 <div class="text-xs text-indigo-900">
                                     <span class="font-bold block">⚡ Awaiting Instapay Verification</span>
@@ -86,6 +89,7 @@
                                     ✓ Verify Instapay Payment
                                 </button>
                             </div>
+                            @endcan
 
                             <table class="min-w-full divide-y divide-gray-200 mb-4 text-sm">
                                 <thead class="bg-gray-50">
@@ -103,19 +107,23 @@
                                 <p class="font-semibold text-gray-800">Total: <span id="modalTotal"></span></p>
                                 <div class="flex items-center gap-2">
                                     <label class="text-sm font-medium text-gray-700">Status:</label>
-                                    <select id="modalStatus" class="border border-gray-300 rounded px-3 py-1.5 text-sm">
-                                        <option value="pending">Pending</option>
-                                        <option value="pending_payment">Pending Payment</option>
-                                        <option value="pending_verification">Pending Verification</option>
-                                        <option value="processing">Processing</option>
-                                        <option value="in_production">In Production</option>
-                                        <option value="shipped">Shipped</option>
-                                        <option value="delivered">Delivered</option>
-                                        <option value="completed">Completed</option>
-                                        <option value="on_hold">On Hold</option>
-                                        <option value="cancelled">Cancelled</option>
-                                    </select>
-                                    <button onclick="saveStatus()" class="bg-gray-900 text-white px-3 py-1.5 rounded text-sm hover:bg-gray-700">Save</button>
+                                    @can('orders.update-status')
+                                        <select id="modalStatus" class="border border-gray-300 rounded px-3 py-1.5 text-sm">
+                                            <option value="pending">Pending</option>
+                                            <option value="pending_payment">Pending Payment</option>
+                                            <option value="pending_verification">Pending Verification</option>
+                                            <option value="processing">Processing</option>
+                                            <option value="in_production">In Production</option>
+                                            <option value="shipped">Shipped</option>
+                                            <option value="delivered">Delivered</option>
+                                            <option value="completed">Completed</option>
+                                            <option value="on_hold">On Hold</option>
+                                            <option value="cancelled">Cancelled</option>
+                                        </select>
+                                        <button onclick="saveStatus()" class="bg-gray-900 text-white px-3 py-1.5 rounded text-sm hover:bg-gray-700">Save</button>
+                                    @else
+                                        <span id="readOnlyStatusBadge" class="px-2.5 py-1 rounded-full text-xs font-semibold bg-gray-100 text-gray-800"></span>
+                                    @endcan
                                 </div>
                             </div>
                         </div>
@@ -227,7 +235,13 @@
                             document.getElementById('modalPrintletStatus').textContent = order.printlet_status ?? '—';
                             document.getElementById('modalNotes').textContent = order.notes || '—';
                             document.getElementById('modalTotal').textContent = '$' + parseFloat(order.total_price).toFixed(2);
-                            document.getElementById('modalStatus').value = order.status;
+                            if (document.getElementById('modalStatus')) {
+                                document.getElementById('modalStatus').value = order.status;
+                            }
+                            if (document.getElementById('readOnlyStatusBadge')) {
+                                document.getElementById('readOnlyStatusBadge').textContent = order.status;
+                                document.getElementById('readOnlyStatusBadge').className = 'px-2.5 py-1 rounded-full text-xs font-semibold ' + (statusColors[order.status] ?? 'bg-gray-100 text-gray-800');
+                            }
 
                             // Display payment reference if present
                             const refContainer = document.getElementById('modalReferenceContainer');
@@ -242,21 +256,25 @@
                             const isCod = ['cod', 'cash_on_delivery'].includes(order.payment_method);
                             const needsCodVerify = ['pending_verification', 'pending'].includes(order.printlet_status) || ['pending_verification', 'pending'].includes(order.status);
                             const codBanner = document.getElementById('codVerifyBanner');
-                            if (isCod && needsCodVerify) {
-                                codBanner.classList.remove('hidden');
-                            } else {
-                                codBanner.classList.add('hidden');
+                            if (codBanner) {
+                                if (isCod && needsCodVerify) {
+                                    codBanner.classList.remove('hidden');
+                                } else {
+                                    codBanner.classList.add('hidden');
+                                }
                             }
 
                             // Toggle Instapay verification banner
                             const isInstapay = order.payment_method === 'instapay';
                             const needsInstapayVerify = order.payment_status !== 'paid';
                             const instapayBanner = document.getElementById('instapayVerifyBanner');
-                            if (isInstapay && needsInstapayVerify) {
-                                instapayBanner.classList.remove('hidden');
-                                document.getElementById('bannerInstapayRef').textContent = order.payment_reference || 'Not provided';
-                            } else {
-                                instapayBanner.classList.add('hidden');
+                            if (instapayBanner) {
+                                if (isInstapay && needsInstapayVerify) {
+                                    instapayBanner.classList.remove('hidden');
+                                    document.getElementById('bannerInstapayRef').textContent = order.payment_reference || 'Not provided';
+                                } else {
+                                    instapayBanner.classList.add('hidden');
+                                }
                             }
 
                             const tbody = document.getElementById('modalItems');

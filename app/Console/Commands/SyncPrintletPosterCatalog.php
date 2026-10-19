@@ -7,7 +7,6 @@ use App\Models\Variant;
 use App\Services\PrintletApiService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
-use Illuminate\Support\Facades\Log;
 
 /**
  * Artisan command to discover Printlet Egypt domestic catalog:
@@ -122,6 +121,7 @@ class SyncPrintletPosterCatalog extends Command
                 $detail = $this->printletApi->getProduct($pId, $countryId);
             } catch (\Exception $e) {
                 $this->error("Failed to load details for product {$pId}: ".$e->getMessage());
+
                 continue;
             }
 
@@ -140,6 +140,7 @@ class SyncPrintletPosterCatalog extends Command
             $localProducts = Product::all();
             if ($localProducts->isEmpty()) {
                 $this->warn(' No local products found in database to map variants to. You can create variants once products exist.');
+
                 continue;
             }
 

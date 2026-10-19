@@ -25,6 +25,10 @@ class AdminOrderController extends Controller
      */
     public function verifyCod(Request $request, Order $order): RedirectResponse|JsonResponse
     {
+        if (! $request->user()?->can('orders.verify-cod')) {
+            abort(403, 'Unauthorized. You do not have permission to verify COD orders.');
+        }
+
         // Ensure the order uses Cash on Delivery
         if ($order->payment_method !== 'cod') {
             $message = 'Cannot verify non-COD order (Payment method: '.$order->payment_method.').';
@@ -107,6 +111,10 @@ class AdminOrderController extends Controller
      */
     public function verifyInstapay(Request $request, Order $order): RedirectResponse|JsonResponse
     {
+        if (! $request->user()?->can('orders.verify-instapay')) {
+            abort(403, 'Unauthorized. You do not have permission to verify Instapay payments.');
+        }
+
         if ($order->payment_method !== 'instapay') {
             $message = 'Cannot verify non-Instapay order (Payment method: '.$order->payment_method.').';
             if ($request->wantsJson()) {

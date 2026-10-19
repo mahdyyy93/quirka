@@ -5,7 +5,6 @@ namespace Tests\Feature;
 use App\Models\Customer;
 use App\Models\Order;
 use App\Models\Product;
-use App\Models\Supplier;
 use App\Models\User;
 use App\Models\Variant;
 use Illuminate\Foundation\Testing\RefreshDatabase;
@@ -26,13 +25,7 @@ class CheckoutTest extends TestCase
             'address' => '123 Nile Corniche, Cairo, Egypt',
         ]);
 
-        $supplier = Supplier::create([
-            'name' => 'Cairo Print Hub',
-            'email' => 'hub@cairoprint.eg',
-        ]);
-
         $product = Product::create([
-            'supplier_id' => $supplier->id,
             'title' => 'Vintage Cairo Poster',
             'sku' => 'POSTER-CAIRO-01',
             'price' => 250.00,
@@ -114,7 +107,7 @@ class CheckoutTest extends TestCase
         // Now visit confirmation page: customer sees transfer details, mobile link, and QR code
         $confirmPage = $this->actingAs($user)->get(route('order.confirmation', $order));
         $confirmPage->assertStatus(200);
-        $confirmPage->assertSee('Complete Your Transfer for Order #' . $order->id);
+        $confirmPage->assertSee('Complete Your Transfer for Order #'.$order->id);
         $confirmPage->assertSee('quirka@instapay');
         $confirmPage->assertSee('For Mobile Users');
         $confirmPage->assertSee('Desktop Users');

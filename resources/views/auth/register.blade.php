@@ -1,6 +1,61 @@
 <x-guest-layout>
     <form method="POST" action="{{ route('register') }}">
         @csrf
+        <!-- Account Type Selection -->
+        <div class="mb-5" x-data="{ accountType: '{{ old('account_type', 'customer') }}' }">
+            <x-input-label :value="__('I am joining as:')" class="mb-2 text-xs uppercase tracking-wider font-semibold text-gray-700" />
+
+            <div class="grid grid-cols-1 sm:grid-cols-2 gap-3">
+                <!-- Customer Option -->
+                <label
+                    @click="accountType = 'customer'"
+                    :class="accountType === 'customer' ? 'border-gray-900 bg-gray-50/80 ring-2 ring-gray-900' : 'border-gray-200 hover:border-gray-300'"
+                    class="relative flex flex-col p-3.5 border rounded-xl cursor-pointer transition-all bg-white shadow-2xs"
+                >
+                    <div class="flex items-center justify-between mb-1.5">
+                        <div class="flex items-center gap-2">
+                            <span class="text-base">🛍️</span>
+                            <span class="font-bold text-sm text-gray-900">Customer</span>
+                        </div>
+                        <input
+                            type="radio"
+                            name="account_type"
+                            value="customer"
+                            x-model="accountType"
+                            class="text-gray-900 focus:ring-gray-900"
+                        >
+                    </div>
+                    <span class="text-xs text-gray-500 leading-normal">
+                        Browse, discover unique artworks, and place orders.
+                    </span>
+                </label>
+
+                <!-- Artist Option -->
+                <label
+                    @click="accountType = 'artist'"
+                    :class="accountType === 'artist' ? 'border-gray-900 bg-gray-50/80 ring-2 ring-gray-900' : 'border-gray-200 hover:border-gray-300'"
+                    class="relative flex flex-col p-3.5 border rounded-xl cursor-pointer transition-all bg-white shadow-2xs"
+                >
+                    <div class="flex items-center justify-between mb-1.5">
+                        <div class="flex items-center gap-2">
+                            <span class="text-base">🎨</span>
+                            <span class="font-bold text-sm text-gray-900">Artist</span>
+                        </div>
+                        <input
+                            type="radio"
+                            name="account_type"
+                            value="artist"
+                            x-model="accountType"
+                            class="text-gray-900 focus:ring-gray-900"
+                        >
+                    </div>
+                    <span class="text-xs text-gray-500 leading-normal">
+                        Upload artwork and manage your products.
+                    </span>
+                </label>
+            </div>
+            <x-input-error :messages="$errors->get('account_type')" class="mt-2" />
+        </div>
 
         <!-- Name -->
         <div>

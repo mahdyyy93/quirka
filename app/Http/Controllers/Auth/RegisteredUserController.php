@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Auth;
 
 use App\Http\Controllers\Controller;
 use App\Models\Customer;
+use App\Models\Role;
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
 use Illuminate\Http\RedirectResponse;
@@ -26,25 +27,36 @@ class RegisteredUserController extends Controller
             'name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'confirmed', Rules\Password::defaults()],
+            'account_type' => ['nullable', 'string', 'in:customer,artist'],
         ]);
+
+        $accountType = $request->input('account_type', 'customer');
+        $role = Role::where('name', $accountType)->first();
 
         $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => Hash::make($request->password),
-            'role' => 'customer',
+            'role' => $accountType,
+            'role_id' => $role?->id,
         ]);
 
-        Customer::create([
-            'user_id' => $user->id,
-            'name' => $user->name,
-            'email' => $user->email,
-        ]);
+        if ($accountType === 'customer') {
+            Customer::create([
+                'user_id' => $user->id,
+                'name' => $user->name,
+                'email' => $user->email,
+            ]);
+        }
 
         event(new Registered($user));
 
         Auth::login($user);
 
-        return redirect(route('dashboard', absolute: false));
+        if ($accountType === 'artist') {
+            return redirect()->route('dashboard');
+        }
+
+        return redirect()->route('shop.index');
     }
 }
