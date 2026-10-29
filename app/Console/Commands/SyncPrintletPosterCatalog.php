@@ -4,6 +4,7 @@ namespace App\Console\Commands;
 
 use App\Models\Product;
 use App\Models\Variant;
+use App\Services\Pricing\RepriceProductVariants;
 use App\Services\PrintletApiService;
 use Illuminate\Console\Command;
 use Illuminate\Support\Facades\Cache;
@@ -41,7 +42,7 @@ class SyncPrintletPosterCatalog extends Command
     /**
      * Execute the console command.
      */
-    public function handle(): int
+    public function handle(RepriceProductVariants $repricer): int
     {
         $this->info('Starting Printlet Egypt poster catalog discovery...');
 
@@ -158,6 +159,8 @@ class SyncPrintletPosterCatalog extends Command
                     $cleanColor = strtoupper(preg_replace('/[^a-zA-Z0-9]/', '', $color));
                     $sku = 'POSTER-'.$localProduct->id.'-'.$cleanSize.'-'.$cleanColor;
 
+                    $printCost = isset($v['cost']) ? (float) $v['cost'] : (isset($v['price']) ? (float) $v['price'] : 100.00);
+
                     Variant::updateOrCreate(
                         [
                             'product_id' => $localProduct->id,
@@ -167,16 +170,18 @@ class SyncPrintletPosterCatalog extends Command
                             'size' => $size,
                             'color' => $color,
                             'sku' => $sku,
-                            'price' => $localProduct->price ?? 150.00,
+                            'print_cost' => $printCost,
                             'printlet_print_area_id' => $printAreaId,
                             'printlet_technique_id' => $techniqueId,
                             'placement_preset' => $placementPreset,
                         ]
                     );
                 }
+
+                $repricer->reprice($localProduct);
             }
 
-            $this->info(" Synced variants to local catalog for product [{$pId}].");
+            $this->info(" Synced and repriced variants to local catalog for product [{$pId}].");
         }
 
         $this->info('Printlet catalog sync completed successfully!');

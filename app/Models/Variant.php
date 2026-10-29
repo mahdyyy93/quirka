@@ -24,6 +24,7 @@ class Variant extends Model
         'size',
         'color',
         'price',
+        'print_cost',
         'sku',
         'printlet_variant_id',
         'printlet_variant_revision',
@@ -41,6 +42,7 @@ class Variant extends Model
      */
     protected $casts = [
         'price' => 'decimal:2',
+        'print_cost' => 'decimal:2',
         'printlet_variant_revision' => 'integer',
         'printlet_print_area_revision' => 'integer',
         'printlet_technique_revision' => 'integer',

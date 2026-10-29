@@ -5,6 +5,7 @@ namespace App\Livewire\Admin;
 use App\Models\Permission;
 use App\Models\Role;
 use App\Models\User;
+use App\Services\RoutePermissionSynchronizer;
 use Illuminate\Contracts\View\View;
 use Illuminate\Validation\Rule;
 use Livewire\Attributes\Layout;
@@ -232,6 +233,20 @@ class RoleManager extends Component
         $this->permissionName = '';
         $this->permissionGroup = '';
         $this->showPermissionModal = true;
+    }
+
+    public function syncRoutes(RoutePermissionSynchronizer $synchronizer): void
+    {
+        $result = $synchronizer->sync();
+        $count = count($result['created']);
+
+        if ($count > 0) {
+            $this->notify("Successfully synced {$count} new permission(s) from application routes.");
+        } else {
+            $this->notify('All route permissions are already up to date.', 'info');
+        }
+
+        $this->resetPage();
     }
 
     public function savePermission(): void

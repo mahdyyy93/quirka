@@ -85,4 +85,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(Customer::class);
     }
+
+    public function artistPricingProfile(): HasOne
+    {
+        return $this->hasOne(ArtistPricingProfile::class);
+    }
 }

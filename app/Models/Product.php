@@ -18,6 +18,8 @@ class Product extends Model
         'slug',
         'sku',
         'price',
+        'artist_min_profit',
+        'artist_max_profit',
         'is_available',
         'customizations',
         'description',
@@ -29,6 +31,8 @@ class Product extends Model
         'is_available' => 'boolean',
         'customizations' => 'array',
         'price' => 'decimal:2',
+        'artist_min_profit' => 'decimal:2',
+        'artist_max_profit' => 'decimal:2',
         'printlet_artwork_revision' => 'integer',
     ];
 
@@ -86,5 +90,28 @@ class Product extends Model
     public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    /**
+     * Resolves the effective [artist_min_profit, artist_max_profit] range for this product:
+     * Product overrides take precedence; otherwise falls back to the artist's profile,
+     * or the global system floor/ceiling limits.
+     *
+     * @return array{0: float, 1: float}
+     */
+    public function effectiveArtistProfitRange(): array
+    {
+        if ($this->artist_min_profit !== null && $this->artist_max_profit !== null) {
+            return [(float) $this->artist_min_profit, (float) $this->artist_max_profit];
+        }
+
+        $artistProfile = $this->user?->artistPricingProfile;
+        if ($artistProfile) {
+            return [(float) $artistProfile->artist_min_profit, (float) $artistProfile->artist_max_profit];
+        }
+
+        $settings = PricingSetting::current();
+
+        return [(float) $settings->artist_profit_floor, (float) $settings->artist_profit_ceiling];
     }
 }

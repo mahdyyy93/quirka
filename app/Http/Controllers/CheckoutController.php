@@ -4,9 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Models\Order;
 use App\Models\OrderItem;
+use App\Models\PricingSetting;
 use App\Models\Product;
 use App\Models\Variant;
 use App\Services\PaymentService;
+use App\Services\Pricing\PricingCalculator;
 use App\Services\PrintletApiService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -295,11 +297,34 @@ class CheckoutController extends Controller
                 'printlet_status' => $printletStatus,
             ]);
 
+            $settings = PricingSetting::current();
+            [$artistMinProfit, $artistMaxProfit] = $product->effectiveArtistProfitRange();
+            $calculator = app(PricingCalculator::class);
+
+            $printCost = $variant->print_cost !== null ? (float) $variant->print_cost : 100.00;
+            $breakdowns = $calculator->calculate(
+                costsByVariantId: [$variant->id => $printCost],
+                artistMinProfit: $artistMinProfit,
+                artistMaxProfit: $artistMaxProfit,
+                platformPercent: (float) $settings->platform_percent,
+                platformFixedFeePerItem: (float) $settings->platform_fixed_fee_per_item,
+                roundingStep: (float) $settings->rounding_step
+            );
+
+            $breakdown = $breakdowns[$variant->id] ?? null;
+            $finalUnitPrice = $breakdown ? $breakdown->unitPrice : (float) $variant->price;
+
             OrderItem::create([
                 'order_id' => $order->id,
                 'product_id' => $product->id,
+                'variant_id' => $variant->id,
+                'artist_id' => $product->user_id,
                 'quantity' => $quantity,
-                'unit_price' => $variant->price,
+                'unit_price' => $finalUnitPrice,
+                'print_cost' => $breakdown ? $breakdown->printCost : $printCost,
+                'artist_profit' => $breakdown ? $breakdown->artistProfit : 0.00,
+                'platform_cut' => $breakdown ? $breakdown->platformCut : 0.00,
+                'platform_fixed_fee' => $breakdown ? $breakdown->platformFixedFee : (float) $settings->platform_fixed_fee_per_item,
                 'customizations' => [
                     'variant_id' => $variant->id,
                     'size' => $variant->size,

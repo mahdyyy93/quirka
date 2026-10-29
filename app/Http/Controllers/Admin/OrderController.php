@@ -47,10 +47,6 @@ class OrderController extends Controller
 
     public function updateStatus(Request $request, Order $order): JsonResponse
     {
-        if (! $request->user()?->can('orders.update-status')) {
-            abort(403, 'Unauthorized. You do not have permission to update orders.');
-        }
-
         $request->validate([
             'status' => ['required', Rule::enum(OrderStatus::class)],
         ]);

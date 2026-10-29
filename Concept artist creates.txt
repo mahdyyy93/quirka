@@ -1,0 +1,27 @@
+Concept:
+artist creates account
+artist agrees on policy and uploads art
+admin reviews and accept 
+Quirka notifies artist when his art is accepted
+art is visible in shop
+customer makes order 
+Quirka send order to Printlet (via api integration)
+Printlet prints and deliver to customer 
+customers receives order
+After 14 days of customer receiving order, Quirka sends money to artist account on Quirka
+Artist chooses to receive his payment to his preferred bank account
+
+Artist dashboard:
+- track orders (filter by customer/date/art)
+- graphical dashboard with filters
+- artist has wallet and can track his transactions
+- artist has option to transfer money from wallet to bank account
+- artist has controller over his art to delete/edit/make invisible 
+
+manager dashboard:
+- track orders (filter by artist/customer/date/art)
+- graphical dashboard with filters
+- track artists wallets transactions 
+- 
+
+

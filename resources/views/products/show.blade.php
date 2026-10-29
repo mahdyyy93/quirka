@@ -149,8 +149,8 @@
             <div class="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 items-start">
 
                 {{-- LEFT COLUMN: Compact Interactive Multi-Image Showcase --}}
-                <div class="md:col-span-6 lg:col-span-5 md:sticky md:top-24">
-                    <div class="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_5rem] gap-4 items-start">
+                <div class="md:col-span-7 lg:col-span-7 md:sticky md:top-24">
+                    <div class="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_5.5rem] gap-4 items-start">
 
                         {{-- Main Compact Viewport --}}
                         <div class="relative min-w-0 w-full bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden group">
@@ -163,13 +163,13 @@
                             </div>
 
                             {{-- Main Image Display --}}
-                            <div class="relative w-full h-[360px] sm:h-[400px] bg-gray-50/60 overflow-hidden flex items-center justify-center cursor-zoom-in" @click="zoomOpen = true">
+                            <div class="relative w-full h-[460px] sm:h-[540px] lg:h-[600px] bg-gray-50/60 overflow-hidden flex items-center justify-center cursor-zoom-in" @click="zoomOpen = true">
                                 @if($imageUrls->isNotEmpty())
                                     <img
                                         :src="images[activeImageIndex]"
                                         src="{{ $imageUrls->first() }}"
                                         alt="{{ $product->title }}"
-                                        class="block w-full h-full object-contain p-2 select-none transition-transform duration-500 ease-out group-hover:scale-105"
+                                        class="block w-full h-full object-contain p-3 select-none transition-transform duration-500 ease-out group-hover:scale-105"
                                     >
                                 @else
                                     <div class="flex flex-col items-center justify-center text-gray-300 p-8">
@@ -224,13 +224,13 @@
 
                         {{-- Thumbnails side strip (to the right of the main image) --}}
                         @if($imageUrls->count() > 1)
-                            <div class="flex sm:flex-col gap-2.5 overflow-x-auto sm:overflow-y-auto max-h-[400px] pb-1 sm:pb-0 scrollbar-none shrink-0 w-full sm:w-20">
+                            <div class="flex sm:flex-col gap-2.5 overflow-x-auto sm:overflow-y-auto max-h-[460px] sm:max-h-[540px] lg:max-h-[600px] pb-1 sm:pb-0 scrollbar-none shrink-0 w-full sm:w-22">
                                 @foreach($imageUrls as $idx => $url)
                                     <button
                                         type="button"
                                         @click="activeImageIndex = {{ $idx }}"
                                         :class="activeImageIndex === {{ $idx }} ? 'ring-2 ring-gray-900 border-transparent shadow-sm' : 'border-gray-200 hover:border-gray-300 opacity-60 hover:opacity-100'"
-                                        class="relative w-16 h-20 rounded-xl overflow-hidden border bg-white shrink-0 transition-all duration-200 focus:outline-none"
+                                        class="relative w-16 sm:w-20 h-20 sm:h-24 rounded-xl overflow-hidden border bg-white shrink-0 transition-all duration-200 focus:outline-none"
                                     >
                                         <img src="{{ $url }}" alt="Thumbnail {{ $idx + 1 }}" class="w-full h-full object-cover">
                                     </button>
@@ -242,7 +242,7 @@
                 </div>
 
                 {{-- RIGHT COLUMN: Product Info, Options & Purchase --}}
-                <div class="md:col-span-6 lg:col-span-7 flex flex-col">
+                <div class="md:col-span-5 lg:col-span-5 flex flex-col">
                     <div class="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8 shadow-sm flex flex-col">
 
                         {{-- Header Details --}}

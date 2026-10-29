@@ -2,6 +2,12 @@
 
 namespace App\Providers;
 
+use App\Models\ArtistPricingProfile;
+use App\Models\PricingSetting;
+use App\Models\Product;
+use App\Observers\ArtistPricingProfileObserver;
+use App\Observers\PricingSettingObserver;
+use App\Observers\ProductPricingObserver;
 use App\Payments\CashOnDeliveryPayment;
 use App\Payments\InstapayPayment;
 use App\Services\PaymentService;
@@ -44,6 +50,10 @@ class AppServiceProvider extends ServiceProvider
         Gate::before(function ($user, string $ability) {
             return ($user->hasRole('admin') || $user->role === 'admin') ? true : null;
         });
+
+        Product::observe(ProductPricingObserver::class);
+        ArtistPricingProfile::observe(ArtistPricingProfileObserver::class);
+        PricingSetting::observe(PricingSettingObserver::class);
 
         $this->configureDefaults();
     }
