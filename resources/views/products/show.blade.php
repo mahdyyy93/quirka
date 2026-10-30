@@ -1,13 +1,11 @@
 <x-app-layout>
-    {{-- Breadcrumbs & Top Bar --}}
-    <div class="bg-white border-b border-gray-100">
-        <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-3.5">
-            <nav class="flex items-center text-xs text-gray-500 gap-2">
-                <a href="{{ route('shop.index') }}" class="hover:text-gray-900 transition-colors">Shop</a>
-                <svg class="w-3.5 h-3.5 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                </svg>
-                <span class="text-gray-900 font-medium truncate max-w-xs sm:max-w-md">{{ $product->title }}</span>
+    {{-- Editorial Breadcrumbs --}}
+    <div class="border-b border-gallery-burgundy/20 bg-gallery-cream">
+        <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8 py-4">
+            <nav class="flex items-center text-xs uppercase tracking-[0.15em] text-gallery-muted gap-3">
+                <a href="{{ route('shop.index') }}" class="hover:text-gallery-burgundy transition-colors">Art Gallery</a>
+                <span class="text-gallery-burgundy/40">/</span>
+                <span class="text-gallery-burgundy font-semibold truncate max-w-xs sm:max-w-md">{{ $product->title }}</span>
             </nav>
         </div>
     </div>
@@ -47,7 +45,7 @@
     @endphp
 
     <div
-        class="py-8 sm:py-12"
+        class="py-12 lg:py-16"
         x-data="{
             images: {{ json_encode($imageUrls) }},
             activeImageIndex: 0,
@@ -99,32 +97,26 @@
                 this.feedbackMessage = '';
 
                 try {
-                    const formData = new FormData();
-                    formData.append('_token', '{{ csrf_token() }}');
-                    formData.append('quantity', this.quantity);
-                    if (this.variantId) {
-                        formData.append('variant_id', this.variantId);
-                    }
-                    if (this.selectedSize) {
-                        formData.append('size', this.selectedSize);
-                    }
-                    if (this.selectedColor) {
-                        formData.append('color', this.selectedColor);
-                    }
-
                     const response = await fetch('{{ route('cart.add', $product) }}', {
                         method: 'POST',
                         headers: {
+                            'Content-Type': 'application/json',
                             'Accept': 'application/json',
-                            'X-Requested-With': 'XMLHttpRequest',
+                            'X-CSRF-TOKEN': document.querySelector('meta[name=csrf-token]').content
                         },
-                        body: formData
+                        body: JSON.stringify({
+                            quantity: this.quantity,
+                            variant_id: this.variantId,
+                            size: this.selectedSize,
+                            color: this.selectedColor
+                        })
                     });
 
                     const data = await response.json();
 
                     if (response.ok && data.success) {
-                        // Dispatch global cart updated event
+                        this.feedbackType = 'success';
+                        this.feedbackMessage = data.message;
                         window.dispatchEvent(new CustomEvent('cart-updated', {
                             detail: {
                                 cartCount: data.cartCount,
@@ -134,340 +126,249 @@
                         }));
                     } else {
                         this.feedbackType = 'error';
-                        this.feedbackMessage = data.message || 'Could not add item to cart.';
+                        this.feedbackMessage = data.message || 'Error adding artwork to your selection.';
                     }
                 } catch (error) {
+                    console.error(error);
                     this.feedbackType = 'error';
-                    this.feedbackMessage = 'Something went wrong. Please check your connection and try again.';
+                    this.feedbackMessage = 'A network error occurred. Please try again.';
                 } finally {
                     this.isSubmitting = false;
                 }
             }
         }"
     >
-        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="grid grid-cols-1 md:grid-cols-12 gap-8 lg:gap-12 items-start">
+        <div class="max-w-[1440px] mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="grid grid-cols-1 lg:grid-cols-12 gap-12 lg:gap-16">
 
-                {{-- LEFT COLUMN: Compact Interactive Multi-Image Showcase --}}
-                <div class="md:col-span-7 lg:col-span-7 md:sticky md:top-24">
-                    <div class="grid grid-cols-1 sm:grid-cols-[minmax(0,1fr)_5.5rem] gap-4 items-start">
-
-                        {{-- Main Compact Viewport --}}
-                        <div class="relative min-w-0 w-full bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden group">
-                            {{-- Availability Badge --}}
-                            <div class="absolute top-2.5 left-2.5 z-10">
-                                <span class="inline-flex items-center gap-1.5 px-2 py-0.5 rounded-full text-[10px] font-semibold bg-white/95 backdrop-blur-md text-emerald-800 border border-emerald-100 shadow-sm">
-                                    <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span>
-                                    In Stock
-                                </span>
-                            </div>
-
-                            {{-- Main Image Display --}}
-                            <div class="relative w-full h-[460px] sm:h-[540px] lg:h-[600px] bg-gray-50/60 overflow-hidden flex items-center justify-center cursor-zoom-in" @click="zoomOpen = true">
-                                @if($imageUrls->isNotEmpty())
-                                    <img
-                                        :src="images[activeImageIndex]"
-                                        src="{{ $imageUrls->first() }}"
-                                        alt="{{ $product->title }}"
-                                        class="block w-full h-full object-contain p-3 select-none transition-transform duration-500 ease-out group-hover:scale-105"
-                                    >
-                                @else
-                                    <div class="flex flex-col items-center justify-center text-gray-300 p-8">
-                                        <svg class="w-12 h-12 mb-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                        </svg>
-                                        <span class="text-xs font-medium text-gray-400">No Image Available</span>
-                                    </div>
-                                @endif
-
-                                {{-- Expand Hint Button --}}
-                                <div class="absolute bottom-2.5 right-2.5 bg-gray-900/70 backdrop-blur-md text-white p-1.5 rounded-lg opacity-0 group-hover:opacity-100 transition-opacity">
-                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/>
-                                    </svg>
-                                </div>
-                            </div>
-
-                            {{-- Lightbox Zoom Modal (Teleported to body to avoid stacking context & z-index issues) --}}
-                            <template x-teleport="body">
-                                <div
-                                    x-show="zoomOpen"
-                                    x-cloak
-                                    x-transition:enter="transition ease-out duration-200"
-                                    x-transition:enter-start="opacity-0"
-                                    x-transition:enter-end="opacity-100"
-                                    x-transition:leave="transition ease-in duration-150"
-                                    x-transition:leave-start="opacity-100"
-                                    x-transition:leave-end="opacity-0"
-                                    class="fixed inset-0 z-[100] bg-black/90 backdrop-blur-md flex items-center justify-center p-4 sm:p-8"
-                                    @click.self="zoomOpen = false"
-                                    @keydown.escape.window="zoomOpen = false"
+                {{-- Left: Prominent Artwork Gallery Presentation --}}
+                <div class="lg:col-span-7 space-y-6">
+                    <div class="relative bg-gallery-frame-backing border-2 border-gallery-burgundy/30 p-6 sm:p-12 flex items-center justify-center min-h-[480px]">
+                        <template x-if="images.length > 0">
+                            <div class="relative group cursor-zoom-in max-h-[640px] w-full flex items-center justify-center" @click="zoomOpen = true">
+                                <img
+                                    :src="images[activeImageIndex]"
+                                    alt="{{ $product->title }}"
+                                    class="max-h-[580px] w-auto object-contain filter drop-shadow-2xl transition-transform duration-500 group-hover:scale-[1.02]"
                                 >
-                                    <button
-                                        type="button"
-                                        @click="zoomOpen = false"
-                                        class="absolute top-6 right-6 text-white/80 hover:text-white p-2 rounded-full bg-white/10 hover:bg-white/20 transition-colors"
-                                    >
-                                        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
-                                        </svg>
-                                    </button>
-                                    <img
-                                        :src="images[activeImageIndex]"
-                                        src="{{ $imageUrls->first() }}"
-                                        alt="{{ $product->title }}"
-                                        class="max-h-[90vh] max-w-[90vw] object-contain rounded-xl shadow-2xl"
-                                    >
+                                <div class="absolute bottom-4 right-4 bg-gallery-burgundy/90 backdrop-blur-sm text-white px-3 py-1.5 text-[10px] uppercase tracking-widest opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5">
+                                    <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
+                                    <span>Inspect High-Res</span>
                                 </div>
+                            </div>
+                        </template>
+
+                        <template x-if="images.length === 0">
+                            <div class="text-center py-20 text-gallery-burgundy">
+                                <svg class="w-16 h-16 mx-auto stroke-1 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                </svg>
+                                <span class="text-xs uppercase tracking-widest font-semibold">Archival Print Exhibition</span>
+                            </div>
+                        </template>
+                    </div>
+
+                    {{-- Image Thumbnails --}}
+                    <template x-if="images.length > 1">
+                        <div class="flex items-center gap-4 overflow-x-auto pb-2">
+                            <template x-for="(img, idx) in images" :key="idx">
+                                <button
+                                    type="button"
+                                    @click="activeImageIndex = idx"
+                                    :class="activeImageIndex === idx ? 'border-gallery-burgundy ring-2 ring-gallery-burgundy' : 'border-gallery-border opacity-70 hover:opacity-100'"
+                                    class="w-20 h-24 bg-gallery-frame-backing border overflow-hidden p-1 transition-all"
+                                >
+                                    <img :src="img" class="w-full h-full object-cover">
+                                </button>
                             </template>
                         </div>
+                    </template>
 
-                        {{-- Thumbnails side strip (to the right of the main image) --}}
-                        @if($imageUrls->count() > 1)
-                            <div class="flex sm:flex-col gap-2.5 overflow-x-auto sm:overflow-y-auto max-h-[460px] sm:max-h-[540px] lg:max-h-[600px] pb-1 sm:pb-0 scrollbar-none shrink-0 w-full sm:w-22">
-                                @foreach($imageUrls as $idx => $url)
-                                    <button
-                                        type="button"
-                                        @click="activeImageIndex = {{ $idx }}"
-                                        :class="activeImageIndex === {{ $idx }} ? 'ring-2 ring-gray-900 border-transparent shadow-sm' : 'border-gray-200 hover:border-gray-300 opacity-60 hover:opacity-100'"
-                                        class="relative w-16 sm:w-20 h-20 sm:h-24 rounded-xl overflow-hidden border bg-white shrink-0 transition-all duration-200 focus:outline-none"
-                                    >
-                                        <img src="{{ $url }}" alt="Thumbnail {{ $idx + 1 }}" class="w-full h-full object-cover">
-                                    </button>
-                                @endforeach
+                    {{-- Museum Standards Badge --}}
+                    <div class="p-6 bg-gallery-cream border border-gallery-burgundy/30 grid grid-cols-1 sm:grid-cols-3 gap-6 text-center sm:text-left">
+                        <div>
+                            <span class="text-[10px] uppercase tracking-[0.2em] text-gallery-burgundy font-bold block mb-1">Archival Pigment</span>
+                            <p class="text-xs text-gallery-muted">12-color giclée printing rated for 100+ years without fade.</p>
+                        </div>
+                        <div>
+                            <span class="text-[10px] uppercase tracking-[0.2em] text-gallery-burgundy font-bold block mb-1">Solid Wood Frame</span>
+                            <p class="text-xs text-gallery-muted">Hand-finished moulding with protective anti-reflective glazing.</p>
+                        </div>
+                        <div>
+                            <span class="text-[10px] uppercase tracking-[0.2em] text-gallery-burgundy font-bold block mb-1">Artist Provenance</span>
+                            <p class="text-xs text-gallery-muted">Official gallery license directly supporting the artist.</p>
+                        </div>
+                    </div>
+                </div>
+
+                {{-- Right: Editorial Artwork Details & Purchasing --}}
+                <div class="lg:col-span-5 space-y-8">
+                    {{-- Title & Artist attribution --}}
+                    <div class="space-y-3 border-b border-gallery-burgundy/30 pb-6">
+                        <div class="flex items-center justify-between">
+                            <span class="text-xs uppercase tracking-[0.25em] text-gallery-burgundy font-bold">Limited Print Edition</span>
+                            <span class="text-xs font-mono text-gallery-burgundy bg-gallery-burgundy/5 px-2 py-0.5 border border-gallery-burgundy/20">
+                                {{ $product->sku }}
+                            </span>
+                        </div>
+                        <h1 class="font-serif text-3xl sm:text-4xl text-gallery-charcoal leading-tight">
+                            {{ $product->title }}
+                        </h1>
+                        <p class="text-sm uppercase tracking-[0.15em] text-gallery-muted">
+                            By <span class="text-gallery-burgundy font-bold">{{ $product->user?->name ?? 'Quirka Studio' }}</span>
+                        </p>
+                    </div>
+
+                    {{-- Price Display --}}
+                    <div class="flex items-baseline gap-3">
+                        <span class="text-sm font-sans uppercase tracking-wider text-gallery-muted">Price</span>
+                        <div class="font-serif text-3xl sm:text-4xl text-gallery-burgundy font-bold">
+                            <span class="text-base font-sans font-normal text-gallery-burgundy/70 uppercase">EGP</span>
+                            <span x-text="parseFloat(currentPrice).toFixed(2)">{{ number_format($initialPrice, 2) }}</span>
+                        </div>
+                        <span class="text-xs text-gallery-burgundy font-medium ml-2 border border-gallery-burgundy/20 px-2 py-0.5 bg-gallery-burgundy/5">Taxes & Delivery Included</span>
+                    </div>
+
+                    {{-- Purchasing Form --}}
+                    <form @submit="submitAddToCart" class="space-y-6">
+                        {{-- Sizes Selector --}}
+                        @if($uniqueSizes->isNotEmpty())
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <label class="text-xs uppercase tracking-[0.15em] font-bold text-gallery-burgundy">Select Dimensions</label>
+                                    <span class="text-xs font-medium text-gallery-burgundy" x-text="selectedSize"></span>
+                                </div>
+                                <div class="grid grid-cols-2 sm:grid-cols-3 gap-2.5">
+                                    @foreach($uniqueSizes as $sz)
+                                        <button
+                                            type="button"
+                                            @click="selectedSize = '{{ $sz }}'; updateSelection()"
+                                            :class="selectedSize.toLowerCase() === '{{ strtolower($sz) }}' ? 'border-gallery-burgundy bg-gallery-burgundy text-white shadow-sm' : 'border-gallery-burgundy/30 bg-gallery-cream text-gallery-charcoal hover:border-gallery-burgundy hover:bg-gallery-burgundy/5'"
+                                            class="py-3 px-3 text-xs uppercase tracking-wider font-semibold border text-center transition-all"
+                                        >
+                                            {{ $sz }}
+                                        </button>
+                                    @endforeach
+                                </div>
                             </div>
                         @endif
 
-                    </div>
-                </div>
-
-                {{-- RIGHT COLUMN: Product Info, Options & Purchase --}}
-                <div class="md:col-span-5 lg:col-span-5 flex flex-col">
-                    <div class="bg-white rounded-2xl border border-gray-100 p-6 sm:p-8 shadow-sm flex flex-col">
-
-                        {{-- Header Details --}}
-                        <div class="mb-4">
-                            <div class="flex items-center justify-between gap-3 mb-2">
-                                <span class="text-xs font-semibold tracking-wider uppercase text-gray-400">
-                                    {{ $product->user->name ?? 'Museum Collection' }}
-                                </span>
-                                <span class="text-[11px] font-mono text-gray-500 bg-gray-100 px-2 py-0.5 rounded-md">
-                                    {{ $product->sku }}
-                                </span>
+                        {{-- Frame / Finish Selector --}}
+                        @if($uniqueColors->isNotEmpty())
+                            <div class="space-y-2">
+                                <div class="flex items-center justify-between">
+                                    <label class="text-xs uppercase tracking-[0.15em] font-bold text-gallery-burgundy">Frame Finish</label>
+                                    <span class="text-xs font-medium text-gallery-burgundy" x-text="selectedColor"></span>
+                                </div>
+                                <div class="grid grid-cols-2 gap-2.5">
+                                    @foreach($uniqueColors as $cl)
+                                        <button
+                                            type="button"
+                                            @click="selectedColor = '{{ $cl }}'; updateSelection()"
+                                            :class="selectedColor.toLowerCase() === '{{ strtolower($cl) }}' ? 'border-gallery-burgundy bg-gallery-burgundy text-white shadow-sm' : 'border-gallery-burgundy/30 bg-gallery-cream text-gallery-charcoal hover:border-gallery-burgundy hover:bg-gallery-burgundy/5'"
+                                            class="py-3 px-3 text-xs uppercase tracking-wider font-semibold border text-center transition-all"
+                                        >
+                                            {{ $cl }}
+                                        </button>
+                                    @endforeach
+                                </div>
                             </div>
-                            <h1 class="text-2xl sm:text-3xl font-extrabold text-gray-900 tracking-tight leading-tight">
-                                {{ $product->title }}
-                            </h1>
-                        </div>
+                        @endif
 
-                        {{-- Live Price --}}
-                        <div class="flex items-baseline gap-2 py-3 border-y border-gray-100 mb-6">
-                            <span class="text-xs font-semibold text-gray-400 uppercase tracking-widest">Price</span>
-                            <span class="text-3xl font-extrabold text-gray-900">
-                                <span class="text-lg font-normal text-gray-400">EGP</span>
-                                <span x-text="parseFloat(currentPrice).toFixed(2)">{{ number_format($initialPrice, 2) }}</span>
-                            </span>
-                            <span class="text-xs text-gray-400 font-medium ml-auto">Inclusive of all local taxes</span>
-                        </div>
-
-                        {{-- Form: Variant Selection & Add to Cart --}}
-                        <form @submit="submitAddToCart($event)" class="space-y-6">
-
-                            {{-- Size Selector --}}
-                            @if($uniqueSizes->isNotEmpty())
-                                <div>
-                                    <div class="flex items-center justify-between mb-2.5">
-                                        <label class="text-xs font-bold uppercase tracking-wider text-gray-700">Size</label>
-                                        <span class="text-xs font-medium text-gray-500" x-text="selectedSize"></span>
-                                    </div>
-                                    <div class="flex flex-wrap gap-2">
-                                        @foreach($uniqueSizes as $size)
-                                            <button
-                                                type="button"
-                                                @click="selectedSize = '{{ $size }}'; updateSelection()"
-                                                :class="selectedSize.toLowerCase() === '{{ strtolower($size) }}' ? 'bg-gray-900 text-white shadow-sm ring-2 ring-gray-900 ring-offset-1' : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'"
-                                                class="px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-150 focus:outline-none"
-                                            >
-                                                {{ $size }}
-                                            </button>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @endif
-
-                            {{-- Frame Color Selector --}}
-                            @if($uniqueColors->isNotEmpty())
-                                <div>
-                                    <div class="flex items-center justify-between mb-2.5">
-                                        <label class="text-xs font-bold uppercase tracking-wider text-gray-700">Frame Color / Finish</label>
-                                        <span class="text-xs font-medium text-gray-500" x-text="selectedColor"></span>
-                                    </div>
-                                    <div class="flex flex-wrap gap-2">
-                                        @foreach($uniqueColors as $color)
-                                            <button
-                                                type="button"
-                                                @click="selectedColor = '{{ $color }}'; updateSelection()"
-                                                :class="selectedColor.toLowerCase() === '{{ strtolower($color) }}' ? 'bg-gray-900 text-white shadow-sm ring-2 ring-gray-900 ring-offset-1' : 'bg-gray-50 text-gray-700 border border-gray-200 hover:bg-gray-100'"
-                                                class="px-4 py-2 rounded-xl text-xs font-semibold transition-all duration-150 focus:outline-none"
-                                            >
-                                                {{ $color }}
-                                            </button>
-                                        @endforeach
-                                    </div>
-                                </div>
-                            @endif
-
-                            {{-- Quantity & Add to Cart Action --}}
-                            <div>
-                                <label class="block text-xs font-bold uppercase tracking-wider text-gray-700 mb-2.5">Quantity</label>
-                                <div class="flex flex-col sm:flex-row gap-3">
-                                    {{-- Counter Box --}}
-                                    <div class="inline-flex items-center border border-gray-200 rounded-xl bg-gray-50 p-1 shrink-0 self-start sm:self-auto">
-                                        <button
-                                            type="button"
-                                            @click="decrementQty()"
-                                            class="w-9 h-9 rounded-lg bg-white border border-gray-200 text-gray-600 hover:text-gray-900 hover:border-gray-300 font-bold flex items-center justify-center transition-all disabled:opacity-40"
-                                            :disabled="quantity <= 1"
-                                        >
-                                            -
-                                        </button>
-                                        <input
-                                            type="number"
-                                            x-model.number="quantity"
-                                            min="1"
-                                            max="99"
-                                            class="w-12 text-center bg-transparent border-0 font-bold text-sm text-gray-800 focus:ring-0 p-0"
-                                        >
-                                        <button
-                                            type="button"
-                                            @click="incrementQty()"
-                                            class="w-9 h-9 rounded-lg bg-white border border-gray-200 text-gray-600 hover:text-gray-900 hover:border-gray-300 font-bold flex items-center justify-center transition-all disabled:opacity-40"
-                                            :disabled="quantity >= 99"
-                                        >
-                                            +
-                                        </button>
-                                    </div>
-
-                                    {{-- Primary Action Button --}}
+                        {{-- Quantity & Add To Cart Button --}}
+                        <div class="pt-4 space-y-4">
+                            <div class="flex items-center gap-4">
+                                <div class="flex items-center border border-gallery-burgundy/40 bg-gallery-cream">
                                     <button
-                                        type="submit"
-                                        :disabled="isSubmitting"
-                                        class="flex-1 bg-gray-900 hover:bg-gray-800 text-white font-semibold text-sm py-3 px-6 rounded-xl transition-all duration-150 shadow-md hover:shadow-lg active:scale-[0.99] flex items-center justify-center gap-2 disabled:opacity-75 disabled:cursor-not-allowed"
+                                        type="button"
+                                        @click="decrementQty"
+                                        class="px-3.5 py-3 text-gallery-burgundy hover:bg-gallery-burgundy/10 transition-colors"
                                     >
-                                        <template x-if="isSubmitting">
-                                            <svg class="animate-spin -ml-1 mr-2 h-4 w-4 text-white" fill="none" viewBox="0 0 24 24">
-                                                <circle class="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" stroke-width="4"></circle>
-                                                <path class="opacity-75" fill="currentColor" d="M4 12a8 8 0 018-8V0C5.373 0 0 5.373 0 12h4zm2 5.291A7.962 7.962 0 014 12H0c0 3.042 1.135 5.824 3 7.938l3-2.647z"></path>
-                                            </svg>
-                                        </template>
-                                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
-                                        </svg>
-                                        <span x-text="isSubmitting ? 'Adding...' : 'Add to Cart'">Add to Cart</span>
+                                        &minus;
+                                    </button>
+                                    <span class="w-10 text-center text-xs font-bold text-gallery-burgundy" x-text="quantity"></span>
+                                    <button
+                                        type="button"
+                                        @click="incrementQty"
+                                        class="px-3.5 py-3 text-gallery-burgundy hover:bg-gallery-burgundy/10 transition-colors"
+                                    >
+                                        &plus;
                                     </button>
                                 </div>
 
-                                {{-- Inline Feedback Alert --}}
-                                <template x-if="feedbackMessage">
-                                    <div
-                                        class="mt-3 p-3 rounded-xl text-xs font-medium"
-                                        :class="feedbackType === 'error' ? 'bg-red-50 text-red-800 border border-red-200' : 'bg-emerald-50 text-emerald-800 border border-emerald-200'"
-                                        x-text="feedbackMessage"
-                                    ></div>
-                                </template>
+                                <button
+                                    type="submit"
+                                    :disabled="isSubmitting"
+                                    class="flex-1 bg-gallery-burgundy hover:bg-gallery-burgundy-dark disabled:opacity-50 text-gallery-cream text-xs uppercase tracking-[0.2em] font-medium py-4 px-6 border border-gallery-burgundy transition-all shadow-md hover:shadow-lg flex items-center justify-center gap-2"
+                                >
+                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
+                                    <span x-show="!isSubmitting">Acquire Artwork</span>
+                                    <span x-show="isSubmitting">Preparing Selection...</span>
+                                </button>
                             </div>
-                        </form>
 
-                        {{-- Design Story / Description --}}
-                        <div class="mt-8 pt-8 border-t border-gray-100">
-                            <h3 class="text-xs font-bold uppercase tracking-wider text-gray-900 mb-3 flex items-center gap-2">
-                                <svg class="w-4 h-4 text-gray-500" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M7 21h10a2 2 0 002-2V9.414a1 1 0 00-.293-.707l-5.414-5.414A1 1 0 0012.586 3H7a2 2 0 00-2 2v14a2 2 0 002 2z"/>
-                                </svg>
-                                Design Story & Details
-                            </h3>
-                            <div class="prose prose-sm text-gray-600 leading-relaxed text-xs sm:text-sm">
-                                @if(!empty($product->description))
-                                    <p>{{ $product->description }}</p>
-                                @else
-                                    <p class="italic text-gray-400">Crafted with attention to artistic detail and fidelity. Printed on heavy 250gsm archival matte stock for long-lasting vibrancy.</p>
-                                @endif
+                            {{-- Feedback notice --}}
+                            <div
+                                x-show="feedbackMessage"
+                                x-transition
+                                :class="feedbackType === 'success' ? 'bg-gallery-burgundy/10 border-gallery-burgundy text-gallery-burgundy font-medium' : 'bg-red-50 border-red-200 text-red-800'"
+                                class="p-3.5 border text-xs"
+                                x-text="feedbackMessage"
+                            ></div>
+                        </div>
+                    </form>
+
+                    {{-- Description & Provenance --}}
+                    @if($product->description)
+                        <div class="border-t border-gallery-burgundy/30 pt-6 space-y-2">
+                            <h3 class="text-xs uppercase tracking-[0.2em] font-bold text-gallery-burgundy">Artwork Overview</h3>
+                            <div class="text-sm text-gallery-muted leading-relaxed font-light">
+                                {!! nl2br(e($product->description)) !!}
                             </div>
                         </div>
-
-                        {{-- Production & Shipping Assurances --}}
-                        <div class="mt-8 pt-6 border-t border-gray-100 grid grid-cols-1 sm:grid-cols-2 gap-4 text-xs text-gray-500">
-                            <div class="flex items-start gap-2.5">
-                                <div class="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center shrink-0 text-gray-700">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 8h14M5 8a2 2 0 110-4h14a2 2 0 110 4M5 8v10a2 2 0 002 2h10a2 2 0 002-2V8m-9 4h4"/>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <span class="font-semibold text-gray-900 block">Archival Giclée Print</span>
-                                    <span>Fade-resistant mineral pigment inks</span>
-                                </div>
-                            </div>
-                            <div class="flex items-start gap-2.5">
-                                <div class="w-8 h-8 rounded-xl bg-gray-100 flex items-center justify-center shrink-0 text-gray-700">
-                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
-                                    </svg>
-                                </div>
-                                <div>
-                                    <span class="font-semibold text-gray-900 block">Safe Delivery Guarantee</span>
-                                    <span>Reinforced protective packaging</span>
-                                </div>
-                            </div>
-                        </div>
-
-                    </div>
+                    @endif
                 </div>
-
             </div>
 
-            {{-- You May Also Like / Related Works --}}
+            {{-- Curated Complementary Artworks --}}
             @if(isset($relatedProducts) && $relatedProducts->isNotEmpty())
-                <div class="mt-16 sm:mt-24 pt-12 border-t border-gray-200">
-                    <div class="flex items-center justify-between mb-8">
-                        <div>
-                            <h2 class="text-xl sm:text-2xl font-bold text-gray-900 tracking-tight">You May Also Like</h2>
-                            <p class="text-xs sm:text-sm text-gray-500 mt-1">Discover other handpicked museum-quality posters from the catalog.</p>
-                        </div>
-                        <a href="{{ route('shop.index') }}" class="text-xs font-semibold text-gray-900 hover:text-gray-600 transition-colors flex items-center gap-1">
-                            Browse All
-                            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
-                            </svg>
-                        </a>
+                <div class="mt-24 pt-16 border-t border-gallery-burgundy/30">
+                    <div class="mb-10">
+                        <span class="text-[10px] uppercase tracking-[0.25em] text-gallery-burgundy font-bold block mb-1">Companion Pieces</span>
+                        <h2 class="font-serif text-3xl text-gallery-charcoal">Related Artworks</h2>
                     </div>
 
-                    <div class="grid grid-cols-2 md:grid-cols-4 gap-4 sm:gap-6">
+                    <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-8">
                         @foreach($relatedProducts as $rel)
                             @php $relImg = $rel->images->first(); @endphp
-                            <div class="group bg-white rounded-2xl border border-gray-100 shadow-sm overflow-hidden flex flex-col hover:shadow-md transition-shadow">
-                                <a href="{{ route('shop.show', $rel) }}" class="block aspect-square overflow-hidden bg-gray-50">
+                            <div class="group flex flex-col bg-gallery-cream border border-gallery-border hover:border-gallery-burgundy transition-all hover:shadow-md">
+                                <a href="{{ route('shop.show', $rel) }}" class="block aspect-[4/5] bg-gallery-frame-backing p-4 flex items-center justify-center overflow-hidden">
                                     @if($relImg)
-                                        <img src="{{ Storage::url($relImg->path) }}" alt="{{ $rel->title }}" class="w-full h-full object-cover group-hover:scale-105 transition-transform duration-300">
+                                        <img
+                                            src="{{ Storage::url($relImg->path) }}"
+                                            alt="{{ $rel->title }}"
+                                            class="w-full h-full object-contain filter drop-shadow group-hover:scale-102 transition-transform duration-500"
+                                        >
                                     @else
-                                        <div class="w-full h-full flex items-center justify-center text-gray-300">
-                                            <svg class="w-10 h-10" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2-2H6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                            </svg>
-                                        </div>
+                                        <div class="text-gallery-burgundy text-[10px] uppercase tracking-wider font-semibold">Archival Print</div>
                                     @endif
                                 </a>
-                                <div class="p-4 flex flex-col flex-1 justify-between">
+                                <div class="p-4 flex flex-col flex-1 justify-between border-t border-gallery-border">
                                     <div>
-                                        <h4 class="font-semibold text-gray-900 text-sm truncate">
-                                            <a href="{{ route('shop.show', $rel) }}" class="hover:text-gray-600 transition-colors">
+                                        <h4 class="font-serif text-base text-gallery-charcoal group-hover:text-gallery-burgundy transition-colors truncate">
+                                            <a href="{{ route('shop.show', $rel) }}">
                                                 {{ $rel->title }}
                                             </a>
                                         </h4>
+                                        <span class="text-[11px] text-gallery-muted uppercase tracking-wider block mt-0.5">
+                                            {{ $rel->user?->name ?? 'Quirka Studio' }}
+                                        </span>
                                     </div>
-                                    <div class="mt-2 text-sm font-bold text-gray-900">
-                                        <span class="text-xs font-normal text-gray-400">EGP</span>
-                                        {{ number_format($rel->price, 2) }}
+                                    <div class="mt-3 pt-2 border-t border-gallery-burgundy/20 flex items-baseline justify-between">
+                                        <span class="text-[10px] uppercase text-gallery-burgundy font-semibold">From</span>
+                                        <div class="font-serif text-base font-bold text-gallery-burgundy">
+                                            EGP {{ number_format($rel->price, 2) }}
+                                        </div>
                                     </div>
                                 </div>
                             </div>
@@ -475,7 +376,31 @@
                     </div>
                 </div>
             @endif
-
         </div>
+
+        {{-- Inspect Zoom Lightbox Modal --}}
+        <template x-teleport="body">
+            <div
+                x-show="zoomOpen"
+                x-cloak
+                @keydown.escape.window="zoomOpen = false"
+                class="fixed inset-0 z-50 flex items-center justify-center bg-gallery-charcoal/95 backdrop-blur-md p-4 sm:p-8"
+            >
+                <button
+                    type="button"
+                    @click="zoomOpen = false"
+                    class="absolute top-6 right-6 text-white/80 hover:text-gallery-burgundy p-2 text-2xl transition-colors"
+                >
+                    &times;
+                </button>
+                <template x-if="images.length > 0">
+                    <img
+                        :src="images[activeImageIndex]"
+                        alt="{{ $product->title }}"
+                        class="max-w-full max-h-[90vh] object-contain shadow-2xl border-4 border-gallery-burgundy/30"
+                    >
+                </template>
+            </div>
+        </template>
     </div>
 </x-app-layout>

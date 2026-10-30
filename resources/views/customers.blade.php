@@ -1,14 +1,14 @@
 <x-app-layout>
     <div class="py-8">
         <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8">
+            <div class="bg-white rounded-none border border-stone-300 shadow-sm p-6 sm:p-8">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                    <input type="text" id="searchInput" placeholder="Search customer by name or email..." class="border border-gray-200 rounded-xl px-4 py-2.5 text-sm w-full max-w-md focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                    <input type="text" id="searchInput" placeholder="Search customer by name or email..." class="border border-stone-300 rounded-none px-4 py-2.5 text-sm w-full max-w-md focus:ring-1 focus:ring-stone-800 focus:border-stone-800 focus:outline-none">
                 </div>
 
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto border border-stone-300 rounded-none">
                     <table class="w-full text-left border-collapse">
-                        <thead class="bg-gray-50 text-gray-500 uppercase text-xs tracking-wider border-b border-gray-100">
+                        <thead class="bg-stone-100 text-stone-700 uppercase text-xs tracking-wider border-b border-stone-300">
                             <tr>
                                 <th class="px-6 py-3.5 font-semibold">Name</th>
                                 <th class="px-6 py-3.5 font-semibold">Email</th>
@@ -18,10 +18,10 @@
                                 <th class="px-6 py-3.5 font-semibold">Member Since</th>
                             </tr>
                         </thead>
-                        <tbody id="customersBody" class="divide-y divide-gray-100 text-sm text-gray-700"></tbody>
+                        <tbody id="customersBody" class="divide-y divide-stone-200 text-sm text-stone-800 bg-white"></tbody>
                     </table>
 
-                    <p id="emptyState" class="hidden text-center text-gray-400 py-8 text-sm">No customers found.</p>
+                    <p id="emptyState" class="hidden text-center text-stone-400 py-8 text-sm">No customers found.</p>
                 </div>
             </div>
         </div>

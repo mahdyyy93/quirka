@@ -1,14 +1,14 @@
 <x-app-layout>
     <div class="py-8">
         <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8">
+            <div class="bg-white rounded-none border border-stone-300 shadow-sm p-6 sm:p-8">
 
                     @if(auth()->user()?->can('orders.view'))
                     {{-- ───────────────── ADMIN / ARTIST ORDERS VIEW ───────────────── --}}
                     <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                        <input type="text" id="searchInput" placeholder="Search customer name, email, or order ID..." class="border border-gray-200 rounded-xl px-4 py-2.5 text-sm w-full max-w-md focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                        <input type="text" id="searchInput" placeholder="Search customer name, email, or order ID..." class="border border-stone-300 rounded-none px-4 py-2.5 text-sm w-full max-w-md focus:ring-1 focus:ring-stone-800 focus:border-stone-800 focus:outline-none">
                         <div class="flex items-center gap-3 shrink-0">
-                            <select id="statusFilter" class="border border-gray-200 rounded-xl px-4 py-2.5 text-sm font-medium text-gray-700 bg-white focus:ring-2 focus:ring-gray-900 focus:outline-none">
+                            <select id="statusFilter" class="border border-stone-300 rounded-none px-4 py-2.5 text-sm font-medium text-stone-700 bg-white focus:ring-1 focus:ring-stone-800 focus:outline-none">
                                 <option value="">All Statuses</option>
                                 <option value="pending">Pending</option>
                                 <option value="pending_payment">Pending Payment</option>
@@ -24,9 +24,9 @@
                         </div>
                     </div>
 
-                    <div class="overflow-x-auto">
+                    <div class="overflow-x-auto border border-stone-300 rounded-none">
                         <table id="ordersTable" class="w-full text-left border-collapse">
-                            <thead class="bg-gray-50 text-gray-500 uppercase text-xs tracking-wider border-b border-gray-100">
+                            <thead class="bg-stone-100 text-stone-700 uppercase text-xs tracking-wider border-b border-stone-300">
                                 <tr>
                                     <th class="px-6 py-3.5 font-semibold">#</th>
                                     <th class="px-6 py-3.5 font-semibold">Customer</th>
@@ -39,7 +39,7 @@
                                     <th class="px-6 py-3.5 font-semibold text-right">Actions</th>
                                 </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-100 text-sm text-gray-700" id="ordersBody"></tbody>
+                            <tbody class="divide-y divide-stone-200 text-sm text-stone-800 bg-white" id="ordersBody"></tbody>
                         </table>
                     </div>
 
@@ -91,17 +91,19 @@
                             </div>
                             @endcan
 
-                            <table class="min-w-full divide-y divide-gray-200 mb-4 text-sm">
-                                <thead class="bg-gray-50">
-                                    <tr>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Product</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Qty</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Unit Price</th>
-                                        <th class="px-3 py-2 text-left text-xs font-medium text-gray-500 uppercase">Subtotal</th>
-                                    </tr>
-                                </thead>
-                                <tbody id="modalItems" class="divide-y divide-gray-200"></tbody>
-                            </table>
+                            <div class="overflow-x-auto border border-stone-300 rounded-none mb-4">
+                                <table class="min-w-full divide-y divide-stone-300 text-sm">
+                                    <thead class="bg-stone-100 text-stone-700">
+                                        <tr>
+                                            <th class="px-3 py-2 text-left text-xs font-semibold uppercase">Product</th>
+                                            <th class="px-3 py-2 text-left text-xs font-semibold uppercase">Qty</th>
+                                            <th class="px-3 py-2 text-left text-xs font-semibold uppercase">Unit Price</th>
+                                            <th class="px-3 py-2 text-left text-xs font-semibold uppercase">Subtotal</th>
+                                        </tr>
+                                    </thead>
+                                    <tbody id="modalItems" class="divide-y divide-stone-200 bg-white"></tbody>
+                                </table>
+                            </div>
 
                             <div class="flex justify-between items-center">
                                 <p class="font-semibold text-gray-800">Total: <span id="modalTotal"></span></p>
@@ -405,20 +407,22 @@
                         </select>
                     </div>
 
-                    <table class="min-w-full divide-y divide-gray-200">
-                        <thead class="bg-gray-50">
-                            <tr>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">#</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Items</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Total</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Payment</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Status</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider">Date</th>
-                                <th class="px-6 py-3 text-left text-xs font-medium text-gray-500 uppercase tracking-wider"></th>
-                            </tr>
-                        </thead>
-                        <tbody id="myOrdersBody" class="bg-white divide-y divide-gray-200"></tbody>
-                    </table>
+                    <div class="overflow-x-auto border border-stone-300 rounded-none">
+                        <table class="min-w-full divide-y divide-stone-300">
+                            <thead class="bg-stone-100 text-stone-700">
+                                <tr>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">#</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Items</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Total</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Payment</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Status</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider">Date</th>
+                                    <th class="px-6 py-3 text-left text-xs font-semibold uppercase tracking-wider"></th>
+                                </tr>
+                            </thead>
+                            <tbody id="myOrdersBody" class="bg-white divide-y divide-stone-200"></tbody>
+                        </table>
+                    </div>
 
                     <div id="myOrdersPagination" class="mt-4 flex items-center justify-between text-sm text-gray-600"></div>
 

@@ -1,17 +1,17 @@
 <x-app-layout>
     <div class="py-8">
         <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8">
+            <div class="bg-white rounded-none border border-stone-300 shadow-sm p-6 sm:p-8">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                    <input type="text" id="searchInput" placeholder="Search title or SKU..." class="border border-gray-200 rounded-xl px-4 py-2.5 text-sm w-full max-w-md focus:ring-2 focus:ring-gray-900 focus:outline-none">
-                    <button onclick="openModal()" class="bg-gray-900 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm hover:bg-gray-800 transition-all shrink-0">
+                    <input type="text" id="searchInput" placeholder="Search title or SKU..." class="border border-stone-300 rounded-none px-4 py-2.5 text-sm w-full max-w-md focus:ring-1 focus:ring-stone-800 focus:border-stone-800 focus:outline-none">
+                    <button onclick="openModal()" class="bg-[#222522] hover:bg-[#753D45] text-white text-sm font-semibold px-4 py-2.5 rounded-none shadow-sm transition-all shrink-0">
                         + Add Product
                     </button>
                 </div>
 
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto border border-stone-300 rounded-none">
                     <table id="productsTable" class="w-full text-left border-collapse">
-                        <thead class="bg-gray-50 text-gray-500 uppercase text-xs tracking-wider border-b border-gray-100">
+                        <thead class="bg-stone-100 text-stone-700 uppercase text-xs tracking-wider border-b border-stone-300">
                             <tr>
                                 <th class="px-4 py-3.5 font-semibold">Thumbnail</th>
                                 <th class="px-4 py-3.5 font-semibold">SKU</th>
@@ -23,7 +23,7 @@
                                 <th class="px-4 py-3.5 font-semibold text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100 text-sm text-gray-700"></tbody>
+                        <tbody class="divide-y divide-stone-200 text-sm text-stone-800 bg-white"></tbody>
                     </table>
                 </div>
             </div>

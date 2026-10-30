@@ -11,8 +11,22 @@ export default {
 
     theme: {
         extend: {
+            colors: {
+                gallery: {
+                    ivory: 'var(--color-gallery-ivory)',
+                    cream: 'var(--color-gallery-cream)',
+                    charcoal: 'var(--color-gallery-charcoal)',
+                    burgundy: 'var(--color-gallery-burgundy)',
+                    'burgundy-dark': 'var(--color-gallery-burgundy-dark)',
+                    muted: 'var(--color-gallery-muted)',
+                    border: 'var(--color-gallery-border)',
+                    surface: 'var(--color-gallery-surface)',
+                    'frame-backing': 'var(--color-gallery-frame-backing)',
+                },
+            },
             fontFamily: {
                 sans: ['Figtree', ...defaultTheme.fontFamily.sans],
+                serif: ['Playfair Display', ...defaultTheme.fontFamily.serif],
             },
         },
     },

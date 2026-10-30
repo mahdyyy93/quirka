@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+:root {
+    --color-gallery-ivory: #e6d3ae;
+    --color-gallery-cream: #eee7d9;
+    --color-gallery-charcoal: #222522;
+    --color-gallery-burgundy: #6b3d1b;
+    --color-gallery-burgundy-dark: #5E2F36;
+    --color-gallery-muted: #6E6B65;
+    --color-gallery-border: #E5E0D8;
+    --color-gallery-surface: #FFFFFF;
+    --color-gallery-frame-backing: #EAE5DC;
+}
+
 [x-cloak] {
     display: none !important;
 }

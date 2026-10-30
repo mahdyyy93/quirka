@@ -38,27 +38,27 @@
             </div>
         </form>
 
-        <div class="mt-8 border-t border-gray-200 pt-6">
+        <div class="mt-8 border-t border-stone-300 pt-6">
             <h3 class="text-lg font-medium text-gray-900 mb-4">Live Price Preview by Size</h3>
-            <div class="overflow-x-auto">
-                <table class="min-w-full divide-y divide-gray-200 text-sm">
-                    <thead class="bg-gray-50">
+            <div class="overflow-x-auto border border-stone-300 rounded-none">
+                <table class="min-w-full divide-y divide-stone-300 text-sm">
+                    <thead class="bg-stone-100 text-stone-700">
                         <tr>
-                            <th class="px-4 py-2 text-left font-medium text-gray-500">Variant Size</th>
-                            <th class="px-4 py-2 text-right font-medium text-gray-500">Print Cost</th>
-                            <th class="px-4 py-2 text-right font-medium text-emerald-600">Your Profit</th>
-                            <th class="px-4 py-2 text-right font-medium text-gray-500">Platform Cut</th>
-                            <th class="px-4 py-2 text-right font-bold text-gray-900">Retail Price</th>
+                            <th class="px-4 py-3 text-left font-semibold text-stone-700">Variant Size</th>
+                            <th class="px-4 py-3 text-right font-semibold text-stone-700">Print Cost</th>
+                            <th class="px-4 py-3 text-right font-semibold text-emerald-700">Your Profit</th>
+                            <th class="px-4 py-3 text-right font-semibold text-stone-700">Platform Cut</th>
+                            <th class="px-4 py-3 text-right font-bold text-gray-900">Retail Price</th>
                         </tr>
                     </thead>
-                    <tbody class="divide-y divide-gray-200 bg-white">
+                    <tbody class="divide-y divide-stone-200 bg-white">
                         @foreach ($breakdowns as $size => $breakdown)
                             <tr>
-                                <td class="px-4 py-2 font-medium text-gray-800">{{ $size }}</td>
-                                <td class="px-4 py-2 text-right text-gray-600">{{ number_format($breakdown->printCost, 2) }} EGP</td>
-                                <td class="px-4 py-2 text-right font-semibold text-emerald-600">{{ number_format($breakdown->artistProfit, 2) }} EGP</td>
-                                <td class="px-4 py-2 text-right text-gray-600">{{ number_format($breakdown->platformCut, 2) }} EGP</td>
-                                <td class="px-4 py-2 text-right font-bold text-gray-900">{{ number_format($breakdown->unitPrice, 2) }} EGP</td>
+                                <td class="px-4 py-2.5 font-medium text-stone-800">{{ $size }}</td>
+                                <td class="px-4 py-2.5 text-right text-stone-600">{{ number_format($breakdown->printCost, 2) }} EGP</td>
+                                <td class="px-4 py-2.5 text-right font-semibold text-emerald-700">{{ number_format($breakdown->artistProfit, 2) }} EGP</td>
+                                <td class="px-4 py-2.5 text-right text-stone-600">{{ number_format($breakdown->platformCut, 2) }} EGP</td>
+                                <td class="px-4 py-2.5 text-right font-bold text-gray-900">{{ number_format($breakdown->unitPrice, 2) }} EGP</td>
                             </tr>
                         @endforeach
                     </tbody>

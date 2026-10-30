@@ -63,29 +63,29 @@
 
         {{-- ==================== TAB 1: ROLES LIST ==================== --}}
         @if($activeTab === 'roles')
-            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8">
+            <div class="bg-white rounded-none border border-stone-300 shadow-sm p-6 sm:p-8">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <div class="w-full sm:max-w-md">
                         <input
                             type="text"
                             wire:model.live.debounce.300ms="roleSearch"
                             placeholder="Search roles by name..."
-                            class="border border-gray-200 rounded-xl px-4 py-2.5 text-sm w-full focus:ring-2 focus:ring-gray-900 focus:outline-none"
+                            class="border border-stone-300 rounded-none px-4 py-2.5 text-sm w-full focus:ring-1 focus:ring-stone-800 focus:border-stone-800 focus:outline-none"
                         >
                     </div>
 
                     <button
                         wire:click="openCreateRoleModal"
-                        class="bg-gray-900 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm hover:bg-gray-800 transition-all shrink-0 inline-flex items-center gap-2"
+                        class="bg-[#222522] hover:bg-[#753D45] text-white text-sm font-semibold px-4 py-2.5 rounded-none shadow-sm transition-all shrink-0 inline-flex items-center gap-2"
                     >
                         <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                         <span>Add New Role</span>
                     </button>
                 </div>
 
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto border border-stone-300 rounded-none">
                     <table class="w-full text-left border-collapse">
-                        <thead class="bg-gray-50 text-gray-500 uppercase text-xs tracking-wider border-b border-gray-100">
+                        <thead class="bg-stone-100 text-stone-700 uppercase text-xs tracking-wider border-b border-stone-300">
                             <tr>
                                 <th class="px-6 py-3.5 font-semibold">Role Name</th>
                                 <th class="px-6 py-3.5 font-semibold">Assigned Users</th>
@@ -94,7 +94,7 @@
                                 <th class="px-6 py-3.5 font-semibold text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100 text-sm text-gray-700">
+                        <tbody class="divide-y divide-stone-200 text-sm text-stone-800 bg-white">
                             @forelse($roles as $role)
                                 <tr class="hover:bg-gray-50/60 transition-colors">
                                     <td class="px-6 py-4 font-semibold text-gray-900 flex items-center gap-2.5">
@@ -308,7 +308,7 @@
 
                         <button
                             wire:click="openCreatePermissionModal"
-                            class="bg-gray-900 text-white text-sm font-semibold px-4 py-2.5 rounded-xl shadow-sm hover:bg-gray-800 transition-all shrink-0 inline-flex items-center gap-2"
+                            class="bg-[#222522] hover:bg-[#753D45] text-white text-sm font-semibold px-4 py-2.5 rounded-none shadow-sm transition-all shrink-0 inline-flex items-center gap-2"
                         >
                             <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
                             <span>Add New Permission</span>
@@ -316,9 +316,9 @@
                     </div>
                 </div>
 
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto border border-stone-300 rounded-none">
                     <table class="w-full text-left border-collapse">
-                        <thead class="bg-gray-50 text-gray-500 uppercase text-xs tracking-wider border-b border-gray-100">
+                        <thead class="bg-stone-100 text-stone-700 uppercase text-xs tracking-wider border-b border-stone-300">
                             <tr>
                                 <th class="px-6 py-3.5 font-semibold">Permission Key</th>
                                 <th class="px-6 py-3.5 font-semibold">Group / Module</th>
@@ -327,7 +327,7 @@
                                 <th class="px-6 py-3.5 font-semibold text-right">Actions</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100 text-sm text-gray-700">
+                        <tbody class="divide-y divide-stone-200 text-sm text-stone-800 bg-white">
                             @forelse($allPermissions as $perm)
                                 <tr class="hover:bg-gray-50/60 transition-colors">
                                     <td class="px-6 py-4 font-mono text-xs font-semibold text-gray-900">
@@ -377,19 +377,19 @@
 
         {{-- ==================== TAB 4: USER ROLES ASSIGNMENT ==================== --}}
         @if($activeTab === 'users')
-            <div class="bg-white rounded-2xl border border-gray-100 shadow-sm p-6 sm:p-8">
+            <div class="bg-white rounded-none border border-stone-300 shadow-sm p-6 sm:p-8">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
                     <div class="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 w-full sm:max-w-xl">
                         <input
                             type="text"
                             wire:model.live.debounce.300ms="userSearch"
                             placeholder="Search users by name or email..."
-                            class="border border-gray-200 rounded-xl px-4 py-2.5 text-sm w-full focus:ring-2 focus:ring-gray-900 focus:outline-none"
+                            class="border border-stone-300 rounded-none px-4 py-2.5 text-sm w-full focus:ring-1 focus:ring-stone-800 focus:border-stone-800 focus:outline-none"
                         >
 
                         <select
                             wire:model.live="userRoleFilter"
-                            class="border border-gray-200 rounded-xl px-4 py-2.5 text-sm bg-white focus:ring-2 focus:ring-gray-900 focus:outline-none"
+                            class="border border-stone-300 rounded-none px-4 py-2.5 text-sm bg-white focus:ring-1 focus:ring-stone-800 focus:outline-none"
                         >
                             <option value="">All Roles</option>
                             @foreach($allRoles as $r)
@@ -402,9 +402,9 @@
                     <p class="text-xs text-gray-500">Each user has exactly one primary role (role_id).</p>
                 </div>
 
-                <div class="overflow-x-auto">
+                <div class="overflow-x-auto border border-stone-300 rounded-none">
                     <table class="w-full text-left border-collapse">
-                        <thead class="bg-gray-50 text-gray-500 uppercase text-xs tracking-wider border-b border-gray-100">
+                        <thead class="bg-stone-100 text-stone-700 uppercase text-xs tracking-wider border-b border-stone-300">
                             <tr>
                                 <th class="px-6 py-3.5 font-semibold">User</th>
                                 <th class="px-6 py-3.5 font-semibold">Email</th>
@@ -412,7 +412,7 @@
                                 <th class="px-6 py-3.5 font-semibold text-right">Assign Single Role</th>
                             </tr>
                         </thead>
-                        <tbody class="divide-y divide-gray-100 text-sm text-gray-700">
+                        <tbody class="divide-y divide-stone-200 text-sm text-stone-800 bg-white">
                             @forelse($users as $user)
                                 <tr class="hover:bg-gray-50/60 transition-colors">
                                     <td class="px-6 py-4 font-semibold text-gray-900 flex items-center gap-3">
