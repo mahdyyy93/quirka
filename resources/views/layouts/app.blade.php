@@ -18,12 +18,12 @@
         <!-- Scripts -->
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
-    <body class="font-sans antialiased bg-gallery-ivory text-gallery-charcoal selection:bg-gallery-burgundy/15 selection:text-gallery-burgundy">
-        <div class="min-h-screen bg-gallery-ivory flex flex-col justify-between">
+    <body class="font-sans antialiased bg-gallery-canvas text-gallery-charcoal selection:bg-gallery-burgundy/15 selection:text-gallery-burgundy">
+        <div class="min-h-screen bg-transparent flex flex-col justify-between">
             @include('layouts.navigation')
 
             @isset($header)
-                <header class="bg-gallery-cream border-b border-gallery-border">
+                <header class="bg-gallery-cream/90 backdrop-blur-sm border-b border-gallery-border">
                     <div class="max-w-7xl mx-auto py-6 px-4 sm:px-6 lg:px-8">
                         {{ $header }}
                     </div>
