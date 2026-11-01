@@ -16,6 +16,8 @@ export default {
                     ivory: 'var(--color-gallery-ivory)',
                     cream: 'var(--color-gallery-cream)',
                     charcoal: 'var(--color-gallery-charcoal)',
+                    accent: 'var(--color-gallery-accent)',
+                    'accent-hover': 'var(--color-gallery-accent-hover)',
                     burgundy: 'var(--color-gallery-burgundy)',
                     'burgundy-dark': 'var(--color-gallery-burgundy-dark)',
                     muted: 'var(--color-gallery-muted)',

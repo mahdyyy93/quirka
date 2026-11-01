@@ -15,6 +15,7 @@ class PricingSetting extends Model
         'platform_percent',
         'platform_fixed_fee_per_item',
         'rounding_step',
+        'payout_holding_days',
     ];
 
     protected $casts = [
@@ -23,6 +24,7 @@ class PricingSetting extends Model
         'platform_percent' => 'decimal:4',
         'platform_fixed_fee_per_item' => 'decimal:2',
         'rounding_step' => 'decimal:2',
+        'payout_holding_days' => 'integer',
     ];
 
     /**
@@ -36,6 +38,7 @@ class PricingSetting extends Model
             'platform_percent' => 0.1000,
             'platform_fixed_fee_per_item' => 10.00,
             'rounding_step' => 5.00,
+            'payout_holding_days' => 14,
         ]);
     }
 }

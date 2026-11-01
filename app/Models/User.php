@@ -90,4 +90,9 @@ class User extends Authenticatable
     {
         return $this->hasOne(ArtistPricingProfile::class);
     }
+
+    public function wallet(): HasOne
+    {
+        return $this->hasOne(Wallet::class);
+    }
 }

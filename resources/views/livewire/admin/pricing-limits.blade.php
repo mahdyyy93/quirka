@@ -47,11 +47,19 @@
                         class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
                     @error('rounding_step') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
                 </div>
+
+                <div>
+                    <label class="block text-sm font-medium text-gray-700">Escrow Clearance Period (Days)</label>
+                    <input type="number" step="1" min="1" max="60" wire:model="payout_holding_days" 
+                        class="mt-1 block w-full rounded-md border-gray-300 shadow-sm focus:border-indigo-500 focus:ring-indigo-500 sm:text-sm">
+                    <span class="text-xs text-gray-500 mt-0.5 block">Holding window after order delivery (recommended: 10–14 days).</span>
+                    @error('payout_holding_days') <span class="text-xs text-red-600">{{ $message }}</span> @enderror
+                </div>
             </div>
 
             <div>
-                <button type="submit" class="inline-flex justify-center py-2 px-4 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-blue-600 hover:bg-blue-700 focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blue-500">
-                    Update Limits & Reprice
+                <button type="submit" class="inline-flex justify-center py-2 px-5 border border-transparent shadow-sm text-sm font-medium rounded-md text-white bg-gallery-accent hover:bg-gallery-accent-hover focus:outline-none transition-colors">
+                    Update Settings &amp; Reprice
                 </button>
             </div>
         </form>

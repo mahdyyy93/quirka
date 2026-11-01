@@ -29,6 +29,7 @@ class Order extends Model
         'printlet_quote_id',
         'printlet_status',
         'cod_reference',
+        'delivered_at',
     ];
 
     protected $casts = [
@@ -36,6 +37,7 @@ class Order extends Model
         'printlet_status' => PrintletStatus::class,
         'total_price' => 'decimal:2',
         'shipping_amount' => 'decimal:2',
+        'delivered_at' => 'datetime',
     ];
 
     public function customer(): BelongsTo

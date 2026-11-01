@@ -44,6 +44,23 @@ class OrderObserver
         if ($order->wasChanged('status') && in_array($statusValue, ['delivered', 'completed'])) {
             $this->dispatchStatusEmail($order, 'delivered');
 
+            try {
+                app(\App\Services\WalletService::class)->holdOrderEarnings($order);
+            } catch (\Throwable $e) {
+                Log::error("OrderObserver: Failed holding wallet earnings for Order #{$order->id}: ".$e->getMessage());
+            }
+
+            return;
+        }
+
+        // 4. Cancellation milestone
+        if ($order->wasChanged('status') && $statusValue === 'cancelled') {
+            try {
+                app(\App\Services\WalletService::class)->cancelOrderEscrow($order);
+            } catch (\Throwable $e) {
+                Log::error("OrderObserver: Failed cancelling wallet escrow for Order #{$order->id}: ".$e->getMessage());
+            }
+
             return;
         }
     }

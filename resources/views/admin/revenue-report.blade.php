@@ -29,7 +29,12 @@
 
             <!-- Artist Payouts Table -->
             <div class="bg-white overflow-hidden shadow-sm rounded-none border border-stone-300 p-6">
-                <h3 class="text-lg font-medium text-gray-900 mb-4">Artist Payout Breakdown</h3>
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="text-lg font-medium text-gray-900">Artist Payout Breakdown</h3>
+                    <a href="{{ route('wallets.index') }}" class="text-xs font-semibold text-emerald-700 hover:text-emerald-800">
+                        Open Wallets &amp; Execute Payouts &rarr;
+                    </a>
+                </div>
                 <div class="overflow-x-auto border border-stone-300 rounded-none">
                     <table class="min-w-full divide-y divide-stone-300">
                         <thead class="bg-stone-100">

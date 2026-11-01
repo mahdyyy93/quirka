@@ -18,6 +18,8 @@ class PricingLimits extends Component
 
     public float $rounding_step;
 
+    public int $payout_holding_days = 14;
+
     public function mount(): void
     {
         $settings = PricingSetting::current();
@@ -26,6 +28,7 @@ class PricingLimits extends Component
         $this->platform_percent = (float) $settings->platform_percent * 100; // Display as percentage e.g. 10%
         $this->platform_fixed_fee_per_item = (float) $settings->platform_fixed_fee_per_item;
         $this->rounding_step = (float) $settings->rounding_step;
+        $this->payout_holding_days = (int) ($settings->payout_holding_days ?? 14);
     }
 
     public function save(): void
@@ -36,6 +39,7 @@ class PricingLimits extends Component
             'platform_percent' => ['required', 'numeric', 'min:0', 'max:100'],
             'platform_fixed_fee_per_item' => ['required', 'numeric', 'min:0'],
             'rounding_step' => ['required', 'numeric', 'min:0.01'],
+            'payout_holding_days' => ['required', 'integer', 'min:1', 'max:60'],
         ]);
 
         $settings = PricingSetting::current();
@@ -45,6 +49,7 @@ class PricingLimits extends Component
             'platform_percent' => $this->platform_percent / 100,
             'platform_fixed_fee_per_item' => $this->platform_fixed_fee_per_item,
             'rounding_step' => $this->rounding_step,
+            'payout_holding_days' => $this->payout_holding_days,
         ]);
 
         RepriceAllProductsJob::dispatch();

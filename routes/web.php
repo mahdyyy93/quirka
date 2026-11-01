@@ -36,6 +36,7 @@ Route::middleware('auth')->group(function () {
     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::delete('/profile', [ProfileController::class, 'destroy'])->name('profile.destroy');
     Route::get('/artist/pricing', ArtistPricingSettings::class)->name('artist.pricing')->middleware('permission:artist.pricing');
+    Route::get('/artist/wallet', \App\Livewire\Artist\WalletDashboard::class)->name('artist.wallet');
 });
 
 // Guest-accessible cart routes (session-based, no auth required)
@@ -70,6 +71,7 @@ Route::middleware(['auth', EnsureUserIsAdmin::class])->group(function () {
     Route::get('/roles', RoleManager::class)->name('roles.index')->middleware('permission:roles.index');
     Route::get('/pricing-limits', PricingLimits::class)->name('pricing-limits.index')->middleware('permission:pricing-limits.index');
     Route::get('/revenue-report', [RevenueReportController::class, 'index'])->name('revenue-report.index')->middleware('permission:revenue-report.index');
+    Route::get('/wallets', \App\Livewire\Admin\WalletManager::class)->name('wallets.index');
 
     Route::get('/admin/products', [ProductController::class, 'index'])->name('products.list')->middleware('permission:products.list');
     Route::post('/admin/products', [ProductController::class, 'store'])->name('products.store')->middleware('permission:products.store');

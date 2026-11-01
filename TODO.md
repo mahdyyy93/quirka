@@ -97,8 +97,10 @@
 
 - [ ] **Custom Brand Favicon**
   - Commit favicon assets (`favicon.ico`, `favicon.svg`, `apple-touch-icon.png`).
-- [ ] **Storefront Landing Page**
-  - Custom brand hero section replacing default welcome screen.
+- [x] **Storefront Landing Page**
+  - Contemporary art gallery and digital art marketplace redesign with warm off-white palette, balanced typography, refined navigation, and clean product grid.
+- [x] **Artist Wallet & Micro-Ledger System**
+  - Escrow clearance holding period (10–14 days post-delivery) for artist profit cuts, manual Instapay payout transfer recording, Quirka platform revenue tracking, and Printlet COD remittance accounting.
 - [ ] **About Us & Contact Page**
   - `/about` story page and `/contact` support form.
 
@@ -116,10 +118,12 @@
 | 6 | Security headers middleware | 🟠 P1 | [x] **Completed** |
 | 7 | Fix `Order::$fillable` | 🟠 P1 | [x] **Completed** |
 | 8 | Remove `/php-info` debug route | 🟠 P1 | [x] **Completed** |
-| 9 | Product detail page (`/shop/{product}`) | 🟠 P1 | [ ] Pending |
+| 9 | Product detail page (`/shop/{product}`) | 🟠 P1 | [x] **Completed** |
 | 10 | Stock validation & low stock indicators | 🟠 P1 | [ ] Pending |
 | 11 | Custom favicon & brand identity | 🟡 P2 | [x] **Completed** |
 | 12 | About & Contact pages | 🟡 P2 | [ ] Pending |
 | 13 | Printlet Production URL & Live credentials switchover | 🔴 P0 | [x] **Completed** |
 | 14 | Printlet webhook replay protection & event deduplication | 🔴 P0 | [x] **Completed** |
 | 15 | Printlet Egypt poster catalog sync (variants, print areas, shipping methods) | 🟠 P1 | [x] **Completed** |
+| 16 | Contemporary Storefront Redesign & Visual Identity | 🟠 P1 | [x] **Completed** |
+| 17 | Artist Wallet & Micro-Ledger System with Escrow Clearance | 🔴 P0 | [x] **Completed** |

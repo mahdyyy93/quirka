@@ -1,56 +1,64 @@
-<nav x-data="{ open: false }" class="sticky top-0 z-40 bg-gallery-cream/95 backdrop-blur-md border-b border-gallery-border transition-colors">
-    <!-- Top Gallery Accent Bar -->
-    <div class="h-1 w-full bg-gallery-burgundy"></div>
-
+<nav x-data="{ open: false }" class="sticky top-0 z-40 bg-white/95 backdrop-blur-md border-b border-gallery-border transition-colors">
     <!-- Primary Navigation Menu -->
     <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-20">
+        <div class="flex justify-between items-center h-20">
             <div class="flex items-center gap-10">
                 <!-- Logo -->
                 <div class="shrink-0 flex items-center">
-                    <a href="{{ route('shop.index') }}" class="group flex items-center gap-3">
-                        <img src="{{ asset('images/quirka-logo-horizontal.jpg') }}" alt="Quirka" class="h-12 w-auto object-contain rounded-sm border border-gallery-burgundy/30 group-hover:border-gallery-burgundy transition-colors">
+                    <a href="{{ route('shop.index') }}" class="flex items-center gap-3 focus:outline-none" aria-label="Quirka Home">
+                        <img src="{{ asset('images/quirka-logo-horizontal.jpg') }}" alt="Quirka" class="h-9 sm:h-10 w-auto object-contain">
                     </a>
                 </div>
 
                 <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:flex items-center">
+                <div class="hidden sm:flex sm:items-center sm:gap-7">
                     <a href="{{ route('shop.index') }}"
-                       class="text-xs uppercase tracking-[0.2em] font-medium transition-colors pb-1 border-b-2 {{ request()->routeIs('shop.index') ? 'border-gallery-burgundy text-gallery-burgundy font-semibold' : 'border-transparent text-gallery-muted hover:text-gallery-burgundy hover:border-gallery-burgundy/40' }}">
+                       class="text-sm font-medium transition-colors pb-1 border-b-2 {{ request()->routeIs('shop.index') ? 'border-gallery-accent text-gallery-charcoal font-semibold' : 'border-transparent text-gallery-muted hover:text-gallery-charcoal hover:border-gallery-border' }}">
                         {{ __('Gallery') }}
                     </a>
 
                     @auth
                         <a href="{{ route('my-orders.index') }}"
-                           class="text-xs uppercase tracking-[0.2em] font-medium transition-colors pb-1 border-b-2 {{ request()->routeIs('my-orders.*') ? 'border-gallery-burgundy text-gallery-burgundy font-semibold' : 'border-transparent text-gallery-muted hover:text-gallery-burgundy hover:border-gallery-burgundy/40' }}">
+                           class="text-sm font-medium transition-colors pb-1 border-b-2 {{ request()->routeIs('my-orders.*') ? 'border-gallery-accent text-gallery-charcoal font-semibold' : 'border-transparent text-gallery-muted hover:text-gallery-charcoal hover:border-gallery-border' }}">
                             {{ __('My Orders') }}
                         </a>
                     @endauth
 
                     @can('products.view')
                         <a href="{{ route('dashboard') }}"
-                           class="text-xs uppercase tracking-[0.2em] font-medium transition-colors pb-1 border-b-2 {{ request()->routeIs('dashboard') || request()->routeIs('products.*') ? 'border-gallery-burgundy text-gallery-burgundy font-semibold' : 'border-transparent text-gallery-muted hover:text-gallery-burgundy hover:border-gallery-burgundy/40' }}">
+                           class="text-sm font-medium transition-colors pb-1 border-b-2 {{ request()->routeIs('dashboard') || request()->routeIs('products.*') ? 'border-gallery-accent text-gallery-charcoal font-semibold' : 'border-transparent text-gallery-muted hover:text-gallery-charcoal hover:border-gallery-border' }}">
                             {{ __('Curate Art') }}
                         </a>
                     @endcan
 
                     @can('orders.view')
                         <a href="{{ route('orders.index') }}"
-                           class="text-xs uppercase tracking-[0.2em] font-medium transition-colors pb-1 border-b-2 {{ request()->routeIs('orders.*') ? 'border-gallery-burgundy text-gallery-burgundy font-semibold' : 'border-transparent text-gallery-muted hover:text-gallery-burgundy hover:border-gallery-burgundy/40' }}">
+                           class="text-sm font-medium transition-colors pb-1 border-b-2 {{ request()->routeIs('orders.*') ? 'border-gallery-accent text-gallery-charcoal font-semibold' : 'border-transparent text-gallery-muted hover:text-gallery-charcoal hover:border-gallery-border' }}">
                             {{ __('Orders') }}
+                        </a>
+                        <a href="{{ route('wallets.index') }}"
+                           class="text-sm font-medium transition-colors pb-1 border-b-2 {{ request()->routeIs('wallets.*') ? 'border-gallery-accent text-gallery-charcoal font-semibold' : 'border-transparent text-gallery-muted hover:text-gallery-charcoal hover:border-gallery-border' }}">
+                            {{ __('Payouts & Wallets') }}
+                        </a>
+                    @endcan
+
+                    @can('pricing-limits.index')
+                        <a href="{{ route('pricing-limits.index') }}"
+                           class="text-sm font-medium transition-colors pb-1 border-b-2 {{ request()->routeIs('pricing-limits.*') ? 'border-gallery-accent text-gallery-charcoal font-semibold' : 'border-transparent text-gallery-muted hover:text-gallery-charcoal hover:border-gallery-border' }}">
+                            {{ __('Pricing') }}
                         </a>
                     @endcan
 
                     @can('customers.view')
                         <a href="{{ route('customers.index') }}"
-                           class="text-xs uppercase tracking-[0.2em] font-medium transition-colors pb-1 border-b-2 {{ request()->routeIs('customers.*') ? 'border-gallery-burgundy text-gallery-burgundy font-semibold' : 'border-transparent text-gallery-muted hover:text-gallery-burgundy hover:border-gallery-burgundy/40' }}">
+                           class="text-sm font-medium transition-colors pb-1 border-b-2 {{ request()->routeIs('customers.*') ? 'border-gallery-accent text-gallery-charcoal font-semibold' : 'border-transparent text-gallery-muted hover:text-gallery-charcoal hover:border-gallery-border' }}">
                             {{ __('Clients') }}
                         </a>
                     @endcan
 
                     @can('roles.view')
                         <a href="{{ route('roles.index') }}"
-                           class="text-xs uppercase tracking-[0.2em] font-medium transition-colors pb-1 border-b-2 {{ request()->routeIs('roles.*') ? 'border-gallery-burgundy text-gallery-burgundy font-semibold' : 'border-transparent text-gallery-muted hover:text-gallery-burgundy hover:border-gallery-burgundy/40' }}">
+                           class="text-sm font-medium transition-colors pb-1 border-b-2 {{ request()->routeIs('roles.*') ? 'border-gallery-accent text-gallery-charcoal font-semibold' : 'border-transparent text-gallery-muted hover:text-gallery-charcoal hover:border-gallery-border' }}">
                             {{ __('Permissions') }}
                         </a>
                     @endcan
@@ -58,27 +66,27 @@
             </div>
 
             <!-- Right Side Action Cluster (Cart + Auth) -->
-            <div class="hidden sm:flex sm:items-center sm:gap-5">
-                {{-- Cart Button (Visible for all users) --}}
+            <div class="hidden sm:flex sm:items-center sm:gap-4">
+                {{-- Cart Button --}}
                 @php $cartCount = collect(session()->get('cart', []))->sum('quantity'); @endphp
                 <div
                     x-data="{ count: {{ $cartCount }} }"
                     x-on:cart-updated.window="if ($event.detail && typeof $event.detail.cartCount !== 'undefined') count = $event.detail.cartCount"
                     class="relative"
                 >
-                    <a href="{{ route('cart.index') }}" class="group relative inline-flex items-center gap-2.5 bg-gallery-burgundy hover:bg-gallery-burgundy-dark text-gallery-cream text-xs uppercase tracking-[0.15em] font-medium px-4 py-2.5 rounded-none border border-gallery-burgundy hover:border-gallery-burgundy-dark transition-all duration-200 shadow-sm">
-                        <svg class="w-3.5 h-3.5 text-gallery-ivory" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <a href="{{ route('cart.index') }}" class="group relative inline-flex items-center gap-2 px-3.5 py-2 rounded-md bg-gallery-cream/70 hover:bg-gallery-cream text-gallery-charcoal text-xs font-medium border border-gallery-border hover:border-gallery-muted/40 transition-colors">
+                        <svg class="w-4 h-4 text-gallery-charcoal group-hover:text-gallery-accent transition-colors" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/>
                         </svg>
-                        <span>Bag</span>
+                        <span>Cart</span>
                         <template x-if="count > 0">
-                            <span x-text="count" class="bg-white text-gallery-burgundy text-[10px] font-bold rounded-full h-4 min-w-[16px] px-1 flex items-center justify-center transition-colors">
+                            <span x-text="count" class="bg-gallery-accent text-white text-[11px] font-semibold rounded-full min-w-[18px] h-[18px] px-1 flex items-center justify-center">
                                 {{ $cartCount }}
                             </span>
                         </template>
                     </a>
                     @if(session('success') || session('error'))
-                        <div x-data="{ visible: true }" x-init="setTimeout(() => visible = false, 3000)" x-show="visible" x-transition class="absolute top-full left-1/2 z-50 mt-2 w-64 -translate-x-1/2 border px-3.5 py-2.5 text-xs shadow-lg {{ session('success') ? 'border-gallery-burgundy/30 bg-gallery-cream text-gallery-burgundy' : 'border-red-200 bg-red-50 text-red-800' }}">
+                        <div x-data="{ visible: true }" x-init="setTimeout(() => visible = false, 3000)" x-show="visible" x-transition class="absolute top-full right-0 z-50 mt-2 w-64 rounded-md border px-3.5 py-2.5 text-xs shadow-lg {{ session('success') ? 'border-gallery-border bg-white text-gallery-charcoal' : 'border-red-200 bg-red-50 text-red-800' }}">
                             {{ session('success') ?? session('error') }}
                         </div>
                     @endif
@@ -88,21 +96,24 @@
                     {{-- User Profile Dropdown --}}
                     <x-dropdown align="right" width="48">
                         <x-slot name="trigger">
-                            <button class="inline-flex items-center px-3.5 py-2 border border-gallery-burgundy/30 text-xs uppercase tracking-[0.15em] font-medium text-gallery-charcoal bg-gallery-cream hover:bg-white hover:border-gallery-burgundy focus:outline-none transition duration-150">
+                            <button class="inline-flex items-center px-3 py-2 border border-gallery-border rounded-md text-xs font-medium text-gallery-charcoal bg-white hover:bg-gallery-cream/50 hover:border-gallery-muted/40 focus:outline-none transition-colors">
                                 <span>{{ auth()->user()->name }}</span>
-                                <svg class="ms-1.5 h-3.5 w-3.5 fill-current text-gallery-burgundy" viewBox="0 0 20 20">
+                                <svg class="ms-1.5 h-3.5 w-3.5 fill-current text-gallery-muted" viewBox="0 0 20 20">
                                     <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd" />
                                 </svg>
                             </button>
                         </x-slot>
 
                         <x-slot name="content">
-                            <x-dropdown-link :href="route('profile.edit')" class="text-xs uppercase tracking-[0.1em] text-gallery-charcoal hover:text-gallery-burgundy">
+                            <x-dropdown-link :href="route('profile.edit')" class="text-xs text-gallery-charcoal hover:bg-gallery-cream/60">
                                 {{ __('Profile') }}
+                            </x-dropdown-link>
+                            <x-dropdown-link :href="route('artist.wallet')" class="text-xs text-gallery-charcoal hover:bg-gallery-cream/60">
+                                {{ __('Artist Wallet') }}
                             </x-dropdown-link>
                             <form method="POST" action="{{ route('logout') }}">
                                 @csrf
-                                <x-dropdown-link :href="route('logout')" onclick="event.preventDefault(); this.closest('form').submit();" class="text-xs uppercase tracking-[0.1em] text-gallery-burgundy hover:bg-gallery-burgundy/10">
+                                <x-dropdown-link :href="route('logout')" onclick="event.preventDefault(); this.closest('form').submit();" class="text-xs text-gallery-accent hover:bg-gallery-cream/60">
                                     {{ __('Log Out') }}
                                 </x-dropdown-link>
                             </form>
@@ -110,31 +121,34 @@
                     </x-dropdown>
                 @else
                     {{-- Guest Auth Links --}}
-                    <div class="flex items-center gap-3 text-xs uppercase tracking-[0.15em] font-medium text-gallery-muted">
-                        <a href="{{ route('login') }}" class="hover:text-gallery-burgundy px-2 py-1.5 transition-colors">Sign In</a>
-                        <span class="text-gallery-burgundy/40">/</span>
-                        <a href="{{ route('register') }}" class="text-gallery-burgundy font-semibold hover:text-gallery-burgundy-dark px-2 py-1.5 transition-colors border border-gallery-burgundy/40 hover:border-gallery-burgundy bg-gallery-burgundy/5">Join</a>
+                    <div class="flex items-center gap-3 text-xs font-medium">
+                        <a href="{{ route('login') }}" class="text-gallery-muted hover:text-gallery-charcoal px-2.5 py-1.5 transition-colors">
+                            Sign In
+                        </a>
+                        <a href="{{ route('register') }}" class="bg-gallery-accent hover:bg-gallery-accent-hover text-white px-4 py-2 rounded-md font-medium transition-colors shadow-sm">
+                            Join Quirka
+                        </a>
                     </div>
                 @endauth
             </div>
 
             <!-- Mobile Hamburger button -->
-            <div class="-me-2 flex items-center sm:hidden gap-3">
+            <div class="flex items-center sm:hidden gap-2">
                 <div
                     x-data="{ count: {{ $cartCount }} }"
                     x-on:cart-updated.window="if ($event.detail && typeof $event.detail.cartCount !== 'undefined') count = $event.detail.cartCount"
                     class="relative"
                 >
-                    <a href="{{ route('cart.index') }}" class="relative inline-flex items-center p-2 text-gallery-burgundy">
+                    <a href="{{ route('cart.index') }}" class="relative inline-flex items-center p-2 text-gallery-charcoal" aria-label="Cart">
                         <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M16 11V7a4 4 0 00-8 0v4M5 9h14l1 12H4L5 9z"/></svg>
                         <template x-if="count > 0">
-                            <span x-text="count" class="absolute top-0 right-0 bg-gallery-burgundy text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
+                            <span x-text="count" class="absolute top-0.5 right-0.5 bg-gallery-accent text-white text-[10px] font-bold rounded-full h-4 w-4 flex items-center justify-center">
                                 {{ $cartCount }}
                             </span>
                         </template>
                     </a>
                 </div>
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 border border-gallery-burgundy/40 text-gallery-burgundy hover:bg-white focus:outline-none transition duration-150">
+                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gallery-charcoal hover:bg-gallery-cream focus:outline-none transition-colors" aria-label="Toggle navigation">
                     <svg class="h-5 w-5" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M4 6h16M4 12h16M4 18h16" />
                         <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="1.75" d="M6 18L18 6M6 6l12 12" />
@@ -145,38 +159,47 @@
     </div>
 
     <!-- Mobile Navigation Drawer -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden bg-gallery-cream border-b border-gallery-border">
-        <div class="pt-3 pb-4 px-4 space-y-2">
-            <a href="{{ route('shop.index') }}" class="block py-2 text-xs uppercase tracking-[0.2em] font-medium text-gallery-burgundy">
+    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden bg-white border-b border-gallery-border">
+        <div class="pt-3 pb-4 px-4 space-y-1">
+            <a href="{{ route('shop.index') }}" class="block py-2 text-sm font-medium {{ request()->routeIs('shop.index') ? 'text-gallery-accent font-semibold' : 'text-gallery-charcoal' }}">
                 {{ __('Gallery') }}
             </a>
 
             @auth
-                <a href="{{ route('my-orders.index') }}" class="block py-2 text-xs uppercase tracking-[0.2em] font-medium text-gallery-charcoal hover:text-gallery-burgundy">
+                <a href="{{ route('my-orders.index') }}" class="block py-2 text-sm font-medium {{ request()->routeIs('my-orders.*') ? 'text-gallery-accent font-semibold' : 'text-gallery-charcoal' }}">
                     {{ __('My Orders') }}
                 </a>
             @endauth
 
             @can('products.view')
-                <a href="{{ route('dashboard') }}" class="block py-2 text-xs uppercase tracking-[0.2em] font-medium text-gallery-charcoal hover:text-gallery-burgundy">
+                <a href="{{ route('dashboard') }}" class="block py-2 text-sm font-medium text-gallery-charcoal hover:text-gallery-accent">
                     {{ __('Curate Art') }}
                 </a>
             @endcan
 
             @can('orders.view')
-                <a href="{{ route('orders.index') }}" class="block py-2 text-xs uppercase tracking-[0.2em] font-medium text-gallery-charcoal hover:text-gallery-burgundy">
+                <a href="{{ route('orders.index') }}" class="block py-2 text-sm font-medium text-gallery-charcoal hover:text-gallery-accent">
                     {{ __('Orders') }}
+                </a>
+                <a href="{{ route('wallets.index') }}" class="block py-2 text-sm font-medium text-gallery-charcoal hover:text-gallery-accent">
+                    {{ __('Payouts & Wallets') }}
+                </a>
+            @endcan
+
+            @can('pricing-limits.index')
+                <a href="{{ route('pricing-limits.index') }}" class="block py-2 text-sm font-medium text-gallery-charcoal hover:text-gallery-accent">
+                    {{ __('Pricing') }}
                 </a>
             @endcan
 
             @can('customers.view')
-                <a href="{{ route('customers.index') }}" class="block py-2 text-xs uppercase tracking-[0.2em] font-medium text-gallery-charcoal hover:text-gallery-burgundy">
+                <a href="{{ route('customers.index') }}" class="block py-2 text-sm font-medium text-gallery-charcoal hover:text-gallery-accent">
                     {{ __('Clients') }}
                 </a>
             @endcan
 
             @can('roles.view')
-                <a href="{{ route('roles.index') }}" class="block py-2 text-xs uppercase tracking-[0.2em] font-medium text-gallery-charcoal hover:text-gallery-burgundy">
+                <a href="{{ route('roles.index') }}" class="block py-2 text-sm font-medium text-gallery-charcoal hover:text-gallery-accent">
                     {{ __('Permissions') }}
                 </a>
             @endcan
@@ -184,22 +207,22 @@
 
         @auth
             <div class="pt-4 pb-4 border-t border-gallery-border px-4 space-y-2">
-                <div class="font-serif italic text-base text-gallery-burgundy">{{ auth()->user()->name }}</div>
+                <div class="text-sm font-medium text-gallery-charcoal">{{ auth()->user()->name }}</div>
                 <div class="text-xs text-gallery-muted">{{ auth()->user()->email }}</div>
-                <div class="mt-3 space-y-2">
-                    <a href="{{ route('profile.edit') }}" class="block text-xs uppercase tracking-[0.15em] text-gallery-charcoal hover:text-gallery-burgundy py-1">{{ __('Profile') }}</a>
+                <div class="mt-3 space-y-1.5">
+                    <a href="{{ route('profile.edit') }}" class="block text-xs font-medium text-gallery-charcoal hover:text-gallery-accent py-1">{{ __('Profile') }}</a>
                     <form method="POST" action="{{ route('logout') }}">
                         @csrf
-                        <button type="submit" class="block text-xs uppercase tracking-[0.15em] text-gallery-burgundy py-1">
+                        <button type="submit" class="block text-xs font-medium text-gallery-accent py-1">
                             {{ __('Log Out') }}
                         </button>
                     </form>
                 </div>
             </div>
         @else
-            <div class="pt-4 pb-4 border-t border-gallery-border px-4 space-y-2">
-                <a href="{{ route('login') }}" class="block text-xs uppercase tracking-[0.15em] text-gallery-charcoal hover:text-gallery-burgundy py-1.5">Sign In</a>
-                <a href="{{ route('register') }}" class="block text-xs uppercase tracking-[0.15em] text-gallery-burgundy font-semibold py-1.5">Join Quirka</a>
+            <div class="pt-4 pb-4 border-t border-gallery-border px-4 flex items-center gap-3">
+                <a href="{{ route('login') }}" class="block flex-1 text-center text-xs font-medium text-gallery-charcoal border border-gallery-border py-2 rounded-md hover:bg-gallery-cream">Sign In</a>
+                <a href="{{ route('register') }}" class="block flex-1 text-center text-xs font-medium text-white bg-gallery-accent py-2 rounded-md hover:bg-gallery-accent-hover">Join Quirka</a>
             </div>
         @endauth
     </div>

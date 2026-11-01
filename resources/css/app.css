@@ -12,9 +12,11 @@
     --color-gallery-charcoal: #202421;
     --color-gallery-muted: #777D78;
 
-    /* Brand */
+    /* Brand Accent */
     --color-gallery-burgundy: #246B61;
     --color-gallery-burgundy-dark: #174B43;
+    --color-gallery-accent: #246B61;
+    --color-gallery-accent-hover: #174B43;
 
     /* Borders and details */
     --color-gallery-border: #E7E8E3;
@@ -25,13 +27,7 @@
     display: none !important;
 }
 
-/* Subtle museum archival canvas texture & ambient gradient overlay */
+/* Contemporary clean solid background */
 .bg-gallery-canvas {
     background-color: var(--color-gallery-ivory);
-    background-image:
-        radial-gradient(circle at 18% 12%, rgba(106, 151, 218, 0.38) 0%, transparent 40%),
-        radial-gradient(circle at 82% 78%, rgba(20, 171, 197, 0.321) 0%, transparent 45%),
-        radial-gradient(circle at 50% 50%, rgba(255, 255, 255, 0.25) 0%, transparent 60%),
-        url("data:image/svg+xml,%3Csvg viewBox='0 0 240 240' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='noiseFilter'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.75' numOctaves='3' stitchTiles='stitch'/%3E%3CfeColorMatrix type='matrix' values='1 0 0 0 0  0 1 0 0 0  0 0 1 0 0  0 0 0 0.038 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23noiseFilter)'/%3E%3C/svg%3E");
-    background-attachment: fixed;
 }
