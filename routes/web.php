@@ -78,6 +78,7 @@ Route::middleware(['auth', EnsureUserIsAdmin::class])->group(function () {
     Route::put('/admin/products/{product}', [ProductController::class, 'update'])->name('products.update')->middleware('permission:products.update');
     Route::delete('/admin/products/{product}', [ProductController::class, 'destroy'])->name('products.destroy')->middleware('permission:products.destroy');
     Route::patch('/admin/products/{product}/toggle-availability', [ProductController::class, 'toggleAvailability'])->name('products.toggle-availability')->middleware('permission:products.toggle-availability');
+    Route::patch('/admin/products/{product}/toggle-featured', [ProductController::class, 'toggleFeatured'])->name('products.toggle-featured')->middleware('permission:products.toggle-featured');
 
     Route::get('/admin/orders', [AdminOrderController::class, 'index'])->name('orders.list')->middleware('permission:orders.list');
     Route::get('/admin/customers', [CustomerController::class, 'index'])->name('customers.list')->middleware('permission:customers.list');

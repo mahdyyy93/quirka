@@ -32,6 +32,11 @@ class ProductController extends Controller
             });
         }
 
+        if ($request->boolean('featured')) {
+            $query->where('is_featured', true)
+                ->orderByRaw('featured_order IS NULL, featured_order ASC');
+        }
+
         return response()->json($query->paginate(15));
     }
 
@@ -48,6 +53,26 @@ class ProductController extends Controller
         return response()->json([
             'message' => 'Product availability updated.',
             'is_available' => $product->is_available,
+        ]);
+    }
+
+    public function toggleFeatured(Request $request, Product $product)
+    {
+        $user = $request->user();
+        if ($user && ! $user->can('products.view-all') && ! $user->hasRole('admin') && $user->role !== 'admin') {
+            abort(403, 'Only administrators can feature products on the homepage.');
+        }
+
+        $product->is_featured = ! $product->is_featured;
+        if ($product->is_featured && $product->featured_order === null) {
+            $product->featured_order = ((int) Product::max('featured_order')) + 1;
+        }
+        $product->save();
+
+        return response()->json([
+            'message' => 'Product homepage featured status updated.',
+            'is_featured' => $product->is_featured,
+            'featured_order' => $product->featured_order,
         ]);
     }
 

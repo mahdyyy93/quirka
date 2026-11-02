@@ -21,6 +21,8 @@ class Product extends Model
         'artist_min_profit',
         'artist_max_profit',
         'is_available',
+        'is_featured',
+        'featured_order',
         'customizations',
         'description',
         'printlet_artwork_id',
@@ -29,6 +31,8 @@ class Product extends Model
 
     protected $casts = [
         'is_available' => 'boolean',
+        'is_featured' => 'boolean',
+        'featured_order' => 'integer',
         'customizations' => 'array',
         'price' => 'decimal:2',
         'artist_min_profit' => 'decimal:2',
@@ -90,6 +94,14 @@ class Product extends Model
     public function orderItems(): HasMany
     {
         return $this->hasMany(OrderItem::class);
+    }
+
+    public function scopeFeatured($query)
+    {
+        return $query->where('is_available', true)
+            ->where('is_featured', true)
+            ->orderByRaw('featured_order IS NULL, featured_order ASC')
+            ->orderByDesc('id');
     }
 
     /**

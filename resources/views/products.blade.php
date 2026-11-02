@@ -3,7 +3,13 @@
         <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
             <div class="bg-white rounded-none border border-stone-300 shadow-sm p-6 sm:p-8">
                 <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 mb-6">
-                    <input type="text" id="searchInput" placeholder="Search title or SKU..." class="border border-stone-300 rounded-none px-4 py-2.5 text-sm w-full max-w-md focus:ring-1 focus:ring-stone-800 focus:border-stone-800 focus:outline-none">
+                    <div class="flex flex-wrap items-center gap-3 w-full max-w-2xl">
+                        <input type="text" id="searchInput" placeholder="Search title or SKU..." class="border border-stone-300 rounded-none px-4 py-2.5 text-sm w-full max-w-md focus:ring-1 focus:ring-stone-800 focus:border-stone-800 focus:outline-none">
+                        <button type="button" id="featuredFilterBtn" onclick="toggleFeaturedFilter()" class="border border-stone-300 bg-stone-50 hover:bg-stone-100 text-stone-700 text-xs font-semibold uppercase tracking-wider px-3.5 py-2.5 transition-all flex items-center gap-1.5">
+                            <span id="featuredFilterIcon">☆</span>
+                            <span>Homepage Featured</span>
+                        </button>
+                    </div>
                     <button onclick="openModal()" class="bg-[#222522] hover:bg-[#753D45] text-white text-sm font-semibold px-4 py-2.5 rounded-none shadow-sm transition-all shrink-0">
                         + Add Product
                     </button>
@@ -19,6 +25,7 @@
                                 <th class="px-4 py-3.5 font-semibold">Price</th>
                                 <th class="px-4 py-3.5 font-semibold">Images</th>
                                 <th class="px-4 py-3.5 font-semibold">Artist</th>
+                                <th class="px-4 py-3.5 font-semibold">Homepage</th>
                                 <th class="px-4 py-3.5 font-semibold">Availability</th>
                                 <th class="px-4 py-3.5 font-semibold text-right">Actions</th>
                             </tr>
@@ -99,9 +106,14 @@
     <script>
         // Global map to store product data for editing
         let currentProducts = {};
+        let onlyFeatured = false;
 
         async function fetchProducts(search = '') {
-            const res = await fetch(`/admin/products?search=${search}`);
+            const params = new URLSearchParams({ search });
+            if (onlyFeatured) {
+                params.set('featured', '1');
+            }
+            const res = await fetch(`/admin/products?${params.toString()}`);
             const data = await res.json();
             const tbody = document.querySelector('#productsTable tbody');
             tbody.innerHTML = '';
@@ -134,6 +146,12 @@
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-900">$${product.price}</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${product.images ? product.images.length : 0} img(s)</td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm text-gray-500">${product.user ? product.user.name : 'None'}</td>
+                    <td class="px-6 py-4 whitespace-nowrap text-sm">
+                        <button type="button" onclick="toggleFeatured(${product.id})" class="px-2.5 py-1 inline-flex items-center gap-1 text-xs leading-5 font-semibold rounded-full border transition-all ${product.is_featured ? 'bg-amber-50 text-amber-800 border-amber-300 shadow-sm' : 'bg-white text-stone-500 border-stone-200 hover:bg-stone-50 hover:text-stone-700'}" title="Toggle homepage showcase">
+                            <span>${product.is_featured ? '★' : '☆'}</span>
+                            <span>${product.is_featured ? 'Featured' : 'Feature'}</span>
+                        </button>
+                    </td>
                     <td class="px-6 py-4 whitespace-nowrap text-sm">
                         <span class="px-2 inline-flex text-xs leading-5 font-semibold rounded-full ${product.is_available ? 'bg-green-100 text-green-800' : 'bg-red-100 text-red-800'}">
                             ${product.is_available ? 'Active' : 'Hidden'}
@@ -303,6 +321,38 @@
                     'Accept': 'application/json'
                 }
             });
+            fetchProducts(document.getElementById('searchInput').value);
+        }
+
+        async function toggleFeatured(id) {
+            const res = await fetch(`/admin/products/${id}/toggle-featured`, {
+                method: 'PATCH',
+                headers: {
+                    'X-CSRF-TOKEN': '{{ csrf_token() }}',
+                    'Accept': 'application/json'
+                }
+            });
+            if (!res.ok) {
+                const err = await res.json().catch(() => ({}));
+                alert(err.message || 'Unable to update homepage featured status.');
+                return;
+            }
+            fetchProducts(document.getElementById('searchInput').value);
+        }
+
+        function toggleFeaturedFilter() {
+            onlyFeatured = !onlyFeatured;
+            const btn = document.getElementById('featuredFilterBtn');
+            const icon = document.getElementById('featuredFilterIcon');
+            if (onlyFeatured) {
+                btn.classList.remove('border-stone-300', 'bg-stone-50', 'text-stone-700');
+                btn.classList.add('border-amber-400', 'bg-amber-50', 'text-amber-900');
+                icon.innerText = '★';
+            } else {
+                btn.classList.add('border-stone-300', 'bg-stone-50', 'text-stone-700');
+                btn.classList.remove('border-amber-400', 'bg-amber-50', 'text-amber-900');
+                icon.innerText = '☆';
+            }
             fetchProducts(document.getElementById('searchInput').value);
         }
 

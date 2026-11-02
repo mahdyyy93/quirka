@@ -29,49 +29,156 @@
                         </div>
                     </div>
 
-                    {{-- Hero Featured Artwork --}}
+                    {{-- Hero Featured Artwork Showcase (Multi-Product Carousel) --}}
                     <div class="lg:col-span-5">
-                        @php
-                            $featuredProduct = $products->first();
-                            $featuredImage = $featuredProduct ? $featuredProduct->images->first() : null;
-                        @endphp
-                        @if($featuredProduct)
-                            <div class="group relative">
+                        @if(isset($featuredProducts) && $featuredProducts->isNotEmpty())
+                            <div
+                                x-data="{
+                                    activeIndex: 0,
+                                    total: {{ $featuredProducts->count() }},
+                                    timer: null,
+                                    paused: false,
+                                    init() {
+                                        if (this.total > 1) {
+                                            this.startTimer();
+                                        }
+                                    },
+                                    startTimer() {
+                                        this.stopTimer();
+                                        this.timer = setInterval(() => {
+                                            if (!this.paused) {
+                                                this.next();
+                                            }
+                                        }, 5500);
+                                    },
+                                    stopTimer() {
+                                        if (this.timer) {
+                                            clearInterval(this.timer);
+                                            this.timer = null;
+                                        }
+                                    },
+                                    next() {
+                                        this.activeIndex = (this.activeIndex + 1) % this.total;
+                                    },
+                                    prev() {
+                                        this.activeIndex = (this.activeIndex - 1 + this.total) % this.total;
+                                    },
+                                    goTo(index) {
+                                        this.activeIndex = index;
+                                        if (this.total > 1) this.startTimer();
+                                    }
+                                }"
+                                @mouseenter="paused = true"
+                                @mouseleave="paused = false"
+                                class="group relative"
+                            >
                                 <div class="bg-white rounded-xl p-3 sm:p-4 border border-gallery-border shadow-sm hover:shadow-md transition-all duration-300">
-                                    <a href="{{ route('shop.show', $featuredProduct) }}" class="block aspect-[4/5] rounded-lg overflow-hidden bg-[#F9F9F8] relative focus:outline-none" aria-label="View {{ $featuredProduct->title }}">
-                                        @if($featuredImage)
-                                            <img
-                                                src="{{ Storage::url($featuredImage->path) }}"
-                                                alt="{{ $featuredProduct->title }}"
-                                                class="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700 ease-out"
+                                    {{-- Image Viewport --}}
+                                    <div class="aspect-[4/5] rounded-lg overflow-hidden bg-[#F9F9F8] relative">
+                                        @foreach($featuredProducts as $idx => $featuredProduct)
+                                            @php
+                                                $featuredImage = $featuredProduct->images->first();
+                                            @endphp
+                                            <a
+                                                href="{{ route('shop.show', $featuredProduct) }}"
+                                                x-show="activeIndex === {{ $idx }}"
+                                                x-transition:enter="transition ease-out duration-500"
+                                                x-transition:enter-start="opacity-0 scale-[0.99]"
+                                                x-transition:enter-end="opacity-100 scale-100"
+                                                x-transition:leave="transition ease-in duration-300 absolute inset-0"
+                                                x-transition:leave-start="opacity-100"
+                                                x-transition:leave-end="opacity-0"
+                                                @if($idx > 0) x-cloak @endif
+                                                class="block w-full h-full relative focus:outline-none"
+                                                aria-label="View {{ $featuredProduct->title }}"
                                             >
-                                        @else
-                                            <div class="w-full h-full flex flex-col items-center justify-center text-gallery-muted">
-                                                <svg class="w-12 h-12 mb-2 stroke-1 text-gallery-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
-                                                    <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
-                                                </svg>
-                                                <span class="text-xs uppercase tracking-wider text-gallery-muted">Featured Artwork</span>
+                                                @if($featuredImage)
+                                                    <img
+                                                        src="{{ Storage::url($featuredImage->path) }}"
+                                                        alt="{{ $featuredProduct->title }}"
+                                                        class="w-full h-full object-cover group-hover:scale-[1.03] transition-transform duration-700 ease-out"
+                                                    >
+                                                @else
+                                                    <div class="w-full h-full flex flex-col items-center justify-center text-gallery-muted">
+                                                        <svg class="w-12 h-12 mb-2 stroke-1 text-gallery-muted" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                            <path stroke-linecap="round" stroke-linejoin="round" d="M4 16l4.586-4.586a2 2 0 012.828 0L16 16m-2-2l1.586-1.586a2 2 0 012.828 0L20 14m-6-6h.01M6 20h12a2 2 0 002-2V6a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+                                                        </svg>
+                                                        <span class="text-xs uppercase tracking-wider text-gallery-muted">Featured Artwork</span>
+                                                    </div>
+                                                @endif
+                                            </a>
+                                        @endforeach
+
+                                        {{-- Prev / Next Controls when multiple featured products exist --}}
+                                        @if($featuredProducts->count() > 1)
+                                            <div class="absolute inset-x-3 top-1/2 -translate-y-1/2 flex items-center justify-between pointer-events-none z-10 opacity-0 group-hover:opacity-100 transition-opacity duration-200">
+                                                <button
+                                                    type="button"
+                                                    @click.prevent="prev()"
+                                                    class="pointer-events-auto w-9 h-9 rounded-full bg-white/90 hover:bg-white text-gallery-charcoal shadow-sm border border-gallery-border flex items-center justify-center transition-transform hover:scale-105 focus:outline-none"
+                                                    aria-label="Previous Featured Artwork"
+                                                >
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"/>
+                                                    </svg>
+                                                </button>
+                                                <button
+                                                    type="button"
+                                                    @click.prevent="next()"
+                                                    class="pointer-events-auto w-9 h-9 rounded-full bg-white/90 hover:bg-white text-gallery-charcoal shadow-sm border border-gallery-border flex items-center justify-center transition-transform hover:scale-105 focus:outline-none"
+                                                    aria-label="Next Featured Artwork"
+                                                >
+                                                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/>
+                                                    </svg>
+                                                </button>
                                             </div>
                                         @endif
-                                    </a>
-
-                                    <div class="mt-3.5 px-1 pb-1 flex items-baseline justify-between gap-4">
-                                        <div class="min-w-0">
-                                            <span class="text-[11px] uppercase tracking-wider text-gallery-muted font-medium block">Exhibition Highlight</span>
-                                            <a href="{{ route('shop.show', $featuredProduct) }}" class="font-medium text-base text-gallery-charcoal hover:text-gallery-accent transition-colors truncate block">
-                                                {{ $featuredProduct->title }}
-                                            </a>
-                                            <span class="block text-xs text-gallery-muted mt-0.5">
-                                                {{ $featuredProduct->user?->name ?? 'Quirka Studio' }}
-                                            </span>
-                                        </div>
-                                        <div class="text-right shrink-0">
-                                            <span class="text-[10px] uppercase tracking-wider text-gallery-muted font-medium block">From</span>
-                                            <div class="text-base font-semibold text-gallery-charcoal">
-                                                <span class="text-xs font-normal text-gallery-muted uppercase">EGP</span> {{ number_format($featuredProduct->price, 2) }}
-                                            </div>
-                                        </div>
                                     </div>
+
+                                    {{-- Metadata Footer for Active Slide --}}
+                                    <div class="mt-3.5 px-1 pb-1 relative min-h-[60px]">
+                                        @foreach($featuredProducts as $idx => $featuredProduct)
+                                            <div
+                                                x-show="activeIndex === {{ $idx }}"
+                                                @if($idx > 0) x-cloak @endif
+                                                class="flex items-baseline justify-between gap-4"
+                                            >
+                                                <div class="min-w-0">
+                                                    <span class="text-[11px] uppercase tracking-wider text-gallery-muted font-medium block">
+                                                        Exhibition Highlight @if($featuredProducts->count() > 1) ({{ $idx + 1 }}/{{ $featuredProducts->count() }}) @endif
+                                                    </span>
+                                                    <a href="{{ route('shop.show', $featuredProduct) }}" class="font-medium text-base text-gallery-charcoal hover:text-gallery-accent transition-colors truncate block">
+                                                        {{ $featuredProduct->title }}
+                                                    </a>
+                                                    <span class="block text-xs text-gallery-muted mt-0.5">
+                                                        {{ $featuredProduct->user?->name ?? 'Quirka Studio' }}
+                                                    </span>
+                                                </div>
+                                                <div class="text-right shrink-0">
+                                                    <span class="text-[10px] uppercase tracking-wider text-gallery-muted font-medium block">From</span>
+                                                    <div class="text-base font-semibold text-gallery-charcoal">
+                                                        <span class="text-xs font-normal text-gallery-muted uppercase">EGP</span> {{ number_format($featuredProduct->price, 2) }}
+                                                    </div>
+                                                </div>
+                                            </div>
+                                        @endforeach
+                                    </div>
+
+                                    {{-- Interactive Pagination Indicator Dashes --}}
+                                    @if($featuredProducts->count() > 1)
+                                        <div class="mt-3 pt-2.5 border-t border-gallery-border/60 flex items-center justify-center gap-2">
+                                            @foreach($featuredProducts as $idx => $featuredProduct)
+                                                <button
+                                                    type="button"
+                                                    @click="goTo({{ $idx }})"
+                                                    :class="activeIndex === {{ $idx }} ? 'w-7 bg-gallery-accent' : 'w-2 bg-gallery-border hover:bg-gallery-muted/50'"
+                                                    class="h-1.5 rounded-full transition-all duration-300 focus:outline-none"
+                                                    aria-label="Show featured artwork {{ $idx + 1 }}: {{ $featuredProduct->title }}"
+                                                ></button>
+                                            @endforeach
+                                        </div>
+                                    @endif
                                 </div>
                             </div>
                         @endif
