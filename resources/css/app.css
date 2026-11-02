@@ -31,3 +31,17 @@
 .bg-gallery-canvas {
     background-color: var(--color-gallery-ivory);
 }
+
+/* Botanical pressed-flower & wall paint texture background layer */
+.bg-botanical-layer {
+    background-repeat: no-repeat;
+    background-size: cover;
+    background-position: top center;
+}
+
+@media (max-width: 768px) {
+    .bg-botanical-layer {
+        background-size: auto 650px;
+        background-position: top left;
+    }
+}

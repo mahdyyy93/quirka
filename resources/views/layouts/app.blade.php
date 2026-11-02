@@ -19,7 +19,14 @@
         @vite(['resources/css/app.css', 'resources/js/app.js'])
     </head>
     <body class="font-sans antialiased bg-gallery-canvas text-gallery-charcoal selection:bg-gallery-accent/15 selection:text-gallery-accent min-h-screen">
-        <div class="min-h-screen bg-transparent flex flex-col justify-between">
+        <!-- Subtle Pressed-Flower Botanical Background Layer with Wall Paint Texture -->
+        <div class="fixed inset-0 pointer-events-none z-0 overflow-hidden" aria-hidden="true">
+            <div class="w-full h-full bg-botanical-layer"
+                 style="background-image: url('{{ asset('images/pressed-flowers-bg.svg') }}?v={{ filemtime(public_path('images/pressed-flowers-bg.svg')) }}');">
+            </div>
+        </div>
+
+        <div class="min-h-screen bg-transparent flex flex-col justify-between relative z-10">
             @include('layouts.navigation')
 
             @isset($header)

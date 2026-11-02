@@ -1,0 +1,585 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1920 1200" width="100%" height="100%" preserveAspectRatio="xMidYMin slice">
+  <defs>
+    <!-- ==================== 1. WALL PAINT TEXTURE (Plaster Stipple & Noise) ==================== -->
+    <!-- Authentic matte painted wall roller / stipple pattern -->
+    <pattern id="wall-paint-stipple" width="90" height="90" patternUnits="userSpaceOnUse">
+      <circle cx="55.4" cy="47.9" r="0.79" fill="#787265" opacity="0.103" />
+      <circle cx="73.5" cy="34.8" r="1.13" fill="#FFFFFF" opacity="0.171" />
+      <circle cx="88.3" cy="19.0" r="1.03" fill="#FFFFFF" opacity="0.151" />
+      <circle cx="73.2" cy="36.1" r="0.55" fill="#FFFFFF" opacity="0.175" />
+      <circle cx="36.5" cy="71.5" r="1.14" fill="#FFFFFF" opacity="0.223" />
+      <circle cx="53.3" cy="41.6" r="1.27" fill="#FFFFFF" opacity="0.171" />
+      <circle cx="61.8" cy="81.5" r="0.87" fill="#787265" opacity="0.106" />
+      <circle cx="6.9" cy="47.2" r="0.99" fill="#787265" opacity="0.094" />
+      <circle cx="36.9" cy="58.5" r="1.0" fill="#FFFFFF" opacity="0.203" />
+      <circle cx="18.3" cy="26.1" r="0.86" fill="#FFFFFF" opacity="0.22" />
+      <circle cx="28.7" cy="71.0" r="0.99" fill="#787265" opacity="0.153" />
+      <circle cx="49.4" cy="69.3" r="0.94" fill="#787265" opacity="0.158" />
+      <circle cx="19.8" cy="86.8" r="0.92" fill="#787265" opacity="0.152" />
+      <circle cx="5.4" cy="44.5" r="1.09" fill="#787265" opacity="0.162" />
+      <circle cx="71.8" cy="43.9" r="1.1" fill="#FFFFFF" opacity="0.175" />
+      <circle cx="50.1" cy="51.1" r="0.71" fill="#787265" opacity="0.1" />
+      <circle cx="6.2" cy="16.0" r="1.16" fill="#787265" opacity="0.166" />
+      <circle cx="74.4" cy="78.2" r="0.94" fill="#787265" opacity="0.139" />
+      <circle cx="78.5" cy="82.9" r="0.84" fill="#FFFFFF" opacity="0.156" />
+      <circle cx="56.8" cy="31.6" r="0.55" fill="#787265" opacity="0.144" />
+      <circle cx="53.9" cy="64.1" r="0.65" fill="#787265" opacity="0.139" />
+      <circle cx="49.6" cy="15.1" r="1.07" fill="#FFFFFF" opacity="0.179" />
+      <circle cx="18.1" cy="68.1" r="1.0" fill="#787265" opacity="0.103" />
+      <circle cx="42.3" cy="62.4" r="0.76" fill="#787265" opacity="0.138" />
+      <circle cx="57.4" cy="28.0" r="1.25" fill="#787265" opacity="0.152" />
+      <circle cx="77.9" cy="20.8" r="0.74" fill="#787265" opacity="0.12" />
+      <circle cx="57.0" cy="13.7" r="1.16" fill="#FFFFFF" opacity="0.164" />
+      <circle cx="72.6" cy="8.6" r="1.06" fill="#787265" opacity="0.157" />
+      <circle cx="25.2" cy="47.4" r="0.98" fill="#787265" opacity="0.101" />
+      <circle cx="76.6" cy="45.4" r="0.8" fill="#787265" opacity="0.099" />
+      <circle cx="22.4" cy="5.6" r="1.13" fill="#787265" opacity="0.133" />
+      <circle cx="82.7" cy="52.0" r="0.58" fill="#FFFFFF" opacity="0.235" />
+      <circle cx="45.5" cy="53.0" r="1.02" fill="#787265" opacity="0.13" />
+      <circle cx="2.4" cy="14.0" r="1.28" fill="#FFFFFF" opacity="0.205" />
+      <circle cx="55.1" cy="82.9" r="1.09" fill="#787265" opacity="0.153" />
+      <circle cx="15.3" cy="67.2" r="1.02" fill="#FFFFFF" opacity="0.22" />
+      <circle cx="41.6" cy="71.9" r="1.04" fill="#FFFFFF" opacity="0.143" />
+      <circle cx="38.5" cy="70.7" r="0.58" fill="#787265" opacity="0.147" />
+      <circle cx="80.9" cy="56.5" r="1.19" fill="#787265" opacity="0.106" />
+      <circle cx="7.9" cy="49.4" r="1.23" fill="#787265" opacity="0.11" />
+      <circle cx="81.5" cy="6.2" r="0.68" fill="#FFFFFF" opacity="0.173" />
+      <circle cx="49.5" cy="42.6" r="0.66" fill="#787265" opacity="0.158" />
+      <circle cx="59.2" cy="32.8" r="0.96" fill="#787265" opacity="0.165" />
+      <circle cx="60.8" cy="84.8" r="0.55" fill="#787265" opacity="0.099" />
+      <circle cx="58.4" cy="36.0" r="0.72" fill="#787265" opacity="0.113" />
+      <circle cx="61.7" cy="1.6" r="1.18" fill="#787265" opacity="0.12" />
+      <circle cx="68.5" cy="29.4" r="1.1" fill="#787265" opacity="0.151" />
+      <circle cx="5.7" cy="68.0" r="1.14" fill="#787265" opacity="0.122" />
+      <circle cx="16.3" cy="44.7" r="1.04" fill="#787265" opacity="0.096" />
+      <circle cx="17.6" cy="86.0" r="1.01" fill="#FFFFFF" opacity="0.156" />
+      <circle cx="20.5" cy="54.1" r="0.56" fill="#787265" opacity="0.105" />
+      <circle cx="2.8" cy="85.5" r="0.92" fill="#FFFFFF" opacity="0.15" />
+      <circle cx="82.3" cy="29.3" r="0.54" fill="#FFFFFF" opacity="0.189" />
+      <circle cx="73.8" cy="29.7" r="1.12" fill="#787265" opacity="0.116" />
+      <circle cx="62.5" cy="10.1" r="0.93" fill="#FFFFFF" opacity="0.146" />
+      <circle cx="61.7" cy="36.1" r="0.53" fill="#787265" opacity="0.168" />
+      <circle cx="4.6" cy="55.1" r="0.85" fill="#787265" opacity="0.169" />
+      <circle cx="53.5" cy="55.1" r="0.95" fill="#FFFFFF" opacity="0.149" />
+      <circle cx="87.5" cy="60.3" r="1.12" fill="#FFFFFF" opacity="0.143" />
+      <circle cx="13.9" cy="21.1" r="1.0" fill="#787265" opacity="0.106" />
+      <circle cx="73.4" cy="35.0" r="0.77" fill="#787265" opacity="0.107" />
+      <circle cx="73.5" cy="78.3" r="0.71" fill="#787265" opacity="0.097" />
+      <circle cx="82.7" cy="43.6" r="0.62" fill="#787265" opacity="0.106" />
+      <circle cx="80.2" cy="63.0" r="0.63" fill="#787265" opacity="0.09" />
+      <circle cx="21.9" cy="32.0" r="0.75" fill="#FFFFFF" opacity="0.213" />
+      <circle cx="38.2" cy="47.2" r="1.24" fill="#FFFFFF" opacity="0.18" />
+      <circle cx="18.6" cy="17.3" r="1.17" fill="#FFFFFF" opacity="0.234" />
+      <circle cx="47.7" cy="59.2" r="0.55" fill="#FFFFFF" opacity="0.15" />
+      <circle cx="49.9" cy="26.2" r="1.2" fill="#FFFFFF" opacity="0.165" />
+      <circle cx="29.2" cy="61.6" r="1.01" fill="#787265" opacity="0.137" />
+      <circle cx="48.2" cy="4.0" r="0.76" fill="#FFFFFF" opacity="0.233" />
+      <circle cx="38.7" cy="79.0" r="1.01" fill="#787265" opacity="0.104" />
+      <circle cx="34.1" cy="46.5" r="0.52" fill="#787265" opacity="0.105" />
+      <circle cx="62.1" cy="34.8" r="0.75" fill="#FFFFFF" opacity="0.189" />
+      <circle cx="54.9" cy="36.9" r="0.86" fill="#FFFFFF" opacity="0.153" />
+      <circle cx="34.3" cy="35.2" r="0.56" fill="#787265" opacity="0.11" />
+      <circle cx="51.0" cy="63.7" r="0.7" fill="#787265" opacity="0.105" />
+      <circle cx="31.6" cy="37.3" r="0.91" fill="#FFFFFF" opacity="0.19" />
+      <circle cx="62.5" cy="83.0" r="1.04" fill="#787265" opacity="0.152" />
+      <circle cx="27.7" cy="34.9" r="0.81" fill="#787265" opacity="0.151" />
+      <circle cx="10.0" cy="83.3" r="0.69" fill="#787265" opacity="0.146" />
+      <circle cx="63.3" cy="65.7" r="1.26" fill="#787265" opacity="0.14" />
+      <circle cx="5.0" cy="85.0" r="0.99" fill="#787265" opacity="0.16" />
+      <circle cx="69.2" cy="55.3" r="0.77" fill="#787265" opacity="0.147" />
+      <circle cx="83.5" cy="81.7" r="1.27" fill="#787265" opacity="0.151" />
+    </pattern>
+
+    <!-- Microscopic plaster turbulence filter for subtle wall paint depth -->
+    <filter id="wall-paint-noise" x="0%" y="0%" width="100%" height="100%">
+      <feTurbulence type="fractalNoise" baseFrequency="0.65" numOctaves="3" stitchTiles="stitch" result="noise" />
+      <feColorMatrix type="matrix" values="0 0 0 0 0.16   0 0 0 0 0.14   0 0 0 0 0.12   0 0 0 0.048 0" />
+    </filter>
+
+    <!-- Authentic pressed flower soft blur filters -->
+    <filter id="pressed-soft" x="-20%" y="-20%" width="140%" height="140%">
+      <feGaussianBlur stdDeviation="0.6" />
+    </filter>
+    <filter id="pressed-shadow" x="-30%" y="-30%" width="160%" height="160%">
+      <feGaussianBlur stdDeviation="1.6" />
+    </filter>
+
+    <!-- ==================== 2. MASKS FOR BOTANICAL COMPOSITION ==================== -->
+    <!-- Upper-Left mask: Concentrated at top-left corner, gently dissolving toward center -->
+    <radialGradient id="mask-left" cx="6%" cy="8%" r="72%" fx="0%" fy="0%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="1" />
+      <stop offset="35%" stop-color="#ffffff" stop-opacity="0.95" />
+      <stop offset="60%" stop-color="#ffffff" stop-opacity="0.65" />
+      <stop offset="82%" stop-color="#ffffff" stop-opacity="0.22" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </radialGradient>
+    <mask id="botanical-mask-left">
+      <rect width="1920" height="1200" fill="url(#mask-left)" />
+    </mask>
+
+    <!-- Right-Side mask: Concentrated at top-right corner, gently dissolving toward center -->
+    <radialGradient id="mask-right" cx="94%" cy="10%" r="62%" fx="100%" fy="0%">
+      <stop offset="0%" stop-color="#ffffff" stop-opacity="0.98" />
+      <stop offset="38%" stop-color="#ffffff" stop-opacity="0.88" />
+      <stop offset="65%" stop-color="#ffffff" stop-opacity="0.50" />
+      <stop offset="85%" stop-color="#ffffff" stop-opacity="0.16" />
+      <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+    </radialGradient>
+    <mask id="botanical-mask-right">
+      <rect width="1920" height="1200" fill="url(#mask-right)" />
+    </mask>
+
+    <!-- ==================== 3. GRADIENTS (Petals, Leaves, Stems) ==================== -->
+    <linearGradient id="petal-pure-white" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#FFFFFF" stop-opacity="0.55" />
+      <stop offset="50%" stop-color="#FFFFFF" stop-opacity="0.82" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.96" />
+    </linearGradient>
+
+    <linearGradient id="petal-translucent-cream" x1="0%" y1="100%" x2="0%" y2="0%">
+      <stop offset="0%" stop-color="#DFD9CD" stop-opacity="0.38" />
+      <stop offset="55%" stop-color="#F3EFE8" stop-opacity="0.68" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.90" />
+    </linearGradient>
+
+    <linearGradient id="leaf-grad" x1="0%" y1="100%" x2="100%" y2="0%">
+      <stop offset="0%" stop-color="#8F887A" stop-opacity="0.28" />
+      <stop offset="45%" stop-color="#BCB6A9" stop-opacity="0.22" />
+      <stop offset="100%" stop-color="#FFFFFF" stop-opacity="0.75" />
+    </linearGradient>
+
+    <linearGradient id="stem-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#736D60" stop-opacity="0.45" />
+      <stop offset="60%" stop-color="#918B7E" stop-opacity="0.32" />
+      <stop offset="100%" stop-color="#B3ADA0" stop-opacity="0.15" />
+    </linearGradient>
+
+    <!-- ==================== 4. BOTANICAL SPECIMENS (DEFINITIONS) ==================== -->
+
+    <!-- A. PRESSED WILD POPPY / ANEMONE (Botanical Diameter ~300px) -->
+    <g id="pressed-poppy">
+      <!-- Shadow Imprint Layer -->
+      <g filter="url(#pressed-shadow)">
+        <path d="M 0,0 C -30,-45 -65,-75 -52,-115 C -42,-145 -12,-155 0,-150 C 12,-155 42,-145 52,-115 C 65,-75 30,-45 0,0 Z" fill="#7E7769" opacity="0.24" />
+        <path d="M 0,0 C -30,-45 -65,-75 -52,-115 C -42,-145 -12,-155 0,-150 C 12,-155 42,-145 52,-115 C 65,-75 30,-45 0,0 Z" fill="#7E7769" opacity="0.22" transform="rotate(45)" />
+        <path d="M 0,0 C -30,-45 -65,-75 -52,-115 C -42,-145 -12,-155 0,-150 C 12,-155 42,-145 52,-115 C 65,-75 30,-45 0,0 Z" fill="#7E7769" opacity="0.24" transform="rotate(90)" />
+        <path d="M 0,0 C -30,-45 -65,-75 -52,-115 C -42,-145 -12,-155 0,-150 C 12,-155 42,-145 52,-115 C 65,-75 30,-45 0,0 Z" fill="#7E7769" opacity="0.22" transform="rotate(135)" />
+        <path d="M 0,0 C -30,-45 -65,-75 -52,-115 C -42,-145 -12,-155 0,-150 C 12,-155 42,-145 52,-115 C 65,-75 30,-45 0,0 Z" fill="#7E7769" opacity="0.24" transform="rotate(180)" />
+        <path d="M 0,0 C -30,-45 -65,-75 -52,-115 C -42,-145 -12,-155 0,-150 C 12,-155 42,-145 52,-115 C 65,-75 30,-45 0,0 Z" fill="#7E7769" opacity="0.22" transform="rotate(225)" />
+        <path d="M 0,0 C -30,-45 -65,-75 -52,-115 C -42,-145 -12,-155 0,-150 C 12,-155 42,-145 52,-115 C 65,-75 30,-45 0,0 Z" fill="#7E7769" opacity="0.24" transform="rotate(270)" />
+        <path d="M 0,0 C -30,-45 -65,-75 -52,-115 C -42,-145 -12,-155 0,-150 C 12,-155 42,-145 52,-115 C 65,-75 30,-45 0,0 Z" fill="#7E7769" opacity="0.22" transform="rotate(315)" />
+      </g>
+      <!-- Translucent Petal Bodies -->
+      <g filter="url(#pressed-soft)">
+        <path d="M 0,0 C -28,-42 -62,-72 -50,-112 C -40,-140 -10,-150 0,-146 C 10,-150 40,-140 50,-112 C 62,-72 28,-42 0,0 Z" fill="url(#petal-pure-white)" />
+        <path d="M 0,0 C -28,-42 -62,-72 -50,-112 C -40,-140 -10,-150 0,-146 C 10,-150 40,-140 50,-112 C 62,-72 28,-42 0,0 Z" fill="url(#petal-translucent-cream)" transform="rotate(45)" />
+        <path d="M 0,0 C -28,-42 -62,-72 -50,-112 C -40,-140 -10,-150 0,-146 C 10,-150 40,-140 50,-112 C 62,-72 28,-42 0,0 Z" fill="url(#petal-pure-white)" transform="rotate(90)" />
+        <path d="M 0,0 C -28,-42 -62,-72 -50,-112 C -40,-140 -10,-150 0,-146 C 10,-150 40,-140 50,-112 C 62,-72 28,-42 0,0 Z" fill="url(#petal-translucent-cream)" transform="rotate(135)" />
+        <path d="M 0,0 C -28,-42 -62,-72 -50,-112 C -40,-140 -10,-150 0,-146 C 10,-150 40,-140 50,-112 C 62,-72 28,-42 0,0 Z" fill="url(#petal-pure-white)" transform="rotate(180)" />
+        <path d="M 0,0 C -28,-42 -62,-72 -50,-112 C -40,-140 -10,-150 0,-146 C 10,-150 40,-140 50,-112 C 62,-72 28,-42 0,0 Z" fill="url(#petal-translucent-cream)" transform="rotate(225)" />
+        <path d="M 0,0 C -28,-42 -62,-72 -50,-112 C -40,-140 -10,-150 0,-146 C 10,-150 40,-140 50,-112 C 62,-72 28,-42 0,0 Z" fill="url(#petal-pure-white)" transform="rotate(270)" />
+        <path d="M 0,0 C -28,-42 -62,-72 -50,-112 C -40,-140 -10,-150 0,-146 C 10,-150 40,-140 50,-112 C 62,-72 28,-42 0,0 Z" fill="url(#petal-translucent-cream)" transform="rotate(315)" />
+
+        <!-- Inner Overlapping Petal Layer for botanical richness -->
+        <path d="M 0,0 C -22,-32 -48,-55 -38,-85 C -30,-106 -8,-114 0,-110 C 8,-114 30,-106 38,-85 C 48,-55 22,-32 0,0 Z" fill="url(#petal-pure-white)" transform="rotate(22.5)" />
+        <path d="M 0,0 C -22,-32 -48,-55 -38,-85 C -30,-106 -8,-114 0,-110 C 8,-114 30,-106 38,-85 C 48,-55 22,-32 0,0 Z" fill="url(#petal-pure-white)" transform="rotate(112.5)" />
+        <path d="M 0,0 C -22,-32 -48,-55 -38,-85 C -30,-106 -8,-114 0,-110 C 8,-114 30,-106 38,-85 C 48,-55 22,-32 0,0 Z" fill="url(#petal-pure-white)" transform="rotate(202.5)" />
+        <path d="M 0,0 C -22,-32 -48,-55 -38,-85 C -30,-106 -8,-114 0,-110 C 8,-114 30,-106 38,-85 C 48,-55 22,-32 0,0 Z" fill="url(#petal-pure-white)" transform="rotate(292.5)" />
+
+        <!-- Delicate Petal Veins -->
+        <path d="M 0,-15 Q -15,-65 -22,-120" stroke="#7A7467" stroke-width="0.9" opacity="0.32" fill="none" />
+        <path d="M 0,-15 Q 15,-65 22,-120" stroke="#7A7467" stroke-width="0.9" opacity="0.32" fill="none" />
+        <path d="M 0,-15 L 0,-135" stroke="#7A7467" stroke-width="1.0" opacity="0.36" fill="none" />
+        <path d="M 0,-15 Q -15,-65 -22,-120" stroke="#7A7467" stroke-width="0.9" opacity="0.32" fill="none" transform="rotate(90)" />
+        <path d="M 0,-15 Q 15,-65 22,-120" stroke="#7A7467" stroke-width="0.9" opacity="0.32" fill="none" transform="rotate(90)" />
+        <path d="M 0,-15 L 0,-135" stroke="#7A7467" stroke-width="1.0" opacity="0.36" fill="none" transform="rotate(90)" />
+        <path d="M 0,-15 Q -15,-65 -22,-120" stroke="#7A7467" stroke-width="0.9" opacity="0.32" fill="none" transform="rotate(180)" />
+        <path d="M 0,-15 Q 15,-65 22,-120" stroke="#7A7467" stroke-width="0.9" opacity="0.32" fill="none" transform="rotate(180)" />
+        <path d="M 0,-15 L 0,-135" stroke="#7A7467" stroke-width="1.0" opacity="0.36" fill="none" transform="rotate(180)" />
+        <path d="M 0,-15 Q -15,-65 -22,-120" stroke="#7A7467" stroke-width="0.9" opacity="0.32" fill="none" transform="rotate(270)" />
+        <path d="M 0,-15 Q 15,-65 22,-120" stroke="#7A7467" stroke-width="0.9" opacity="0.32" fill="none" transform="rotate(270)" />
+        <path d="M 0,-15 L 0,-135" stroke="#7A7467" stroke-width="1.0" opacity="0.36" fill="none" transform="rotate(270)" />
+      </g>
+      <!-- Center Disc & Stamen Ring -->
+      <circle cx="0" cy="0" r="28" fill="#7E7769" opacity="0.28" />
+      <circle cx="0" cy="0" r="18" fill="#655F52" opacity="0.48" />
+      <circle cx="0" cy="0" r="10" fill="#FFFFFF" opacity="0.88" />
+      <!-- Radial Seed Ribs -->
+      <line x1="0" y1="-8" x2="0" y2="8" stroke="#655F52" stroke-width="1.2" opacity="0.5" />
+      <line x1="-8" y1="0" x2="8" y2="0" stroke="#655F52" stroke-width="1.2" opacity="0.5" />
+      <line x1="-6" y1="-6" x2="6" y2="6" stroke="#655F52" stroke-width="1.0" opacity="0.5" />
+      <line x1="-6" y1="6" x2="6" y2="-6" stroke="#655F52" stroke-width="1.0" opacity="0.5" />
+      <!-- Pollen Ring (16 Anthers) -->
+      <circle cx="-18" cy="-8" r="2.6" fill="#655F52" opacity="0.48" />
+      <circle cx="-18" cy="-8" r="1.3" fill="#FFFFFF" opacity="0.9" />
+      <circle cx="-16" cy="-14" r="2.6" fill="#655F52" opacity="0.48" />
+      <circle cx="-16" cy="-14" r="1.3" fill="#FFFFFF" opacity="0.9" />
+      <circle cx="-8" cy="-18" r="2.6" fill="#655F52" opacity="0.48" />
+      <circle cx="-8" cy="-18" r="1.3" fill="#FFFFFF" opacity="0.9" />
+      <circle cx="0" cy="-20" r="2.6" fill="#655F52" opacity="0.48" />
+      <circle cx="0" cy="-20" r="1.3" fill="#FFFFFF" opacity="0.9" />
+      <circle cx="8" cy="-18" r="2.6" fill="#655F52" opacity="0.48" />
+      <circle cx="8" cy="-18" r="1.3" fill="#FFFFFF" opacity="0.9" />
+      <circle cx="16" cy="-14" r="2.6" fill="#655F52" opacity="0.48" />
+      <circle cx="16" cy="-14" r="1.3" fill="#FFFFFF" opacity="0.9" />
+      <circle cx="18" cy="-8" r="2.6" fill="#655F52" opacity="0.48" />
+      <circle cx="18" cy="-8" r="1.3" fill="#FFFFFF" opacity="0.9" />
+      <circle cx="20" cy="0" r="2.6" fill="#655F52" opacity="0.48" />
+      <circle cx="20" cy="0" r="1.3" fill="#FFFFFF" opacity="0.9" />
+      <circle cx="18" cy="8" r="2.6" fill="#655F52" opacity="0.48" />
+      <circle cx="18" cy="8" r="1.3" fill="#FFFFFF" opacity="0.9" />
+      <circle cx="14" cy="16" r="2.6" fill="#655F52" opacity="0.48" />
+      <circle cx="14" cy="16" r="1.3" fill="#FFFFFF" opacity="0.9" />
+      <circle cx="8" cy="18" r="2.6" fill="#655F52" opacity="0.48" />
+      <circle cx="8" cy="18" r="1.3" fill="#FFFFFF" opacity="0.9" />
+      <circle cx="0" cy="20" r="2.6" fill="#655F52" opacity="0.48" />
+      <circle cx="0" cy="20" r="1.3" fill="#FFFFFF" opacity="0.9" />
+      <circle cx="-8" cy="18" r="2.6" fill="#655F52" opacity="0.48" />
+      <circle cx="-8" cy="18" r="1.3" fill="#FFFFFF" opacity="0.9" />
+      <circle cx="-14" cy="16" r="2.6" fill="#655F52" opacity="0.48" />
+      <circle cx="-14" cy="16" r="1.3" fill="#FFFFFF" opacity="0.9" />
+      <circle cx="-18" cy="8" r="2.6" fill="#655F52" opacity="0.48" />
+      <circle cx="-18" cy="8" r="1.3" fill="#FFFFFF" opacity="0.9" />
+      <circle cx="-20" cy="0" r="2.6" fill="#655F52" opacity="0.48" />
+      <circle cx="-20" cy="0" r="1.3" fill="#FFFFFF" opacity="0.9" />
+    </g>
+
+    <!-- B. PRESSED COSMOS / DAISY (Botanical Diameter ~230px) -->
+    <g id="pressed-cosmos">
+      <g filter="url(#pressed-shadow)">
+        <path d="M 0,0 C -15,-30 -28,-60 -20,-95 C -12,-112 0,-106 5,-115 C 10,-106 22,-112 20,-95 C 28,-60 15,-30 0,0 Z" fill="#7E7769" opacity="0.22" />
+        <path d="M 0,0 C -15,-30 -28,-60 -20,-95 C -12,-112 0,-106 5,-115 C 10,-106 22,-112 20,-95 C 28,-60 15,-30 0,0 Z" fill="#7E7769" opacity="0.22" transform="rotate(36)" />
+        <path d="M 0,0 C -15,-30 -28,-60 -20,-95 C -12,-112 0,-106 5,-115 C 10,-106 22,-112 20,-95 C 28,-60 15,-30 0,0 Z" fill="#7E7769" opacity="0.22" transform="rotate(72)" />
+        <path d="M 0,0 C -15,-30 -28,-60 -20,-95 C -12,-112 0,-106 5,-115 C 10,-106 22,-112 20,-95 C 28,-60 15,-30 0,0 Z" fill="#7E7769" opacity="0.22" transform="rotate(108)" />
+        <path d="M 0,0 C -15,-30 -28,-60 -20,-95 C -12,-112 0,-106 5,-115 C 10,-106 22,-112 20,-95 C 28,-60 15,-30 0,0 Z" fill="#7E7769" opacity="0.22" transform="rotate(144)" />
+        <path d="M 0,0 C -15,-30 -28,-60 -20,-95 C -12,-112 0,-106 5,-115 C 10,-106 22,-112 20,-95 C 28,-60 15,-30 0,0 Z" fill="#7E7769" opacity="0.22" transform="rotate(180)" />
+        <path d="M 0,0 C -15,-30 -28,-60 -20,-95 C -12,-112 0,-106 5,-115 C 10,-106 22,-112 20,-95 C 28,-60 15,-30 0,0 Z" fill="#7E7769" opacity="0.22" transform="rotate(216)" />
+        <path d="M 0,0 C -15,-30 -28,-60 -20,-95 C -12,-112 0,-106 5,-115 C 10,-106 22,-112 20,-95 C 28,-60 15,-30 0,0 Z" fill="#7E7769" opacity="0.22" transform="rotate(252)" />
+        <path d="M 0,0 C -15,-30 -28,-60 -20,-95 C -12,-112 0,-106 5,-115 C 10,-106 22,-112 20,-95 C 28,-60 15,-30 0,0 Z" fill="#7E7769" opacity="0.22" transform="rotate(288)" />
+        <path d="M 0,0 C -15,-30 -28,-60 -20,-95 C -12,-112 0,-106 5,-115 C 10,-106 22,-112 20,-95 C 28,-60 15,-30 0,0 Z" fill="#7E7769" opacity="0.22" transform="rotate(324)" />
+      </g>
+      <g filter="url(#pressed-soft)">
+        <path d="M 0,0 C -13,-28 -25,-56 -18,-92 C -10,-108 0,-102 4,-112 C 9,-102 20,-108 18,-92 C 25,-56 13,-28 0,0 Z" fill="url(#petal-pure-white)" />
+        <path d="M 0,0 C -13,-28 -25,-56 -18,-92 C -10,-108 0,-102 4,-112 C 9,-102 20,-108 18,-92 C 25,-56 13,-28 0,0 Z" fill="url(#petal-translucent-cream)" transform="rotate(36)" />
+        <path d="M 0,0 C -13,-28 -25,-56 -18,-92 C -10,-108 0,-102 4,-112 C 9,-102 20,-108 18,-92 C 25,-56 13,-28 0,0 Z" fill="url(#petal-pure-white)" transform="rotate(72)" />
+        <path d="M 0,0 C -13,-28 -25,-56 -18,-92 C -10,-108 0,-102 4,-112 C 9,-102 20,-108 18,-92 C 25,-56 13,-28 0,0 Z" fill="url(#petal-translucent-cream)" transform="rotate(108)" />
+        <path d="M 0,0 C -13,-28 -25,-56 -18,-92 C -10,-108 0,-102 4,-112 C 9,-102 20,-108 18,-92 C 25,-56 13,-28 0,0 Z" fill="url(#petal-pure-white)" transform="rotate(144)" />
+        <path d="M 0,0 C -13,-28 -25,-56 -18,-92 C -10,-108 0,-102 4,-112 C 9,-102 20,-108 18,-92 C 25,-56 13,-28 0,0 Z" fill="url(#petal-translucent-cream)" transform="rotate(180)" />
+        <path d="M 0,0 C -13,-28 -25,-56 -18,-92 C -10,-108 0,-102 4,-112 C 9,-102 20,-108 18,-92 C 25,-56 13,-28 0,0 Z" fill="url(#petal-pure-white)" transform="rotate(216)" />
+        <path d="M 0,0 C -13,-28 -25,-56 -18,-92 C -10,-108 0,-102 4,-112 C 9,-102 20,-108 18,-92 C 25,-56 13,-28 0,0 Z" fill="url(#petal-translucent-cream)" transform="rotate(252)" />
+        <path d="M 0,0 C -13,-28 -25,-56 -18,-92 C -10,-108 0,-102 4,-112 C 9,-102 20,-108 18,-92 C 25,-56 13,-28 0,0 Z" fill="url(#petal-pure-white)" transform="rotate(288)" />
+        <path d="M 0,0 C -13,-28 -25,-56 -18,-92 C -10,-108 0,-102 4,-112 C 9,-102 20,-108 18,-92 C 25,-56 13,-28 0,0 Z" fill="url(#petal-translucent-cream)" transform="rotate(324)" />
+
+        <line x1="0" y1="0" x2="0" y2="-90" stroke="#7A7467" stroke-width="0.8" opacity="0.3" />
+        <line x1="0" y1="0" x2="0" y2="-90" stroke="#7A7467" stroke-width="0.8" opacity="0.3" transform="rotate(72)" />
+        <line x1="0" y1="0" x2="0" y2="-90" stroke="#7A7467" stroke-width="0.8" opacity="0.3" transform="rotate(144)" />
+        <line x1="0" y1="0" x2="0" y2="-90" stroke="#7A7467" stroke-width="0.8" opacity="0.3" transform="rotate(216)" />
+        <line x1="0" y1="0" x2="0" y2="-90" stroke="#7A7467" stroke-width="0.8" opacity="0.3" transform="rotate(288)" />
+      </g>
+      <circle cx="0" cy="0" r="22" fill="#7E7769" opacity="0.32" />
+      <circle cx="0" cy="0" r="13" fill="#625C4F" opacity="0.52" />
+      <circle cx="0" cy="0" r="5" fill="#FFFFFF" opacity="0.92" />
+    </g>
+
+    <!-- C. QUEEN ANNE'S LACE UMBEL (Airy Botanical Spray ~280px) -->
+    <g id="pressed-umbel">
+      <path d="M 0,130 Q -6,55 0,0" stroke="url(#stem-grad)" stroke-width="2.6" fill="none" />
+      <!-- Radiating Pedicels -->
+      <line x1="0" y1="0" x2="-95" y2="-95" stroke="#746E61" stroke-width="1.3" opacity="0.38" />
+      <line x1="0" y1="0" x2="-55" y2="-120" stroke="#746E61" stroke-width="1.3" opacity="0.38" />
+      <line x1="0" y1="0" x2="0" y2="-130" stroke="#746E61" stroke-width="1.3" opacity="0.38" />
+      <line x1="0" y1="0" x2="55" y2="-120" stroke="#746E61" stroke-width="1.3" opacity="0.38" />
+      <line x1="0" y1="0" x2="95" y2="-95" stroke="#746E61" stroke-width="1.3" opacity="0.38" />
+      <line x1="0" y1="0" x2="-120" y2="-45" stroke="#746E61" stroke-width="1.3" opacity="0.38" />
+      <line x1="0" y1="0" x2="120" y2="-45" stroke="#746E61" stroke-width="1.3" opacity="0.38" />
+      <line x1="0" y1="0" x2="-70" y2="-70" stroke="#746E61" stroke-width="1.0" opacity="0.28" />
+      <line x1="0" y1="0" x2="70" y2="-70" stroke="#746E61" stroke-width="1.0" opacity="0.28" />
+      <line x1="0" y1="0" x2="-25" y2="-90" stroke="#746E61" stroke-width="1.0" opacity="0.28" />
+      <line x1="0" y1="0" x2="25" y2="-90" stroke="#746E61" stroke-width="1.0" opacity="0.28" />
+      <!-- Starburst Florets at Tips -->
+      <circle cx="-95" cy="-95" r="7.5" fill="#FFFFFF" opacity="0.94" />
+      <circle cx="-95" cy="-95" r="3.2" fill="#746E61" opacity="0.45" />
+      <circle cx="-55" cy="-120" r="7.0" fill="#FFFFFF" opacity="0.94" />
+      <circle cx="-55" cy="-120" r="3.0" fill="#746E61" opacity="0.45" />
+      <circle cx="0" cy="-130" r="8.0" fill="#FFFFFF" opacity="0.94" />
+      <circle cx="0" cy="-130" r="3.4" fill="#746E61" opacity="0.45" />
+      <circle cx="55" cy="-120" r="7.0" fill="#FFFFFF" opacity="0.94" />
+      <circle cx="55" cy="-120" r="3.0" fill="#746E61" opacity="0.45" />
+      <circle cx="95" cy="-95" r="7.5" fill="#FFFFFF" opacity="0.94" />
+      <circle cx="95" cy="-95" r="3.2" fill="#746E61" opacity="0.45" />
+      <circle cx="-120" cy="-45" r="6.5" fill="#FFFFFF" opacity="0.90" />
+      <circle cx="-120" cy="-45" r="2.8" fill="#746E61" opacity="0.40" />
+      <circle cx="120" cy="-45" r="6.5" fill="#FFFFFF" opacity="0.90" />
+      <circle cx="120" cy="-45" r="2.8" fill="#746E61" opacity="0.40" />
+      <circle cx="-70" cy="-70" r="5.5" fill="#FFFFFF" opacity="0.85" />
+      <circle cx="70" cy="-70" r="5.5" fill="#FFFFFF" opacity="0.85" />
+      <circle cx="-25" cy="-90" r="5.5" fill="#FFFFFF" opacity="0.85" />
+      <circle cx="25" cy="-90" r="5.5" fill="#FFFFFF" opacity="0.85" />
+    </g>
+
+    <!-- D. PRESSED FERN / EUCALYPTUS FROND (Botanical Length ~440px) -->
+    <g id="pressed-fern">
+      <path d="M 0,380 Q 45,190 70,0" stroke="url(#stem-grad)" stroke-width="3.4" fill="none" />
+      <!-- Leaf Pairs -->
+      <path d="M 7,330 Q 55,320 88,298 Q 58,340 7,335" fill="url(#leaf-grad)" />
+      <path d="M 10,312 Q -38,294 -70,272 Q -38,312 9,318" fill="url(#leaf-grad)" />
+      <path d="M 21,265 Q 68,245 104,220 Q 68,265 21,270" fill="url(#leaf-grad)" />
+      <path d="M 24,248 Q -22,225 -56,200 Q -20,240 23,252" fill="url(#leaf-grad)" />
+      <path d="M 36,200 Q 82,176 112,148 Q 80,192 36,205" fill="url(#leaf-grad)" />
+      <path d="M 39,184 Q 2,158 -32,130 Q 0,172 38,188" fill="url(#leaf-grad)" />
+      <path d="M 50,136 Q 90,110 114,80 Q 84,122 50,140" fill="url(#leaf-grad)" />
+      <path d="M 53,122 Q 20,94 -8,66 Q 20,108 52,126" fill="url(#leaf-grad)" />
+      <path d="M 62,76 Q 92,50 102,22 Q 82,58 62,79" fill="url(#leaf-grad)" />
+      <path d="M 64,62 Q 36,36 16,8 Q 36,48 63,66" fill="url(#leaf-grad)" />
+      <path d="M 70,0 Q 78,-32 70,-54 Q 62,-28 70,4" fill="url(#leaf-grad)" />
+    </g>
+
+    <!-- E. 4-PETAL HYDRANGEA FLORET (Diameter ~80px) -->
+    <g id="pressed-hydrangea">
+      <path d="M 0,0 C -14,-28 -38,-42 -28,-62 C -18,-82 18,-78 30,-60 C 40,-42 20,-22 0,0 Z" fill="url(#petal-translucent-cream)" />
+      <path d="M 0,0 C -12,-25 -32,-38 -24,-55 C -15,-72 15,-68 26,-52 C 34,-38 18,-20 0,0 Z" fill="url(#petal-pure-white)" />
+      <path d="M 0,0 C -14,-28 -38,-42 -28,-62 C -18,-82 18,-78 30,-60 C 40,-42 20,-22 0,0 Z" fill="url(#petal-translucent-cream)" transform="rotate(90)" />
+      <path d="M 0,0 C -12,-25 -32,-38 -24,-55 C -15,-72 15,-68 26,-52 C 34,-38 18,-20 0,0 Z" fill="url(#petal-pure-white)" transform="rotate(90)" />
+      <path d="M 0,0 C -14,-28 -38,-42 -28,-62 C -18,-82 18,-78 30,-60 C 40,-42 20,-22 0,0 Z" fill="url(#petal-translucent-cream)" transform="rotate(180)" />
+      <path d="M 0,0 C -12,-25 -32,-38 -24,-55 C -15,-72 15,-68 26,-52 C 34,-38 18,-20 0,0 Z" fill="url(#petal-pure-white)" transform="rotate(180)" />
+      <path d="M 0,0 C -14,-28 -38,-42 -28,-62 C -18,-82 18,-78 30,-60 C 40,-42 20,-22 0,0 Z" fill="url(#petal-translucent-cream)" transform="rotate(270)" />
+      <path d="M 0,0 C -12,-25 -32,-38 -24,-55 C -15,-72 15,-68 26,-52 C 34,-38 18,-20 0,0 Z" fill="url(#petal-pure-white)" transform="rotate(270)" />
+      <circle cx="0" cy="0" r="5.5" fill="#787265" opacity="0.48" />
+      <circle cx="0" cy="0" r="2.8" fill="#FFFFFF" opacity="0.96" />
+    </g>
+
+    <!-- F. DRIFTING PETALS & LEAVES -->
+    <g id="drifting-petal">
+      <path d="M 0,0 C -22,-36 -50,-50 -36,-78 C -22,-104 26,-96 38,-68 C 44,-42 26,-18 0,0 Z" fill="url(#petal-pure-white)" />
+      <path d="M 0,0 Q 4,-44 0,-70" stroke="#7A7467" stroke-width="1.1" opacity="0.32" fill="none" />
+    </g>
+    <g id="drifting-leaf">
+      <path d="M 0,0 C -28,-34 -48,-72 -20,-105 C 10,-134 50,-112 40,-70 C 28,-36 14,-10 0,0 Z" fill="url(#leaf-grad)" />
+      <path d="M 0,0 Q 7,-55 10,-100" stroke="#746E61" stroke-width="1.3" opacity="0.38" fill="none" />
+    </g>
+  </defs>
+
+  <!-- ==================== LAYER 1: WALL PAINT STIPPLE TEXTURE ==================== -->
+  <!-- Microscopic matte wall paint roller stipple across the entire canvas -->
+  <rect width="100%" height="100%" fill="url(#wall-paint-stipple)" />
+  <!-- Additional plaster turbulence layer for authentic wall texture -->
+  <rect width="100%" height="100%" filter="url(#wall-paint-noise)" />
+
+  <!-- ==================== LAYER 2: UPPER-LEFT BOTANICAL CLUSTER ==================== -->
+  <g mask="url(#botanical-mask-left)">
+    <!-- Primary sweeping stem from top-left border into the page -->
+    <path d="M -70,-50 Q 140,170 220,420 T 260,820" stroke="url(#stem-grad)" stroke-width="4.0" fill="none" />
+    <path d="M 120,160 Q 260,130 380,190" stroke="url(#stem-grad)" stroke-width="2.8" fill="none" />
+    <path d="M 190,350 Q 330,400 430,520" stroke="url(#stem-grad)" stroke-width="2.5" fill="none" />
+    <path d="M 240,610 Q 350,690 380,800" stroke="url(#stem-grad)" stroke-width="2.2" fill="none" />
+
+    <!-- Main Botanical Blooms -->
+    <!-- Bloom L1: Magnificent Large Wild Poppy (Top Left) -->
+    <g transform="translate(220, 180) rotate(-12) scale(1.4)">
+      <use href="#pressed-poppy" />
+    </g>
+
+    <!-- Bloom L2: Wild Cosmos branching inward -->
+    <g transform="translate(460, 260) rotate(32) scale(1.25)">
+      <use href="#pressed-cosmos" />
+    </g>
+
+    <!-- Bloom L3: Mid-stem Poppy -->
+    <g transform="translate(270, 500) rotate(-38) scale(1.2)">
+      <use href="#pressed-poppy" />
+    </g>
+
+    <!-- Queen Anne's Lace Umbels (Airy, delicate, starburst) -->
+    <g transform="translate(560, 110) rotate(18) scale(1.35)">
+      <use href="#pressed-umbel" />
+    </g>
+    <g transform="translate(160, 680) rotate(-18) scale(1.2)">
+      <use href="#pressed-umbel" />
+    </g>
+    <g transform="translate(490, 420) rotate(42) scale(1.05)">
+      <use href="#pressed-umbel" />
+    </g>
+
+    <!-- Large Fern Fronds -->
+    <g transform="translate(70, 260) rotate(-22) scale(1.25)">
+      <use href="#pressed-fern" />
+    </g>
+    <g transform="translate(340, 560) rotate(48) scale(1.0)">
+      <use href="#pressed-fern" />
+    </g>
+
+    <!-- Hydrangea Florets Clustered Near Blooms -->
+    <g transform="translate(110, 70) rotate(15) scale(1.15)">
+      <use href="#pressed-hydrangea" />
+    </g>
+    <g transform="translate(320, 80) rotate(38) scale(1.05)">
+      <use href="#pressed-hydrangea" />
+    </g>
+    <g transform="translate(480, 280) rotate(-22) scale(0.95)">
+      <use href="#pressed-hydrangea" />
+    </g>
+    <g transform="translate(240, 320) rotate(65) scale(1.1)">
+      <use href="#pressed-hydrangea" />
+    </g>
+    <g transform="translate(80, 460) rotate(-12) scale(1.2)">
+      <use href="#pressed-hydrangea" />
+    </g>
+    <g transform="translate(380, 360) rotate(12) scale(0.9)">
+      <use href="#pressed-hydrangea" />
+    </g>
+    <g transform="translate(300, 720) rotate(78) scale(1.15)">
+      <use href="#pressed-hydrangea" />
+    </g>
+
+    <!-- Pressed Leaves along stem -->
+    <g transform="translate(230, 240) rotate(58) scale(1.25)">
+      <use href="#drifting-leaf" />
+    </g>
+    <g transform="translate(130, 350) rotate(-62) scale(1.35)">
+      <use href="#drifting-leaf" />
+    </g>
+    <g transform="translate(350, 480) rotate(68) scale(1.15)">
+      <use href="#drifting-leaf" />
+    </g>
+    <g transform="translate(240, 580) rotate(-32) scale(1.3)">
+      <use href="#drifting-leaf" />
+    </g>
+
+    <!-- Left edge descending trail -->
+    <path d="M 60,760 Q 130,980 80,1230" stroke="url(#stem-grad)" stroke-width="2.6" fill="none" />
+    <g transform="translate(130, 990) rotate(25) scale(1.1)">
+      <use href="#pressed-cosmos" />
+    </g>
+    <g transform="translate(220, 1130) rotate(20) scale(1.18)">
+      <use href="#pressed-umbel" />
+    </g>
+    <g transform="translate(110, 1090) rotate(42) scale(1.25)">
+      <use href="#drifting-leaf" />
+    </g>
+
+    <!-- Drifting Petals toward center -->
+    <g transform="translate(680, 170) rotate(38) scale(1.2)">
+      <use href="#drifting-petal" />
+    </g>
+    <g transform="translate(820, 130) rotate(-15) scale(1.05)">
+      <use href="#drifting-petal" />
+    </g>
+    <g transform="translate(920, 220) rotate(65) scale(0.95)">
+      <use href="#drifting-petal" />
+    </g>
+    <g transform="translate(740, 300) rotate(22) scale(0.9)">
+      <use href="#pressed-hydrangea" />
+    </g>
+    <g transform="translate(620, 440) rotate(-35) scale(1.05)">
+      <use href="#drifting-petal" />
+    </g>
+    <g transform="translate(750, 500) rotate(80) scale(0.95)">
+      <use href="#drifting-leaf" />
+    </g>
+    <g transform="translate(980, 340) rotate(28) scale(0.8)">
+      <use href="#drifting-petal" />
+    </g>
+
+    <!-- Fine Pollen and Seed Pods -->
+    <circle cx="560" cy="220" r="4.6" fill="#FFFFFF" opacity="0.95" />
+    <circle cx="560" cy="220" r="2.2" fill="#787265" opacity="0.48" />
+    <circle cx="650" cy="350" r="4.0" fill="#FFFFFF" opacity="0.9" />
+    <circle cx="650" cy="350" r="1.8" fill="#787265" opacity="0.45" />
+    <circle cx="780" cy="290" r="4.2" fill="#FFFFFF" opacity="0.85" />
+    <circle cx="780" cy="290" r="2.0" fill="#787265" opacity="0.42" />
+    <circle cx="880" cy="410" r="3.4" fill="#FFFFFF" opacity="0.8" />
+  </g>
+
+  <!-- ==================== LAYER 3: RIGHT-SIDE BOTANICAL CLUSTER ==================== -->
+  <g mask="url(#botanical-mask-right)">
+    <!-- Curving stem entering from top right -->
+    <path d="M 2000,-40 Q 1830,160 1770,400 T 1740,790" stroke="url(#stem-grad)" stroke-width="3.6" fill="none" />
+    <path d="M 1860,150 Q 1740,120 1620,180" stroke="url(#stem-grad)" stroke-width="2.6" fill="none" />
+    <path d="M 1790,330 Q 1670,380 1590,490" stroke="url(#stem-grad)" stroke-width="2.4" fill="none" />
+    <path d="M 1750,570 Q 1650,650 1630,750" stroke="url(#stem-grad)" stroke-width="2.0" fill="none" />
+
+    <!-- Bloom R1: Gorgeous Large Poppy near Top Right -->
+    <g transform="translate(1700, 180) rotate(20) scale(1.35)">
+      <use href="#pressed-poppy" />
+    </g>
+
+    <!-- Bloom R2: Cosmos blooming inward toward left -->
+    <g transform="translate(1500, 250) rotate(-26) scale(1.22)">
+      <use href="#pressed-cosmos" />
+    </g>
+
+    <!-- Bloom R3: Lower Right Poppy Blossom -->
+    <g transform="translate(1660, 480) rotate(32) scale(1.15)">
+      <use href="#pressed-poppy" />
+    </g>
+
+    <!-- Queen Anne's Lace Umbels on Right -->
+    <g transform="translate(1420, 110) rotate(-16) scale(1.28)">
+      <use href="#pressed-umbel" />
+    </g>
+    <g transform="translate(1780, 560) rotate(18) scale(1.15)">
+      <use href="#pressed-umbel" />
+    </g>
+
+    <!-- Large Fern sweeping down right edge -->
+    <g transform="translate(1860, 240) rotate(162) scale(1.2)">
+      <use href="#pressed-fern" />
+    </g>
+
+    <!-- Hydrangea Florets on Right -->
+    <g transform="translate(1820, 80) rotate(-15) scale(1.1)">
+      <use href="#pressed-hydrangea" />
+    </g>
+    <g transform="translate(1640, 90) rotate(-35) scale(1.0)">
+      <use href="#pressed-hydrangea" />
+    </g>
+    <g transform="translate(1460, 310) rotate(25) scale(0.95)">
+      <use href="#pressed-hydrangea" />
+    </g>
+    <g transform="translate(1740, 340) rotate(-55) scale(1.05)">
+      <use href="#pressed-hydrangea" />
+    </g>
+    <g transform="translate(1850, 450) rotate(18) scale(1.15)">
+      <use href="#pressed-hydrangea" />
+    </g>
+    <g transform="translate(1580, 380) rotate(-10) scale(0.9)">
+      <use href="#pressed-hydrangea" />
+    </g>
+
+    <!-- Right-side Pressed Leaves -->
+    <g transform="translate(1710, 260) rotate(-52) scale(1.2)">
+      <use href="#drifting-leaf" />
+    </g>
+    <g transform="translate(1810, 360) rotate(62) scale(1.3)">
+      <use href="#drifting-leaf" />
+    </g>
+    <g transform="translate(1610, 500) rotate(-65) scale(1.1)">
+      <use href="#drifting-leaf" />
+    </g>
+
+    <!-- Drifting Petals toward center from right -->
+    <g transform="translate(1380, 190) rotate(-35) scale(1.15)">
+      <use href="#drifting-petal" />
+    </g>
+    <g transform="translate(1260, 150) rotate(22) scale(1.0)">
+      <use href="#drifting-petal" />
+    </g>
+    <g transform="translate(1160, 250) rotate(-55) scale(0.9)">
+      <use href="#drifting-petal" />
+    </g>
+    <g transform="translate(1320, 320) rotate(-20) scale(0.85)">
+      <use href="#pressed-hydrangea" />
+    </g>
+    <g transform="translate(1420, 440) rotate(32) scale(1.0)">
+      <use href="#drifting-petal" />
+    </g>
+
+    <!-- Right seeds drifting inward -->
+    <circle cx="1450" cy="240" r="4.2" fill="#FFFFFF" opacity="0.9" />
+    <circle cx="1450" cy="240" r="2.0" fill="#787265" opacity="0.45" />
+    <circle cx="1360" cy="370" r="3.6" fill="#FFFFFF" opacity="0.85" />
+    <circle cx="1360" cy="370" r="1.6" fill="#787265" opacity="0.4" />
+    <circle cx="1220" cy="310" r="3.8" fill="#FFFFFF" opacity="0.8" />
+    <circle cx="1220" cy="310" r="1.8" fill="#787265" opacity="0.38" />
+  </g>
+</svg>
