@@ -1,27 +1,5 @@
 <x-app-layout>
-    @php
-        $cartTotal = 0;
-        foreach ($cart as $productId => $item) {
-            $p = $products->get($productId);
-            if ($p) {
-                $variant = null;
-                if (!empty($item['variant_id'])) {
-                    $variant = $p->variants->firstWhere('id', $item['variant_id']);
-                }
-                if (!$variant && !empty($item['size'])) {
-                    $variant = $p->variants->first(function ($v) use ($item) {
-                        $match = strtolower($v->size) === strtolower($item['size']);
-                        if (!empty($item['color'])) {
-                            $match = $match && strtolower($v->color) === strtolower($item['color']);
-                        }
-                        return $match;
-                    });
-                }
-                $price = $variant ? (float) $variant->price : (float) $p->price;
-                $cartTotal += $price * ($item['quantity'] ?? 1);
-            }
-        }
-    @endphp
+    @php $cartTotal = $items->sum('line_total'); @endphp
 
     <div class="py-8">
         <div class="max-w-[1600px] mx-auto px-4 sm:px-6 lg:px-8">
@@ -156,37 +134,22 @@
                         <h3 class="font-semibold text-gray-800 text-lg mb-4">Order Summary</h3>
 
                         <div class="space-y-3 mb-4">
-                            @foreach($cart as $productId => $item)
+                            @foreach($items as $item)
                                 @php
-                                    $product = $products->get($productId);
-                                    if (!$product) continue;
-                                    $variant = null;
-                                    if (!empty($item['variant_id'])) {
-                                        $variant = $product->variants->firstWhere('id', $item['variant_id']);
-                                    }
-                                    if (!$variant && !empty($item['size'])) {
-                                        $variant = $product->variants->first(function ($v) use ($item) {
-                                            $match = strtolower($v->size) === strtolower($item['size']);
-                                            if (!empty($item['color'])) {
-                                                $match = $match && strtolower($v->color) === strtolower($item['color']);
-                                            }
-                                            return $match;
-                                        });
-                                    }
-                                    $itemPrice = $variant ? (float) $variant->price : (float) $product->price;
-                                    $subtotal = $itemPrice * $item['quantity'];
+                                    $product = $item['product'];
+                                    $variant = $item['variant'];
                                 @endphp
                                 <div class="flex justify-between text-sm">
                                     <div class="truncate mr-2">
                                         <span class="text-gray-700 font-medium">{{ $product->title }}</span>
                                         <span class="text-gray-400">×{{ $item['quantity'] }}</span>
-                                        @if($variant || !empty($item['size']) || !empty($item['color']))
+                                        @if($item['size'] || $item['color'])
                                             <div class="text-[11px] text-gray-500">
-                                                {{ implode(' / ', array_filter([$variant?->size ?? ($item['size'] ?? null), $variant?->color ?? ($item['color'] ?? null)])) }}
+                                                {{ implode(' / ', array_filter([$item['size'], $item['color']])) }}
                                             </div>
                                         @endif
                                     </div>
-                                    <span class="font-medium text-gray-900 shrink-0">${{ number_format($subtotal, 2) }}</span>
+                                    <span class="font-medium text-gray-900 shrink-0">EGP {{ number_format($item['line_total'], 2) }}</span>
                                 </div>
                             @endforeach
                         </div>
@@ -194,7 +157,7 @@
                         <div class="border-t border-gray-100 pt-4 mb-6">
                             <div class="flex justify-between items-center">
                                 <span class="font-semibold text-gray-700">Total</span>
-                                <span class="text-2xl font-bold text-gray-900">${{ number_format($cartTotal, 2) }}</span>
+                                <span class="text-2xl font-bold text-gray-900">EGP {{ number_format($cartTotal, 2) }}</span>
                             </div>
                         </div>
 

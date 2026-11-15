@@ -5,13 +5,14 @@ namespace App\Http\Controllers;
 use App\Models\Order;
 use App\Models\OrderItem;
 use App\Models\PricingSetting;
-use App\Models\Product;
 use App\Models\Variant;
+use App\Services\Cart;
 use App\Services\PaymentService;
 use App\Services\Pricing\PricingCalculator;
 use App\Services\PrintletApiService;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Collection;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Support\Facades\DB;
@@ -35,18 +36,11 @@ class CheckoutController extends Controller
      */
     public function show(): View|RedirectResponse
     {
-        $cart = session()->get('cart', []);
+        $items = Cart::items();
 
-        if (empty($cart)) {
+        if ($items->isEmpty()) {
             return redirect()->route('cart.index')->with('error', 'Your cart is empty.');
         }
-
-        $productIds = array_keys($cart);
-        $products = Product::with(['variants'])
-            ->whereIn('id', $productIds)
-            ->where('is_available', true)
-            ->get()
-            ->keyBy('id');
 
         $paymentMethods = [
             'cod' => 'Cash on Delivery',
@@ -55,7 +49,7 @@ class CheckoutController extends Controller
         $instapayConfig = config('services.instapay');
         $customer = Auth::user()?->customer;
 
-        return view('checkout', compact('cart', 'products', 'paymentMethods', 'instapayConfig', 'customer'));
+        return view('checkout', compact('items', 'paymentMethods', 'instapayConfig', 'customer'));
     }
 
     /**
@@ -88,42 +82,11 @@ class CheckoutController extends Controller
             'address_line_1' => $request->input('address_line_1', $request->input('address', $customer?->address)),
         ]);
 
-        // If variant_id is missing, derive it from the session cart items
-        if (! $request->filled('variant_id')) {
-            $cart = session()->get('cart', []);
-            if (! empty($cart)) {
-                $firstProductId = array_key_first($cart);
-                $product = Product::with('variants')->find($firstProductId);
-                if ($product) {
-                    $selectedSize = $cart[$firstProductId]['size'] ?? 'M';
-                    $selectedColor = $cart[$firstProductId]['color'] ?? 'Default';
-
-                    $variant = Variant::firstOrCreate(
-                        [
-                            'product_id' => $product->id,
-                            'size' => $selectedSize,
-                            'color' => $selectedColor,
-                        ],
-                        [
-                            'sku' => ($product->sku ?? 'SKU-'.$product->id).'-'.strtoupper(substr($selectedSize, 0, 3)).'-'.strtoupper(substr($selectedColor, 0, 3)),
-                            'price' => $product->price,
-                            'printlet_variant_id' => 'v_default',
-                            'printlet_variant_revision' => 1,
-                        ]
-                    );
-                    $request->merge([
-                        'variant_id' => $variant->id,
-                        'quantity' => $cart[$firstProductId]['quantity'] ?? 1,
-                    ]);
-                }
-            }
-        }
-
         $request->validate([
             'payment_method' => 'required|string|in:prepaid,cod,cash_on_delivery,instapay',
             'payment_reference' => 'nullable|string|max:255',
-            'variant_id' => 'required|exists:variants,id',
-            'quantity' => 'nullable|integer|min:1',
+            'variant_id' => 'nullable|exists:variants,id',
+            'quantity' => 'nullable|integer|min:1|max:99',
             'name' => 'required|string|max:255',
             'phone' => 'required|string|max:50',
             'email' => 'required|email|max:255',
@@ -139,14 +102,13 @@ class CheckoutController extends Controller
         $cityName = config('services.printlet.cities')[$cityId] ?? $cityId;
         $customer->update(['address' => $cityName.', '.$request->address_line_1]);
 
-        $variant = Variant::with('product')->findOrFail($request->variant_id);
-        $product = $variant->product;
+        // An explicit variant_id checks out that single variant; otherwise every line in the cart is ordered.
+        $lines = $this->resolveLines($request);
 
-        if (! $product || ! $product->is_available) {
-            return redirect()->route('cart.index')->with('error', 'Selected item is unavailable.');
+        if ($lines === null) {
+            return redirect()->route('cart.index')->with('error', 'Your cart is empty or contains items that need to be re-selected.');
         }
 
-        $quantity = (int) ($request->quantity ?? 1);
         $countryId = Cache::get('printlet:egypt_country_id', config('services.printlet.country_id', 'c1839db2-37eb-4b21-82ea-b248aeef1e97'));
         $countryCode = strtoupper($request->country_code ?? config('services.printlet.country_code', 'EG'));
         $currency = Cache::get('printlet:currency', config('services.printlet.currency', 'EGP'));
@@ -162,35 +124,7 @@ class CheckoutController extends Controller
                 'country_id' => $countryId,
                 'currency' => $currency,
             ],
-            'items' => [
-                [
-                    'merchant_line_id' => 'line-'.$runId,
-                    'configuration' => [
-                        'variant' => [
-                            'id' => $variant->printlet_variant_id,
-                            'revision' => (int) $variant->printlet_variant_revision,
-                        ],
-                        'print_areas' => [
-                            [
-                                'print_area' => [
-                                    'id' => $variant->printlet_print_area_id ?? 'area_front',
-                                    'revision' => (int) $variant->printlet_print_area_revision,
-                                ],
-                                'technique' => [
-                                    'id' => $variant->printlet_technique_id ?? 'tech_dtg',
-                                    'revision' => (int) $variant->printlet_technique_revision,
-                                ],
-                                'placement_preset' => $variant->placement_preset ?? 'center',
-                                'artwork' => [
-                                    'id' => $product->printlet_artwork_id ?? 'art_default',
-                                    'revision' => (int) ($product->printlet_artwork_revision ?? 1),
-                                ],
-                            ],
-                        ],
-                        'quantity' => $quantity,
-                    ],
-                ],
-            ],
+            'items' => $lines->values()->map(fn (array $line, int $i) => $this->quoteItem($line['variant'], $line['quantity'], $runId, $i))->all(),
             'shipping' => [
                 'method_id' => $shippingMethodId,
                 'recipient' => [
@@ -215,7 +149,7 @@ class CheckoutController extends Controller
         }
 
         // Calculate store total (item price * quantity + shipping)
-        $itemTotal = (float) ($variant->price * $quantity);
+        $itemTotal = (float) $lines->sum(fn (array $line) => $line['variant']->price * $line['quantity']);
         $grandTotal = $itemTotal + $shippingCost;
 
         // --------------------------------------------------------------------------
@@ -242,7 +176,7 @@ class CheckoutController extends Controller
                 'source' => 'storefront',
                 'run_id' => $runId,
                 'customer_id' => (string) $customer->id,
-                'variant_sku' => $variant->sku,
+                'variant_sku' => $lines->map(fn (array $line) => $line['variant']->sku.' x'.$line['quantity'])->implode(', '),
             ],
         ];
 
@@ -268,9 +202,7 @@ class CheckoutController extends Controller
             $printletOrderId,
             $printletQuoteId,
             $printletStatus,
-            $product,
-            $variant,
-            $quantity
+            $lines
         ) {
             $localStatus = match ($paymentMethod) {
                 'cod' => 'pending_verification',
@@ -298,46 +230,61 @@ class CheckoutController extends Controller
             ]);
 
             $settings = PricingSetting::current();
-            [$artistMinProfit, $artistMaxProfit] = $product->effectiveArtistProfitRange();
             $calculator = app(PricingCalculator::class);
 
-            $printCost = $variant->print_cost !== null ? (float) $variant->print_cost : 100.00;
-            $breakdowns = $calculator->calculate(
-                costsByVariantId: [$variant->id => $printCost],
-                artistMinProfit: $artistMinProfit,
-                artistMaxProfit: $artistMaxProfit,
-                platformPercent: (float) $settings->platform_percent,
-                platformFixedFeePerItem: (float) $settings->platform_fixed_fee_per_item,
-                roundingStep: (float) $settings->rounding_step
-            );
+            foreach ($lines as $line) {
+                /** @var Variant $variant */
+                $variant = $line['variant'];
+                $product = $variant->product;
+                $quantity = $line['quantity'];
 
-            $breakdown = $breakdowns[$variant->id] ?? null;
-            $finalUnitPrice = $breakdown ? $breakdown->unitPrice : (float) $variant->price;
+                [$artistMinProfit, $artistMaxProfit] = $product->effectiveArtistProfitRange();
 
-            OrderItem::create([
-                'order_id' => $order->id,
-                'product_id' => $product->id,
-                'variant_id' => $variant->id,
-                'artist_id' => $product->user_id,
-                'quantity' => $quantity,
-                'unit_price' => $finalUnitPrice,
-                'print_cost' => $breakdown ? $breakdown->printCost : $printCost,
-                'artist_profit' => $breakdown ? $breakdown->artistProfit : 0.00,
-                'platform_cut' => $breakdown ? $breakdown->platformCut : 0.00,
-                'platform_fixed_fee' => $breakdown ? $breakdown->platformFixedFee : (float) $settings->platform_fixed_fee_per_item,
-                'customizations' => [
+                // Use every priced sibling variant so the artist-profit interpolation
+                // matches RepriceProductVariants (a lone variant would always get min profit).
+                $printCost = $variant->print_cost !== null ? (float) $variant->print_cost : 100.00;
+                $costs = $product->variants()
+                    ->whereNotNull('print_cost')
+                    ->pluck('print_cost', 'id')
+                    ->map(fn ($cost) => (float) $cost)
+                    ->all();
+                $costs[$variant->id] = $printCost;
+
+                $breakdown = $calculator->calculate(
+                    costsByVariantId: $costs,
+                    artistMinProfit: $artistMinProfit,
+                    artistMaxProfit: $artistMaxProfit,
+                    platformPercent: (float) $settings->platform_percent,
+                    platformFixedFeePerItem: (float) $settings->platform_fixed_fee_per_item,
+                    roundingStep: (float) $settings->rounding_step
+                )[$variant->id] ?? null;
+
+                OrderItem::create([
+                    'order_id' => $order->id,
+                    'product_id' => $product->id,
                     'variant_id' => $variant->id,
-                    'size' => $variant->size,
-                    'color' => $variant->color,
-                    'sku' => $variant->sku,
-                ],
-            ]);
+                    'artist_id' => $product->user_id,
+                    'quantity' => $quantity,
+                    // The customer (and Printlet COD collection) was charged $variant->price; snapshot exactly that.
+                    'unit_price' => (float) $variant->price,
+                    'print_cost' => $breakdown ? $breakdown->printCost : $printCost,
+                    'artist_profit' => $breakdown ? $breakdown->artistProfit : 0.00,
+                    'platform_cut' => $breakdown ? $breakdown->platformCut : 0.00,
+                    'platform_fixed_fee' => $breakdown ? $breakdown->platformFixedFee : (float) $settings->platform_fixed_fee_per_item,
+                    'customizations' => [
+                        'variant_id' => $variant->id,
+                        'size' => $variant->size,
+                        'color' => $variant->color,
+                        'sku' => $variant->sku,
+                    ],
+                ]);
+            }
 
             return $order;
         });
 
         // Observer handles order confirmation email automatically
-        session()->forget('cart');
+        Cart::clear();
 
         $successMessage = match ($order->payment_method) {
             'instapay' => 'Order #'.$order->id.' placed successfully! Please complete your Instapay transfer below.',
@@ -347,6 +294,71 @@ class CheckoutController extends Controller
 
         return redirect()->route('order.confirmation', $order)
             ->with('success', $successMessage);
+    }
+
+    /**
+     * Resolve the variants + quantities to order, or null when there is nothing valid to order.
+     *
+     * @return Collection<int, array{variant: Variant, quantity: int}>|null
+     */
+    protected function resolveLines(Request $request): ?Collection
+    {
+        if ($request->filled('variant_id')) {
+            $variant = Variant::with('product')->findOrFail($request->variant_id);
+
+            if (! $variant->product?->is_available) {
+                return null;
+            }
+
+            return collect([['variant' => $variant, 'quantity' => (int) ($request->quantity ?? 1)]]);
+        }
+
+        $items = Cart::items();
+
+        if ($items->isEmpty() || $items->contains(fn (array $item) => $item['variant'] === null)) {
+            return null;
+        }
+
+        return $items->map(fn (array $item) => [
+            'variant' => $item['variant']->setRelation('product', $item['product']),
+            'quantity' => $item['quantity'],
+        ])->values();
+    }
+
+    /**
+     * Build one Printlet quote line for a variant.
+     */
+    protected function quoteItem(Variant $variant, int $quantity, string $runId, int $index): array
+    {
+        $product = $variant->product;
+
+        return [
+            'merchant_line_id' => 'line-'.$runId.'-'.$index,
+            'configuration' => [
+                'variant' => [
+                    'id' => $variant->printlet_variant_id,
+                    'revision' => (int) $variant->printlet_variant_revision,
+                ],
+                'print_areas' => [
+                    [
+                        'print_area' => [
+                            'id' => $variant->printlet_print_area_id ?? 'area_front',
+                            'revision' => (int) $variant->printlet_print_area_revision,
+                        ],
+                        'technique' => [
+                            'id' => $variant->printlet_technique_id ?? 'tech_dtg',
+                            'revision' => (int) $variant->printlet_technique_revision,
+                        ],
+                        'placement_preset' => $variant->placement_preset ?? 'center',
+                        'artwork' => [
+                            'id' => $product->printlet_artwork_id ?? 'art_default',
+                            'revision' => (int) ($product->printlet_artwork_revision ?? 1),
+                        ],
+                    ],
+                ],
+                'quantity' => $quantity,
+            ],
+        ];
     }
 
     /**

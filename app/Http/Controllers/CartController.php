@@ -4,6 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Models\Product;
 use App\Models\Variant;
+use App\Services\Cart;
 use Illuminate\Http\JsonResponse;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -14,16 +15,9 @@ class CartController extends Controller
 {
     public function index(): View
     {
-        $cart = session()->get('cart', []);
+        $items = Cart::items();
 
-        $productIds = array_keys($cart);
-        $products = Product::with(['variants', 'images'])
-            ->whereIn('id', $productIds)
-            ->where('is_available', true)
-            ->get()
-            ->keyBy('id');
-
-        return view('cart', compact('cart', 'products'));
+        return view('cart', ['items' => $items, 'subtotal' => $items->sum('line_total')]);
     }
 
     public function add(Request $request, Product $product): JsonResponse|RedirectResponse
@@ -46,32 +40,22 @@ class CartController extends Controller
             return back()->with('error', 'This product is no longer available.');
         }
 
-        $cart = session()->get('cart', []);
-        $qty = $request->integer('quantity');
-        $variantId = $request->input('variant_id');
-        $size = $request->input('size');
-        $color = $request->input('color');
-        $unitPrice = (float) $product->price;
+        $variant = null;
+        if ($request->filled('variant_id')) {
+            $variant = Variant::where('product_id', $product->id)->find($request->input('variant_id'));
 
-        if ($variantId) {
-            $variant = Variant::find($variantId);
-            if ($variant && $variant->product_id === $product->id) {
-                $size = $variant->size;
-                $color = $variant->color;
-                $unitPrice = (float) $variant->price;
+            if (! $variant) {
+                $message = 'The selected option does not belong to this product.';
+
+                return $request->wantsJson()
+                    ? response()->json(['success' => false, 'message' => $message], 422)
+                    : back()->with('error', $message);
             }
         }
 
-        $cart[$product->id] = [
-            'quantity' => ($cart[$product->id]['quantity'] ?? 0) + $qty,
-            'variant_id' => $variantId ?? ($cart[$product->id]['variant_id'] ?? null),
-            'size' => $size ?? ($cart[$product->id]['size'] ?? null),
-            'color' => $color ?? ($cart[$product->id]['color'] ?? null),
-        ];
-
-        session()->put('cart', $cart);
-
-        $cartCount = collect($cart)->sum('quantity');
+        $line = Cart::add($product, $variant, $request->integer('quantity'), $request->input('size'), $request->input('color'));
+        $unitPrice = (float) ($variant?->price ?? $product->price);
+        $cartCount = Cart::count();
 
         if ($request->wantsJson()) {
             $firstImage = $product->images()->first();
@@ -84,9 +68,9 @@ class CartController extends Controller
                     'id' => $product->id,
                     'title' => $product->title,
                     'slug' => $product->slug,
-                    'quantity' => $cart[$product->id]['quantity'],
-                    'size' => $cart[$product->id]['size'],
-                    'color' => $cart[$product->id]['color'],
+                    'quantity' => $line['quantity'],
+                    'size' => $line['size'],
+                    'color' => $line['color'],
                     'unit_price' => $unitPrice,
                     'image_url' => $firstImage ? Storage::url($firstImage->path) : null,
                 ],
@@ -98,20 +82,21 @@ class CartController extends Controller
 
     public function update(Request $request, Product $product): RedirectResponse
     {
-        $request->validate(['quantity' => 'required|integer|min:1|max:99']);
+        $validated = $request->validate([
+            'quantity' => 'required|integer|min:1|max:99',
+            'variant_id' => 'nullable|integer',
+        ]);
 
-        $cart = session()->get('cart', []);
-        $cart[$product->id] = ['quantity' => $request->integer('quantity')];
-        session()->put('cart', $cart);
+        Cart::setQuantity(Cart::lineKey($product->id, $validated['variant_id'] ?? null), (int) $validated['quantity']);
 
         return back()->with('success', 'Cart updated.');
     }
 
-    public function remove(Product $product): RedirectResponse
+    public function remove(Request $request, Product $product): RedirectResponse
     {
-        $cart = session()->get('cart', []);
-        unset($cart[$product->id]);
-        session()->put('cart', $cart);
+        $variantId = $request->filled('variant_id') ? (int) $request->input('variant_id') : null;
+
+        Cart::remove(Cart::lineKey($product->id, $variantId));
 
         return back()->with('success', 'Item removed from cart.');
     }

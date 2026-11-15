@@ -19,44 +19,7 @@
                 </div>
             @endif
 
-            @php
-                $cartItems = [];
-                $subtotal = 0;
-                foreach ($cart as $productId => $item) {
-                    if (isset($products[$productId])) {
-                        $product = $products[$productId];
-                        $qty = (int) ($item['quantity'] ?? 1);
-
-                        // Find matching variant to use its exact price
-                        $variant = null;
-                        if (!empty($item['variant_id'])) {
-                            $variant = $product->variants->firstWhere('id', $item['variant_id']);
-                        }
-                        if (!$variant && !empty($item['size'])) {
-                            $variant = $product->variants->first(function ($v) use ($item) {
-                                $match = strtolower($v->size) === strtolower($item['size']);
-                                if (!empty($item['color'])) {
-                                    $match = $match && strtolower($v->color) === strtolower($item['color']);
-                                }
-                                return $match;
-                            });
-                        }
-
-                        $unitPrice = $variant ? (float) $variant->price : (float) $product->price;
-                        $lineTotal = $unitPrice * $qty;
-                        $subtotal += $lineTotal;
-                        $cartItems[] = [
-                            'product' => $product,
-                            'variant' => $variant,
-                            'unit_price' => $unitPrice,
-                            'quantity' => $qty,
-                            'line_total' => $lineTotal,
-                            'size' => $variant ? $variant->size : ($item['size'] ?? null),
-                            'color' => $variant ? $variant->color : ($item['color'] ?? null),
-                        ];
-                    }
-                }
-            @endphp
+            @php $cartItems = $items; @endphp
 
             @if(count($cartItems) === 0)
                 <div class="bg-white rounded-2xl p-12 text-center border border-gray-100 shadow-sm space-y-4 max-w-xl mx-auto my-12">
@@ -104,7 +67,7 @@
                                                     <span class="text-[11px] bg-gray-100 text-gray-700 font-medium px-2 py-0.5 rounded">Color: {{ $item['color'] }}</span>
                                                 @endif
                                             </div>
-                                            <p class="text-sm font-semibold text-gray-900 mt-1">${{ number_format($item['unit_price'], 2) }} each</p>
+                                            <p class="text-sm font-semibold text-gray-900 mt-1">EGP {{ number_format($item['unit_price'], 2) }} each</p>
                                         </div>
                                     </div>
 
@@ -113,6 +76,7 @@
                                         <form method="POST" action="{{ route('cart.update', $product) }}" class="flex items-center gap-2">
                                             @csrf
                                             @method('PATCH')
+                                            <input type="hidden" name="variant_id" value="{{ $item['variant']?->id }}">
                                             <input type="number" name="quantity" value="{{ $qty }}" min="1" max="99" 
                                                 class="w-16 border border-gray-200 rounded-lg px-2.5 py-1.5 text-sm text-center font-medium focus:ring-2 focus:ring-gray-900">
                                             <button type="submit" class="text-xs text-gray-600 hover:text-gray-900 font-semibold px-2 py-1 bg-gray-100 hover:bg-gray-200 rounded-lg transition-colors">
@@ -122,13 +86,14 @@
 
                                         <!-- Line Total -->
                                         <div class="text-right min-w-[80px]">
-                                            <span class="font-bold text-gray-900 text-base">${{ number_format($item['line_total'], 2) }}</span>
+                                            <span class="font-bold text-gray-900 text-base">EGP {{ number_format($item['line_total'], 2) }}</span>
                                         </div>
 
                                         <!-- Remove Button -->
                                         <form method="POST" action="{{ route('cart.remove', $product) }}">
                                             @csrf
                                             @method('DELETE')
+                                            <input type="hidden" name="variant_id" value="{{ $item['variant']?->id }}">
                                             <button type="submit" class="text-gray-400 hover:text-red-600 p-1.5 transition-colors" title="Remove item">
                                                 <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
                                             </button>
@@ -153,7 +118,7 @@
                             <div class="space-y-3 text-sm">
                                 <div class="flex justify-between text-gray-600">
                                     <span>Subtotal ({{ count($cartItems) }} items)</span>
-                                    <span class="font-bold text-gray-900">${{ number_format($subtotal, 2) }}</span>
+                                    <span class="font-bold text-gray-900">EGP {{ number_format($subtotal, 2) }}</span>
                                 </div>
 
                                 <div class="flex justify-between text-gray-600">
@@ -166,7 +131,7 @@
 
                             <div class="flex justify-between items-baseline text-base font-bold text-gray-900">
                                 <span>Estimated Subtotal</span>
-                                <span class="text-2xl">${{ number_format($subtotal, 2) }}</span>
+                                <span class="text-2xl">EGP {{ number_format($subtotal, 2) }}</span>
                             </div>
 
                             <div class="p-4 bg-gray-50 rounded-xl text-xs text-gray-500 space-y-1">

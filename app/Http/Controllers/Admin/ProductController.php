@@ -5,6 +5,7 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use App\Models\Product;
 use App\Models\Variant;
+use App\Services\Pricing\RepriceProductVariants;
 use Illuminate\Http\Request;
 use Illuminate\Support\Arr;
 
@@ -119,6 +120,7 @@ class ProductController extends Controller
         // Check if template variants already exist in the database from other products
         $templateVariants = Variant::where('product_id', '!=', $product->id)
             ->get()
+            ->sortByDesc(fn ($v) => $v->print_cost !== null)
             ->unique(fn ($v) => $v->printlet_variant_id);
 
         if ($templateVariants->isNotEmpty()) {
@@ -131,7 +133,8 @@ class ProductController extends Controller
                     'size' => $template->size,
                     'color' => $template->color,
                     'sku' => 'POSTER-'.$product->id.'-'.$cleanSize.'-'.$cleanColor,
-                    'price' => $product->price,
+                    'price' => $template->price ?? $product->price,
+                    'print_cost' => $template->print_cost,
                     'printlet_variant_id' => $template->printlet_variant_id,
                     'printlet_variant_revision' => $template->printlet_variant_revision,
                     'printlet_print_area_id' => $template->printlet_print_area_id,
@@ -144,10 +147,10 @@ class ProductController extends Controller
         } else {
             // Default baseline poster configurations if catalog hasn't been synced yet
             $defaults = [
-                ['size' => 'A3', 'color' => 'Black Frame', 'printlet_variant_id' => 'v_a3_black'],
-                ['size' => 'A3', 'color' => 'White Frame', 'printlet_variant_id' => 'v_a3_white'],
-                ['size' => 'A4', 'color' => 'Black Frame', 'printlet_variant_id' => 'v_a4_black'],
-                ['size' => 'A4', 'color' => 'White Frame', 'printlet_variant_id' => 'v_a4_white'],
+                ['size' => 'A3', 'color' => 'Black Frame', 'printlet_variant_id' => 'v_a3_black', 'print_cost' => 150.00],
+                ['size' => 'A3', 'color' => 'White Frame', 'printlet_variant_id' => 'v_a3_white', 'print_cost' => 150.00],
+                ['size' => 'A4', 'color' => 'Black Frame', 'printlet_variant_id' => 'v_a4_black', 'print_cost' => 100.00],
+                ['size' => 'A4', 'color' => 'White Frame', 'printlet_variant_id' => 'v_a4_white', 'print_cost' => 100.00],
             ];
 
             foreach ($defaults as $d) {
@@ -160,6 +163,7 @@ class ProductController extends Controller
                     'color' => $d['color'],
                     'sku' => 'POSTER-'.$product->id.'-'.$cleanSize.'-'.$cleanColor,
                     'price' => $product->price,
+                    'print_cost' => $d['print_cost'],
                     'printlet_variant_id' => $d['printlet_variant_id'],
                     'printlet_print_area_id' => 'pa_front',
                     'printlet_technique_id' => 'tech_digital_print',
@@ -167,6 +171,9 @@ class ProductController extends Controller
                 ]);
             }
         }
+
+        // Derive each variant's retail price from its print cost (artist profit + platform cut).
+        app(RepriceProductVariants::class)->reprice($product);
     }
 
     public function update(Request $request, Product $product)

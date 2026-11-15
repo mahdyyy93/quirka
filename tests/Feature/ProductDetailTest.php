@@ -5,6 +5,7 @@ namespace Tests\Feature;
 use App\Models\Product;
 use App\Models\User;
 use App\Models\Variant;
+use App\Services\Cart;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Tests\TestCase;
 
@@ -96,10 +97,12 @@ class ProductDetailTest extends TestCase
             ],
         ]);
 
+        // Cart lines are keyed per product + variant so different variants never overwrite each other.
         $cart = session()->get('cart', []);
-        $this->assertArrayHasKey($product->id, $cart);
-        $this->assertEquals(2, $cart[$product->id]['quantity']);
-        $this->assertEquals($variant->id, $cart[$product->id]['variant_id']);
+        $line = Cart::lineKey($product->id, $variant->id);
+        $this->assertArrayHasKey($line, $cart);
+        $this->assertEquals(2, $cart[$line]['quantity']);
+        $this->assertEquals($variant->id, $cart[$line]['variant_id']);
     }
 
     public function test_admin_can_toggle_update_and_delete_product_by_id(): void

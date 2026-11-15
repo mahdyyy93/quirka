@@ -143,13 +143,13 @@
 
                 {{-- Left: Contemporary Artwork Gallery Presentation --}}
                 <div class="lg:col-span-7 space-y-5">
-                    <div class="relative bg-white rounded-xl border border-gallery-border p-6 sm:p-10 flex items-center justify-center min-h-[460px] shadow-sm">
+                    <div class="relative bg-white rounded-xl border border-gallery-border p-2 sm:p-4 lg:p-5 flex items-center justify-center min-h-[480px] sm:min-h-[620px] lg:min-h-[700px] shadow-sm">
                         <template x-if="images.length > 0">
-                            <div class="relative group cursor-zoom-in max-h-[600px] w-full flex items-center justify-center" @click="zoomOpen = true">
+                            <div class="relative group cursor-zoom-in w-full h-full flex items-center justify-center" @click="zoomOpen = true">
                                 <img
                                     :src="images[activeImageIndex]"
                                     alt="{{ $product->title }}"
-                                    class="max-h-[540px] w-auto object-contain filter drop-shadow-[0_8px_24px_rgba(0,0,0,0.08)] transition-transform duration-500 group-hover:scale-[1.02]"
+                                    class="max-h-[640px] sm:max-h-[720px] lg:max-h-[780px] w-full h-auto object-contain filter drop-shadow-[0_10px_28px_rgba(0,0,0,0.08)] transition-transform duration-500 group-hover:scale-[1.01]"
                                 >
                                 <div class="absolute bottom-3 right-3 bg-gallery-charcoal/80 backdrop-blur-sm text-white px-3 py-1.5 rounded-md text-xs font-medium opacity-0 group-hover:opacity-100 transition-opacity flex items-center gap-1.5 shadow-sm">
                                     <svg class="w-3.5 h-3.5" fill="none" stroke="currentColor" viewBox="0 0 24 24"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0zM10 7v3m0 0v3m0-3h3m-3 0H7"/></svg>
